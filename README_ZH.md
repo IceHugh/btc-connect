@@ -6,8 +6,8 @@
 </div>
 
 <div align="center">
-  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_black.png" width="300">
-  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_white.png" width="300">
+  <img src="https://github.com/IceHugh/btc-connect/blob/main/images/example_black.png" width="300">
+  <img src="https://github.com/IceHugh/btc-connect/blob/main/images/example_white.png" width="300">
   <br />
 </div>
 
