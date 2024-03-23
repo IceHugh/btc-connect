@@ -7,6 +7,8 @@ export abstract class BtcConnector {
   abstract readonly id: string;
   /** Connector name */
   abstract readonly name: string;
+
+  abstract readonly logo: string;
   /** Extension or Snap homepage */
   abstract homepage: string;
 

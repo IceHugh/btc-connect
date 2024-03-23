@@ -1,6 +1,6 @@
 import { WalletNetwork, Balance } from '../types';
 import { BtcConnector } from './base';
-
+import { okxLogo } from '../assets';
 export namespace OkxWalletTypes {
   export interface AddressInfo {
     address: string;
@@ -202,7 +202,8 @@ declare global {
 
 export class OkxConnector extends BtcConnector {
   readonly id = 'okx';
-  readonly name = 'Okx Wallet';
+  readonly name = 'OKX';
+  readonly logo = okxLogo;
   public homepage =
     'https://www.okx.com/web3/build/docs/sdks/chains/bitcoin/provider';
   public banance: Balance = { confirmed: 0, unconfirmed: 0, total: 0 };

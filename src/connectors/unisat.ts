@@ -1,3 +1,4 @@
+import { unisatLogo } from '../assets';
 import { WalletNetwork, Balance } from '../types';
 import { BtcConnector } from './base';
 
@@ -104,6 +105,7 @@ declare global {
 export class UnisatConnector extends BtcConnector {
   readonly id = 'unisat';
   readonly name = 'Unisat';
+  readonly logo = unisatLogo;
   public homepage = 'https://unisat.io';
   public banance: Balance = { confirmed: 0, unconfirmed: 0, total: 0 };
   public unisat: Unisat;
