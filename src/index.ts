@@ -12,14 +12,16 @@ import {
 type Connector = UnisatConnector | OkxConnector;
 
 export interface BtcConnectors {
-  id: string;
+  id: BtcConnectorId;
   instance: Connector;
   installed: boolean;
 }
 class BtcWalletConnect {
   private local_storage_key = 'btc_connector_id';
+  private local_disconnect_key = 'btc_disconnect_status';
   connectorId: BtcConnectorId = 'unisat';
   localConnectorId?: BtcConnectorId;
+  disConnectStatus: boolean = false;
   connected: boolean = false;
   installed: boolean = false;
   address?: string;
@@ -48,18 +50,20 @@ class BtcWalletConnect {
     this.localConnectorId =
       (localStorage.getItem(this.local_storage_key) as BtcConnectorId) ||
       undefined;
+    this.disConnectStatus = localStorage.getItem(this.local_disconnect_key) == '1';
     this.connectorId = defaultConnectorId;
     this.connector = this.connectors.find(
       (c) => c.id === defaultConnectorId && c.installed
     )?.instance;
   }
-  async switchConnector(id: BtcConnectorId) {
+  switchConnector(id: BtcConnectorId) {
     const _c = this.connectors.find(
       (c) => c.id === id && c.installed
     )?.instance;
     if (!_c) {
       throw new Error('Connector not found');
     }
+    this.connectorId = id;
     this.connector = _c;
     return _c;
   }
@@ -74,6 +78,7 @@ class BtcWalletConnect {
       this.balance = this.connector.banance;
     }
     localStorage.setItem(this.local_storage_key, this.connectorId);
+    localStorage.removeItem(this.local_disconnect_key);
     return this.connected;
   }
   private async getCurrentInfo() {
@@ -93,6 +98,9 @@ class BtcWalletConnect {
   async check() {
     if (!this.connector) {
       throw new Error('Connector not found');
+    }
+    if (this.disConnectStatus) {
+      return false;
     }
     this.connectorId = this.localConnectorId || this.connectorId;
     const _c = this.connectors.find(
@@ -118,6 +126,7 @@ class BtcWalletConnect {
     this.publicKey = undefined;
     this.balance = { confirmed: 0, unconfirmed: 0, total: 0 };
     localStorage.removeItem(this.local_storage_key);
+    localStorage.setItem(this.local_disconnect_key, '1');
   }
   async getAccounts() {
     if (!this.connector) {
@@ -139,6 +148,7 @@ class BtcWalletConnect {
     }
     await this.connector.switchNetwork(network);
     this.network = network;
+    await this.getCurrentInfo();
   }
   async sendToAddress(toAddress: string, amount: number) {
     if (!this.connector) {

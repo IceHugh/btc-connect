@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Btc connect for unisat okx",
   "type": "module",
   "license": "MIT",
