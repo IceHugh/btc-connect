@@ -217,5 +217,5 @@ You can also donate by scanning the following QR codes in WeChat or Alipay:
 You can also donate using the following cryptocurrency addresses:
 
 - BTC: bc1pnacumj3jhn28x8lwj5fqfwzxcq0kfhyrtzadd4unlg4cu57mp3wghp0j73
-<img src="https://github.com/IceHugh/btc-connect/blob/main/images/btc_qrcode.jpg" width="100" height="100">
+<img src="https://github.com/IceHugh/btc-connect/blob/main/images/btc_qrcode.jpg" width="300" >
 Thank you to every supporter for your contributions!

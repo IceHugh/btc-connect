@@ -217,6 +217,6 @@ BTC Wallet Connect 使用 [MIT 许可证](https://github.com/IceHugh/btc-connect
 你还可以通过以下加密货币地址捐赠：
 
 - BTC: bc1pnacumj3jhn28x8lwj5fqfwzxcq0kfhyrtzadd4unlg4cu57mp3wghp0j73
-<img src="https://github.com/IceHugh/btc-connect/blob/main/images/btc_qrcode.jpg" width="100" height="100">
+<img src="https://github.com/IceHugh/btc-connect/blob/main/images/btc_qrcode.jpg" width="300">
 
 感谢每一位支持者的贡献！
