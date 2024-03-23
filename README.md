@@ -6,6 +6,12 @@
   <br />
 </div>
 
+<div align="center">
+  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_black.png" width="300">
+  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_white.png" width="300">
+  <br />
+</div>
+
 # BTC Wallet Connect
 
 BTC Wallet Connect is a library that allows you to easily integrate Bitcoin wallets (Unisat and OKX) into your web application. With this library, you can enable your users to manage their Bitcoin addresses, send and receive transactions, and interact with Bitcoin wallets directly from your web app.

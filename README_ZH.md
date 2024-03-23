@@ -5,6 +5,13 @@
   <br />
 </div>
 
+<div align="center">
+  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_black.png" width="300">
+  <img src="https://github.com/IceHugh/btc-connect/blob/images/example_white.png" width="300">
+  <br />
+</div>
+
+
 # BTC 钱包连接
 
 BTC Wallet Connect 是一个库，可以让你轻松地将比特币钱包（Unisat 和 OKX）集成到你的 Web 应用程序中。使用这个库，你可以让用户管理他们的比特币地址、发送和接收交易，并直接从你的 Web 应用程序与比特币钱包进行交互。
