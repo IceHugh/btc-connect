@@ -3,7 +3,7 @@ import {
   Balance,
   BtcWalletConnectOptions,
   BtcConnectorId,
-  BrcWalletNetwork,
+  BtcWalletNetwork,
   NetworkChangedEvent,
   AccountsChangedEvent,
   MessageType,
@@ -24,7 +24,7 @@ class BtcWalletConnect {
   installed: boolean = false;
   address?: string;
   publicKey?: string;
-  network: BrcWalletNetwork;
+  network: BtcWalletNetwork;
   balance: Balance = { confirmed: 0, unconfirmed: 0, total: 0 };
   connectors: BtcConnectors[];
   connector?: Connector;
@@ -133,7 +133,7 @@ class BtcWalletConnect {
     return this.connector.network;
   }
 
-  async switchNetwork(network: BrcWalletNetwork) {
+  async switchNetwork(network: BtcWalletNetwork) {
     if (!this.connector) {
       throw new Error('Connector not found');
     }

@@ -7,13 +7,13 @@ export type Balance = {
 	total: number;
 };
 export interface BtcWalletConnectOptions {
-	network?: BrcWalletNetwork;
+	network?: BtcWalletNetwork;
 	defaultConnectorId?: BtcConnectorId;
 }
-export type BrcWalletNetwork = "livenet" | "testnet";
+export type BtcWalletNetwork = "livenet" | "testnet";
 export type BtcConnectorId = "unisat" | "okx";
 export type AccountsChangedEvent = (event: "networkChanged", handler: (accounts: Array<string>) => void) => void;
-export type NetworkChangedEvent = (event: "networkChanged", handler: (network: BrcWalletNetwork) => void) => void;
+export type NetworkChangedEvent = (event: "networkChanged", handler: (network: BtcWalletNetwork) => void) => void;
 export type MessageType = "ecdsa" | "bip322-simple";
 export type Address = string;
 declare abstract class BtcConnector {
@@ -297,7 +297,7 @@ declare class BtcWalletConnect {
 	installed: boolean;
 	address?: string;
 	publicKey?: string;
-	network: BrcWalletNetwork;
+	network: BtcWalletNetwork;
 	balance: Balance;
 	connectors: BtcConnectors[];
 	connector?: Connector;
@@ -309,7 +309,7 @@ declare class BtcWalletConnect {
 	disconnect(): Promise<void>;
 	getAccounts(): Promise<string[]>;
 	getNetwork(): Promise<WalletNetwork>;
-	switchNetwork(network: BrcWalletNetwork): Promise<void>;
+	switchNetwork(network: BtcWalletNetwork): Promise<void>;
 	sendToAddress(toAddress: string, amount: number): Promise<string>;
 	signMessage(message: string, type?: MessageType): Promise<string>;
 	signPsbt(psbtHex: string, options?: any): Promise<string>;
