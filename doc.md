@@ -95,7 +95,7 @@ wallet.disconnect().then(() => {
 Transaction and Signing Methods:
 ```typescript
 // Sending cryptocurrency
-wallet.sendToAddress("1BitcoinAddress...", 0.01).then((txId) => {
+wallet.sendToAddress("1BitcoinAddress...", 1000).then((txId) => {
   console.log('Transaction ID:', txId);
 });
 

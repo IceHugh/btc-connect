@@ -163,7 +163,7 @@ btcWallet.connect()
 
 // Send Bitcoin
 const toAddress = '...';
-const amount = 0.1;
+const amount = 1000;
 btcWallet.sendToAddress(toAddress, amount)
   .then((txid) => {
     console.log('Transaction ID:', txid);

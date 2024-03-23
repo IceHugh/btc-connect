@@ -163,7 +163,7 @@ btcWallet.connect()
 
 // 发送比特币
 const toAddress = '...';
-const amount = 0.1;
+const amount = 1000;
 btcWallet.sendToAddress(toAddress, amount)
   .then((txid) => {
     console.log('交易 ID:', txid);
