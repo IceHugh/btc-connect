@@ -78,7 +78,7 @@ export const WalletSelectModal = ({
                 <span className="flex-1">{wallet.name}</span>
               </div>
               <div className="text-xs text-orange-600">
-                {wallet.installed && 'Not Installed'}
+                {!wallet.installed && 'Not Installed'}
               </div>
             </div>
           ))}

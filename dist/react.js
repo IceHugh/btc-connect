@@ -77,7 +77,7 @@ var WalletSelectModal = ({
     className: "flex-1"
   }, wallet.name)), React.createElement("div", {
     className: "text-xs text-orange-600"
-  }, wallet.installed && "Not Installed")))))) : null;
+  }, !wallet.installed && "Not Installed")))))) : null;
   if (isBrowser) {
     return ReactDOM.createPortal(modalContent, document.body);
   } else {
