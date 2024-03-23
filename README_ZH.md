@@ -1,7 +1,7 @@
 <div align="center">
-  <a href="./README_ZH.md">英文</a>
+  <a href="https://github.com/IceHugh/btc-connect/blob/main/README_ZH.md">英文</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="./doc.md">文档</a>
+  <a href="https://github.com/IceHugh/btc-connect/blob/main/doc.md">文档</a>
   <br />
 </div>
 
