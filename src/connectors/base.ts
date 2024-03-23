@@ -15,7 +15,6 @@ export abstract class BtcConnector {
   /** Whether connector is usable */
   ready: boolean = false;
 
-  public installed: boolean = false;
   public connected: boolean = false;
   address: Address | undefined = '';
 

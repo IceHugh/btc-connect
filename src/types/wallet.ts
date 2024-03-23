@@ -16,3 +16,4 @@ export type NetworkChangedEvent = (
 ) => void;
 
 export type MessageType = 'ecdsa' | 'bip322-simple';
+
