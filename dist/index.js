@@ -240,8 +240,8 @@ class OkxConnector extends BtcConnector {
 }
 // src/index.ts
 class BtcWalletConnect {
-  local_storage_key = "btc_connector_id";
-  local_disconnect_key = "btc_disconnect_status";
+  local_storage_key = "_btc_connector_id";
+  local_disconnect_key = "_btc_disconnect_status";
   connectorId = "unisat";
   localConnectorId;
   disConnectStatus = false;
@@ -340,7 +340,6 @@ class BtcWalletConnect {
     this.address = undefined;
     this.publicKey = undefined;
     this.balance = { confirmed: 0, unconfirmed: 0, total: 0 };
-    localStorage.removeItem(this.local_storage_key);
     localStorage.setItem(this.local_disconnect_key, "1");
   }
   async getAccounts() {

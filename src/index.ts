@@ -17,8 +17,8 @@ export interface BtcConnectors {
   installed: boolean;
 }
 class BtcWalletConnect {
-  private local_storage_key = 'btc_connector_id';
-  private local_disconnect_key = 'btc_disconnect_status';
+  private local_storage_key = '_btc_connector_id';
+  private local_disconnect_key = '_btc_disconnect_status';
   connectorId: BtcConnectorId = 'unisat';
   localConnectorId?: BtcConnectorId;
   disConnectStatus: boolean = false;
@@ -125,7 +125,6 @@ class BtcWalletConnect {
     this.address = undefined;
     this.publicKey = undefined;
     this.balance = { confirmed: 0, unconfirmed: 0, total: 0 };
-    localStorage.removeItem(this.local_storage_key);
     localStorage.setItem(this.local_disconnect_key, '1');
   }
   async getAccounts() {
