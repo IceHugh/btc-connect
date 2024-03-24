@@ -231,6 +231,7 @@ export class OkxConnector extends BtcConnector {
       this.connected = true;
       this.address = res.address;
       this.publicKey = res.publicKey;
+      await this.switchNetwork('livenet')
       await this.getCurrentInfo();
     } catch (error) {
       throw error;

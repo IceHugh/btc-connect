@@ -132,12 +132,14 @@ export const useReactWalletStore = create<WalletStore>()(
         const publicKey = btcWallet.publicKey;
         const balance = btcWallet.balance;
         const connected = btcWallet.connected;
+        const network = btcWallet.network;
         const localConnectorId = btcWallet.localConnectorId;
         set((state) => ({
           publicKey,
           address,
           balance,
           connected,
+          network,
           localConnectorId,
         }));
       } catch (error) {

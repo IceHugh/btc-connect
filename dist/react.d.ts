@@ -322,15 +322,24 @@ declare class BtcWalletConnect {
 	removeListener: NetworkChangedEvent | AccountsChangedEvent;
 }
 export interface WalletConnectReactProps {
-	config: BtcWalletConnectOptions;
+	config?: BtcWalletConnectOptions;
 	theme?: "light" | "dark";
+	ui?: {
+		connectClass?: string;
+		disconnectClass?: string;
+	};
+	text?: {
+		connectText?: string;
+		disconnectText?: string;
+		modalTitle?: string;
+	};
 	onConnectSuccess?: (btcWallet: BtcWalletConnect) => void;
 	onConnectError?: (error: any) => void;
 	onDisconnectSuccess?: () => void;
 	onDisconnectError?: (error: any) => void;
-	children?: React.ReactNode;
+	children?: any;
 }
-export declare const WalletConnectReact: ({ config: { network, defaultConnectorId }, theme, onConnectSuccess, onConnectError, onDisconnectSuccess, onDisconnectError, children, }: WalletConnectReactProps) => React.JSX.Element;
+export declare const WalletConnectReact: ({ config: { network, defaultConnectorId }, theme, ui: { connectClass, disconnectClass }, text: { connectText, disconnectText, modalTitle }, onConnectSuccess, onConnectError, onDisconnectSuccess, onDisconnectError, children, }: WalletConnectReactProps) => React.JSX.Element;
 export type WalletState = {
 	btcWallet?: BtcWalletConnect;
 	balance: Balance;

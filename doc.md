@@ -113,6 +113,41 @@ wallet.signPsbt("psbtHex...", {}).then((signedPsbt) => {
 ### useReactWalletStore (React-specific)
 
 - **Purpose**: Manages the wallet's state in React applications.
+It seems there was an issue generating the document through my code execution environment. However, I can still provide you with the Markdown content directly here. You can copy this Markdown content into your own `.md` file manually:
+
+#### Wallet State Interface Documentation
+
+This document describes the structure of the wallet state used within a cryptocurrency application. It outlines the types and fields that comprise the state of a `BtcWalletConnect` instance and related information.
+
+##### Fields Description
+
+- `btcWallet?`: Optional. An instance of `BtcWalletConnect`. Represents the wallet connection.
+- `balance`: A `Balance` object containing details about the wallet's balance, including confirmed and unconfirmed amounts.
+- `publicKey`: The public key of the wallet as a `string`.
+- `address`: The blockchain address of the wallet as a `string`.
+- `connected`: A `boolean` indicating whether the wallet is currently connected.
+- `initStatus`: A `boolean` indicating whether the wallet has been initialized.
+- `network`: The `BtcWalletNetwork` the wallet is connected to, e.g., `"livenet"` or `"testnet"`.
+- `connectorId?`: Optional. The `BtcConnectorId` of the currently selected connector.
+- `localConnectorId?`: Optional. The `BtcConnectorId` of the locally stored connector preference.
+- `connector?`: Optional. The current `Connector` instance used for blockchain interactions.
+- `connectors?`: Optional. An array of objects representing available connectors. Each object contains:
+  - `id`: The `BtcConnectorId` of the connector.
+  - `name`: The name of the connector as a `string`.
+  - `logo`: A `base64 string` URL to the connector's logo.
+  - `connector`: The connector instance, type `any`.
+  - `installed`: A `boolean` indicating whether the connector is installed.
+
+##### Types Overview
+
+- `BtcWalletConnect`: Represents the main class for wallet connectivity.
+- `Balance`: An object containing numeric fields for `confirmed`, `unconfirmed`, and `total` balances.
+- `BtcWalletNetwork`: Enumerates the blockchain networks supported, such as `"livenet"` and `"testnet"`.
+- `BtcConnectorId`: Identifies connectors by ID, such as `"unisat"` or `"okx"`.
+- `Connector`: The interface for blockchain connector implementations.
+```
+
+
 - **Methods**:
   - **init(config: BtcWalletConnectOptions): void**: Initializes the wallet with configuration options.
   - **check(): void**: Checks the current status of the wallet connection.

@@ -77,6 +77,7 @@ class BtcWalletConnect {
       this.address = this.connector.address;
       this.publicKey = this.connector.publicKey;
       this.balance = this.connector.banance;
+      this.network = this.connector.network;
     }
     localStorage.setItem(this.local_storage_key, this.connectorId);
     localStorage.removeItem(this.local_disconnect_key);

@@ -8,18 +8,29 @@ import { useReactWalletStore } from '../hooks';
 import { BtcWalletConnectOptions, BtcConnectorId } from '../types/wallet';
 
 export interface WalletConnectReactProps {
-  config: BtcWalletConnectOptions;
+  config?: BtcWalletConnectOptions;
   theme?: 'light' | 'dark';
+  ui?: {
+    connectClass?: string;
+    disconnectClass?: string;
+  };
+  text?: {
+    connectText?: string;
+    disconnectText?: string;
+    modalTitle?: string;
+  },
   onConnectSuccess?: (btcWallet: BtcWalletConnect) => void;
   onConnectError?: (error: any) => void;
   onDisconnectSuccess?: () => void;
   onDisconnectError?: (error: any) => void;
-  children?: React.ReactNode;
+  children?: any;
 }
 
 export const WalletConnectReact = ({
-  config: { network = 'livenet', defaultConnectorId = 'unisat' },
+  config: { network = 'livenet', defaultConnectorId = 'unisat' } = {},
   theme = 'dark',
+  ui: { connectClass = '', disconnectClass = '' } = {},
+  text: { connectText = 'Connect', disconnectText = 'Disconnect', modalTitle = 'Select Wallet' } = {},
   onConnectSuccess,
   onConnectError,
   onDisconnectSuccess,
@@ -75,22 +86,23 @@ export const WalletConnectReact = ({
     );
   }, [connectors]);
 
-  useEffect(() => {
-    if (initStatus) {
-      check();
-    }
-  }, [initStatus]);
+  // useEffect(() => {
+  //   if (initStatus) {
+  //     // check();
+  //   }
+  // }, [initStatus]);
 
-  useEffect(() => {
-    if (connected) {
-      // btcWallet?.on("accountChanged", check);
-      btcWallet?.on('networkChanged', check);
-    }
-    return () => {
-      // btcWallet?.removeListener("accountChanged", check);
-      btcWallet?.removeListener('networkChanged', check);
-    };
-  }, [connected]);
+  // useEffect(() => {
+  //   console.log('btc connected', connected);
+  //   if (connected) {
+  //     // btcWallet?.on("accountChanged", check);
+  //     btcWallet?.on('networkChanged', check);
+  //   }
+  //   return () => {
+  //     // btcWallet?.removeListener("accountChanged", check);
+  //     btcWallet?.removeListener('networkChanged', check);
+  //   };
+  // }, [connected]);
 
   useEffect(() => {
     init({ network, defaultConnectorId });
@@ -110,12 +122,13 @@ export const WalletConnectReact = ({
               theme === 'dark'
                 ? 'bg-gradient-to-r from-pink-500 to-violet-500 border-gray-600'
                 : 'bg-gradient-to-r from-blue-500 to-green-500 border-gray-300'
-            }`}
+            } ${connectClass}`}
           >
-            Connect
+            {connectText}
           </button>
           <WalletSelectModal
             theme={theme}
+            title={modalTitle}
             onClose={() => setVisible(false)}
             visible={visible}
             wallets={wallets}
@@ -131,7 +144,7 @@ export const WalletConnectReact = ({
             theme === 'dark'
               ? 'bg-gradient-to-r from-pink-500 to-violet-500'
               : 'bg-gradient-to-r from-blue-500 to-green-500'
-          }`}
+          } ${disconnectClass}`}
         >
           <span className="mr-1">{hideStr(address, 4, '***')}</span>
           <ExitIcon

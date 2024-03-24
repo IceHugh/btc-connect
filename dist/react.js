@@ -265,6 +265,7 @@ class OkxConnector extends BtcConnector {
       this.connected = true;
       this.address = res.address;
       this.publicKey = res.publicKey;
+      await this.switchNetwork("livenet");
       await this.getCurrentInfo();
     } catch (error) {
       throw error;
@@ -401,6 +402,7 @@ class BtcWalletConnect {
       this.address = this.connector.address;
       this.publicKey = this.connector.publicKey;
       this.balance = this.connector.banance;
+      this.network = this.connector.network;
     }
     localStorage.setItem(this.local_storage_key, this.connectorId);
     localStorage.removeItem(this.local_disconnect_key);
@@ -615,12 +617,14 @@ var useReactWalletStore = create()(devtools((set, get) => ({
       const publicKey = btcWallet.publicKey;
       const balance = btcWallet.balance;
       const connected = btcWallet.connected;
+      const network = btcWallet.network;
       const localConnectorId = btcWallet.localConnectorId;
       set((state) => ({
         publicKey,
         address,
         balance,
         connected,
+        network,
         localConnectorId
       }));
     } catch (error) {
@@ -673,8 +677,10 @@ var useReactWalletStore = create()(devtools((set, get) => ({
 })));
 // src/components/WalletConnectReact.tsx
 var WalletConnectReact = ({
-  config: { network = "livenet", defaultConnectorId = "unisat" },
+  config: { network = "livenet", defaultConnectorId = "unisat" } = {},
   theme = "dark",
+  ui: { connectClass = "", disconnectClass = "" } = {},
+  text: { connectText = "Connect", disconnectText = "Disconnect", modalTitle = "Select Wallet" } = {},
   onConnectSuccess,
   onConnectError,
   onDisconnectSuccess,
@@ -726,19 +732,6 @@ var WalletConnectReact = ({
     })) || [];
   }, [connectors2]);
   useEffect2(() => {
-    if (initStatus) {
-      check();
-    }
-  }, [initStatus]);
-  useEffect2(() => {
-    if (connected) {
-      btcWallet?.on("networkChanged", check);
-    }
-    return () => {
-      btcWallet?.removeListener("networkChanged", check);
-    };
-  }, [connected]);
-  useEffect2(() => {
     init({ network, defaultConnectorId });
   }, []);
   useEffect2(() => {
@@ -746,16 +739,17 @@ var WalletConnectReact = ({
   }, [network, defaultConnectorId]);
   return React3.createElement(React3.Fragment, null, !connected ? React3.createElement(React3.Fragment, null, React3.createElement("button", {
     onClick: handleConnect,
-    className: `bg-clip-text text-transparent border  rounded-xl h-10 px-4 hover:border-yellow-500 ${theme === "dark" ? "bg-gradient-to-r from-pink-500 to-violet-500 border-gray-600" : "bg-gradient-to-r from-blue-500 to-green-500 border-gray-300"}`
-  }, "Connect"), React3.createElement(WalletSelectModal, {
+    className: `bg-clip-text text-transparent border  rounded-xl h-10 px-4 hover:border-yellow-500 ${theme === "dark" ? "bg-gradient-to-r from-pink-500 to-violet-500 border-gray-600" : "bg-gradient-to-r from-blue-500 to-green-500 border-gray-300"} ${connectClass}`
+  }, connectText), React3.createElement(WalletSelectModal, {
     theme,
+    title: modalTitle,
     onClose: () => setVisible(false),
     visible,
     wallets,
     onClick: walletSelect
   })) : children ? children : React3.createElement("button", {
     onClick: handlerDisconnect,
-    className: `bg-clip-text text-transparent border border-gray-300 rounded-xl h-10 px-4 hover:border-yellow-500 flex justify-center items-center ${theme === "dark" ? "bg-gradient-to-r from-pink-500 to-violet-500" : "bg-gradient-to-r from-blue-500 to-green-500"}`
+    className: `bg-clip-text text-transparent border border-gray-300 rounded-xl h-10 px-4 hover:border-yellow-500 flex justify-center items-center ${theme === "dark" ? "bg-gradient-to-r from-pink-500 to-violet-500" : "bg-gradient-to-r from-blue-500 to-green-500"} ${disconnectClass}`
   }, React3.createElement("span", {
     className: "mr-1"
   }, hideStr(address, 4, "***")), React3.createElement(ExitIcon, {

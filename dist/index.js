@@ -157,6 +157,7 @@ class OkxConnector extends BtcConnector {
       this.connected = true;
       this.address = res.address;
       this.publicKey = res.publicKey;
+      await this.switchNetwork("livenet");
       await this.getCurrentInfo();
     } catch (error) {
       throw error;
@@ -293,6 +294,7 @@ class BtcWalletConnect {
       this.address = this.connector.address;
       this.publicKey = this.connector.publicKey;
       this.balance = this.connector.banance;
+      this.network = this.connector.network;
     }
     localStorage.setItem(this.local_storage_key, this.connectorId);
     localStorage.removeItem(this.local_disconnect_key);
