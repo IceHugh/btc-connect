@@ -12,9 +12,9 @@
 </div>
 
 
-# BTC 钱包连接
+# BTC Connect
 
-BTC Wallet Connect 是一个库，可以让你轻松地将比特币钱包（Unisat 和 OKX）集成到你的 Web 应用程序中。使用这个库，你可以让用户管理他们的比特币地址、发送和接收交易，并直接从你的 Web 应用程序与比特币钱包进行交互。
+BTC Connect 是一个库，可以让你轻松地将比特币钱包（Unisat 和 OKX）集成到你的 Web 应用程序中。使用这个库，你可以让用户管理他们的比特币地址、发送和接收交易，并直接从你的 Web 应用程序与比特币钱包进行交互。
 
 ## 特性
 
@@ -199,7 +199,7 @@ btcWallet.disconnect()
 
 ## 许可证
 
-BTC Wallet Connect 使用 [MIT 许可证](https://github.com/IceHugh/btc-connect/blob/main/LICENSE)。
+BTC Connect 使用 [MIT 许可证](https://github.com/IceHugh/btc-connect/blob/main/LICENSE)。
 
 ## 支持与捐赠
 
