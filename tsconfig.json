@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": [
-      "ESNext"
+      "ESNext", "dom"
     ],
     "module": "esnext",
     "target": "esnext",
@@ -13,7 +13,7 @@
     "strict": true,
     "downlevelIteration": true,
     "skipLibCheck": true,
-    "jsx": "react",
+    "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
@@ -21,5 +21,7 @@
       "bun-types", // add Bun global
       "web"
     ]
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist/**/*", "node_modules"]
 }

@@ -1,4 +1,4 @@
-import { UnisatConnector, OkxConnector } from './connectors';
+import { UnisatConnector, OkxConnector, Sat20Connector } from './connectors';
 import {
   Balance,
   BtcWalletConnectOptions,
@@ -10,7 +10,7 @@ import {
   AccountChangedEvent,
 } from './types';
 
-export type Connector = UnisatConnector | OkxConnector;
+export type Connector = UnisatConnector | OkxConnector | Sat20Connector;
 
 export interface BtcConnectors {
   id: BtcConnectorId;
@@ -46,6 +46,11 @@ class BtcWalletConnect {
         id: 'okx',
         instance: new OkxConnector(this.network),
         installed: !!window.okxwallet,
+      },
+      {
+        id: 'sat20',
+        instance: new OkxConnector(this.network),
+        installed: !!window.sat20,
       },
     ];
     this.localConnectorId =
@@ -200,7 +205,10 @@ class BtcWalletConnect {
     if (!this.connector) {
       throw new Error('Connector not found');
     }
-    if (this.connector instanceof UnisatConnector) {
+    if (
+      this.connector instanceof UnisatConnector ||
+      this.connector instanceof Sat20Connector
+    ) {
       this.connector.on(event as 'networkChanged' | 'accountsChanged', handler);
     } else {
       this.connector.on(

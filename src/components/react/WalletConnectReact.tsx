@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { useEffect, useState, useRef } from 'react';
-import BtcWalletConnect from '../connect';
+import BtcWalletConnect from '../../connect';
 import { WalletSelectModal } from './WalletSelectModal';
-import { hideStr } from '../utils';
+import { hideStr } from '../../utils';
 import { ExitIcon } from './ExitIcon';
-import { useReactWalletStore } from '../hooks';
-import { BtcWalletConnectOptions, BtcConnectorId } from '../types/wallet';
+import { useReactWalletStore } from '../../hooks/react';
+import { BtcWalletConnectOptions, BtcConnectorId } from '../../types/wallet';
 
 export interface WalletConnectReactProps {
   config?: BtcWalletConnectOptions;

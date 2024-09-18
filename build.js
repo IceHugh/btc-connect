@@ -5,6 +5,7 @@ await Bun.build({
   outdir: "./dist",
   target: "browser",
   minify: true,
+
   external: ["react", "react-dom", 'zustand'],
   plugins: [dts()],
 });

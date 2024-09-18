@@ -13,7 +13,7 @@ export interface BtcWalletConnectOptions {
 	defaultConnectorId?: BtcConnectorId;
 }
 export type BtcWalletNetwork = "livenet" | "testnet";
-export type BtcConnectorId = "unisat" | "okx";
+export type BtcConnectorId = "unisat" | "okx" | "sat20";
 export type MessageType = "ecdsa" | "bip322-simple";
 export type Address = string;
 declare abstract class BtcConnector {
@@ -286,7 +286,100 @@ declare class OkxConnector extends BtcConnector {
 	pushTx(rawTx: string): Promise<string>;
 	pushPsbt(psbtHex: string): Promise<string>;
 }
-export type Connector = UnisatConnector | OkxConnector;
+declare namespace Sat20WalletTypes {
+	type AccountsChangedEvent = (event: "accountsChanged" | "networkChanged", handler: (accounts: Array<string> | string) => void) => void;
+	type Inscription = {
+		inscriptionId: string;
+		inscriptionNumber: string;
+		address: string;
+		outputValue: string;
+		content: string;
+		contentLength: string;
+		contentType: string;
+		preview: string;
+		timestamp: number;
+		offset: number;
+		genesisTransaction: string;
+		location: string;
+	};
+	type GetInscriptionsResult = {
+		total: number;
+		list: Inscription[];
+	};
+	type SendInscriptionsResult = {
+		txid: string;
+	};
+	type Network = "livenet" | "testnet";
+}
+export type Sat20 = {
+	requestAccounts: () => Promise<string[]>;
+	getAccounts: () => Promise<string[]>;
+	on: Sat20WalletTypes.AccountsChangedEvent;
+	removeListener: Sat20WalletTypes.AccountsChangedEvent;
+	getInscriptions: (cursor: number, size: number) => Promise<Sat20WalletTypes.GetInscriptionsResult>;
+	sendInscription: (address: string, inscriptionId: string, options?: {
+		feeRate: number;
+	}) => Promise<Sat20WalletTypes.SendInscriptionsResult>;
+	switchNetwork: (network: "livenet" | "testnet") => Promise<void>;
+	getNetwork: () => Promise<Sat20WalletTypes.Network>;
+	getPublicKey: () => Promise<string>;
+	getBalance: () => Promise<Balance>;
+	sendBitcoin: (address: string, atomicAmount: number, options?: {
+		feeRate: number;
+	}) => Promise<string>;
+	pushTx: ({ rawtx }: {
+		rawtx: string;
+	}) => Promise<string>;
+	pushPsbt: (psbtHex: string) => Promise<string>;
+	signMessage: (message: string, type?: "ecdsa" | "bip322-simple") => Promise<string>;
+	signPsbt: (psbtHex: string, options?: {
+		autoFinalized?: boolean;
+		toSignInputs: {
+			index: number;
+			address?: string;
+			publicKey?: string;
+			sighashTypes?: number[];
+			disableTweakSigner?: boolean;
+		}[];
+	}) => Promise<string>;
+	signPsbts: (psbtHexs: string[], options?: {
+		autoFinalized?: boolean;
+		toSignInputs: {
+			index: number;
+			address?: string;
+			publicKey?: string;
+			sighashTypes?: number[];
+			disableTweakSigner?: boolean;
+		};
+	}[]) => Promise<string[]>;
+};
+declare class Sat20Connector extends BtcConnector {
+	readonly id = "Sat20";
+	readonly name: string;
+	readonly logo: string;
+	readonly networks: WalletNetwork[];
+	homepage: string;
+	banance: Balance;
+	sat20: Sat20;
+	constructor(network: WalletNetwork);
+	on(event: "accountsChanged" | "networkChanged", handler: any): void;
+	removeListener(event: "accountsChanged" | "networkChanged", handler: any): void;
+	connect(): Promise<boolean>;
+	requestAccounts(): Promise<string[]>;
+	getCurrentInfo(): Promise<void>;
+	disconnect(): Promise<void>;
+	getAccounts(): Promise<string[]>;
+	sendToAddress(toAddress: string, amount: number): Promise<string>;
+	switchNetwork(network: WalletNetwork): Promise<void>;
+	getPublicKey(): Promise<string>;
+	getBalance(): Promise<Balance>;
+	signPsbt(psbtHex: string, options?: any): Promise<string>;
+	signMessage(message: string): Promise<string>;
+	signPsbts(psbtHexs: string[], options?: any): Promise<string[]>;
+	pushTx(rawTx: string): Promise<string>;
+	pushPsbt(psbtHex: string): Promise<string>;
+}
+export type Connector = UnisatConnector | OkxConnector | Sat20Connector;
 export interface BtcConnectors {
 	id: BtcConnectorId;
 	instance: Connector;
@@ -344,6 +437,17 @@ export interface WalletConnectReactProps {
 	children?: any;
 }
 export declare const WalletConnectReact: ({ config: { network, defaultConnectorId }, theme, ui: { connectClass, disconnectClass, modalClass, modalZIndex, }, text: { connectText, disconnectText, modalTitle, }, onConnectSuccess, onConnectError, onDisconnectSuccess, onDisconnectError, children, }: WalletConnectReactProps) => React.JSX.Element;
+export interface WalletSelectModalProps {
+	visible: boolean;
+	title?: string;
+	className?: string;
+	zIndex?: number;
+	theme?: "light" | "dark";
+	wallets: any[];
+	onClick?: (id: BtcConnectorId) => void;
+	onClose?: () => void;
+}
+export declare const WalletSelectModal: ({ visible, title, theme, wallets, zIndex, className, onClick, onClose, }: WalletSelectModalProps) => React.ReactPortal | null;
 export type WalletState = {
 	btcWallet?: BtcWalletConnect;
 	balance: Balance;

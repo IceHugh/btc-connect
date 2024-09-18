@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { closeIcon, loadingIcon } from '../assets';
-import { BtcConnectorId } from '../types/wallet';
+import { closeIcon, loadingIcon } from '../../assets';
+import { BtcConnectorId } from '../../types/wallet';
 
 export interface WalletSelectModalProps {
   visible: boolean;

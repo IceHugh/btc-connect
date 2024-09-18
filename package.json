@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
-  "version": "1.4.7",
+  "version": "1.5.0",
   "description": "Btc connect for unisat okx",
   "type": "module",
   "license": "MIT",
@@ -42,7 +42,8 @@
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "react-dom": "^18.2.0",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.3.3"
   },
   "optionalDependencies": {
     "@types/react-dom": "^18.2.22",
