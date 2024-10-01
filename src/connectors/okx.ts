@@ -365,4 +365,13 @@ export class OkxConnector extends BtcConnector {
     }
     return this.okxwallet.pushPsbt(psbtHex);
   }
+  async getInscriptions(
+    cursor: number,
+    size: number,
+  ): Promise<OkxWalletTypes.GetInscriptionsResult> {
+    if (!this.okxwallet) {
+      throw new Error('OkxWallet not installed');
+    }
+    return this.okxwallet.getInscriptions(cursor, size);
+  }
 }

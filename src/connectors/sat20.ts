@@ -61,7 +61,7 @@ export type Sat20 = {
     atomicAmount: number,
     options?: { feeRate: number },
   ) => Promise<string>;
-  pushTx: ({ rawtx }: { rawtx: string }) => Promise<string>;
+  pushTx: (rawtx: string) => Promise<string>;
   pushPsbt: (psbtHex: string) => Promise<string>;
   signMessage: (
     message: string,
@@ -181,7 +181,13 @@ export class Sat20Connector extends BtcConnector {
     if (!this.sat20) {
       throw new Error('Sat20 not installed');
     }
-    return this.sat20?.sendBitcoin(toAddress, amount);
+    const result = await this.sat20.sendBitcoin(toAddress, amount);
+    try {
+      const txid = JSON.parse(result);
+      return txid;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async switchNetwork(network: WalletNetwork) {
@@ -228,12 +234,33 @@ export class Sat20Connector extends BtcConnector {
     if (!this.sat20) {
       throw new Error('Sat20 not installed');
     }
-    return this.sat20.pushTx({ rawtx: rawTx });
+    const result = await this.sat20.pushTx(rawTx);
+    try {
+      const txid = JSON.parse(result);
+      return txid;
+    } catch (error) {
+      throw error;
+    }
   }
   async pushPsbt(psbtHex: string) {
     if (!this.sat20) {
       throw new Error('Sat20 not installed');
     }
-    return this.sat20.pushPsbt(psbtHex);
+    const result = await this.sat20.pushPsbt(psbtHex);
+    try {
+      const txid = JSON.parse(result);
+      return txid;
+    } catch (error) {
+      throw error;
+    }
+  }
+  async getInscriptions(
+    cursor: number,
+    size: number,
+  ): Promise<Sat20WalletTypes.GetInscriptionsResult> {
+    if (!this.sat20) {
+      throw new Error('Unisat not installed');
+    }
+    return this.sat20.getInscriptions(cursor, size);
   }
 }

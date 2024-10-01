@@ -1,4 +1,11 @@
-import { UnisatConnector, OkxConnector, Sat20Connector } from './connectors';
+import {
+  UnisatConnector,
+  OkxConnector,
+  Sat20Connector,
+  UnisatWalletTypes,
+  OkxWalletTypes,
+  Sat20WalletTypes,
+} from './connectors';
 import {
   Balance,
   BtcWalletConnectOptions,
@@ -49,7 +56,7 @@ class BtcWalletConnect {
       },
       {
         id: 'sat20',
-        instance: new OkxConnector(this.network),
+        instance: new Sat20Connector(this.network),
         installed: !!window.sat20,
       },
     ];
@@ -232,6 +239,19 @@ class BtcWalletConnect {
     } else if (this.connector instanceof OkxConnector) {
       return;
     }
+  }
+  async getInscriptions(
+    cursor: number,
+    size: number,
+  ): Promise<
+    | Sat20WalletTypes.GetInscriptionsResult
+    | OkxWalletTypes.GetInscriptionsResult
+    | UnisatWalletTypes.GetInscriptionsResult
+  > {
+    if (!this.connector) {
+      throw new Error('Connector not found');
+    }
+    return this.connector.getInscriptions(cursor, size);
   }
 }
 

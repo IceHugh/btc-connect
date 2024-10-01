@@ -147,6 +147,7 @@ export class UnisatConnector extends BtcConnector {
     }
     return this.unisat.requestAccounts();
   }
+
   async getCurrentInfo() {
     if (!this.unisat) {
       throw new Error('Unisat not installed');
@@ -235,5 +236,14 @@ export class UnisatConnector extends BtcConnector {
       throw new Error('Unisat not installed');
     }
     return this.unisat.pushPsbt(psbtHex);
+  }
+  async getInscriptions(
+    cursor: number,
+    size: number,
+  ): Promise<UnisatWalletTypes.GetInscriptionsResult> {
+    if (!this.unisat) {
+      throw new Error('Unisat not installed');
+    }
+    return this.unisat.getInscriptions(cursor, size);
   }
 }

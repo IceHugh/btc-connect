@@ -131,6 +131,7 @@ declare class UnisatConnector extends BtcConnector {
 	signPsbts(psbtHexs: string[], options?: any): Promise<string[]>;
 	pushTx(rawTx: string): Promise<string>;
 	pushPsbt(psbtHex: string): Promise<string>;
+	getInscriptions(cursor: number, size: number): Promise<UnisatWalletTypes.GetInscriptionsResult>;
 }
 declare namespace OkxWalletTypes {
 	interface AddressInfo {
@@ -283,6 +284,7 @@ declare class OkxConnector extends BtcConnector {
 	signPsbts(psbtHexs: string[], options?: any): Promise<string[]>;
 	pushTx(rawTx: string): Promise<string>;
 	pushPsbt(psbtHex: string): Promise<string>;
+	getInscriptions(cursor: number, size: number): Promise<OkxWalletTypes.GetInscriptionsResult>;
 }
 declare namespace Sat20WalletTypes {
 	type AccountsChangedEvent = (event: "accountsChanged" | "networkChanged", handler: (accounts: Array<string> | string) => void) => void;
@@ -325,9 +327,7 @@ export type Sat20 = {
 	sendBitcoin: (address: string, atomicAmount: number, options?: {
 		feeRate: number;
 	}) => Promise<string>;
-	pushTx: ({ rawtx }: {
-		rawtx: string;
-	}) => Promise<string>;
+	pushTx: (rawtx: string) => Promise<string>;
 	pushPsbt: (psbtHex: string) => Promise<string>;
 	signMessage: (message: string, type?: "ecdsa" | "bip322-simple") => Promise<string>;
 	signPsbt: (psbtHex: string, options?: {
@@ -367,15 +367,16 @@ declare class Sat20Connector extends BtcConnector {
 	getCurrentInfo(): Promise<void>;
 	disconnect(): Promise<void>;
 	getAccounts(): Promise<string[]>;
-	sendToAddress(toAddress: string, amount: number): Promise<string>;
+	sendToAddress(toAddress: string, amount: number): Promise<any>;
 	switchNetwork(network: WalletNetwork): Promise<void>;
 	getPublicKey(): Promise<string>;
 	getBalance(): Promise<Balance>;
 	signPsbt(psbtHex: string, options?: any): Promise<string>;
 	signMessage(message: string): Promise<string>;
 	signPsbts(psbtHexs: string[], options?: any): Promise<string[]>;
-	pushTx(rawTx: string): Promise<string>;
-	pushPsbt(psbtHex: string): Promise<string>;
+	pushTx(rawTx: string): Promise<any>;
+	pushPsbt(psbtHex: string): Promise<any>;
+	getInscriptions(cursor: number, size: number): Promise<Sat20WalletTypes.GetInscriptionsResult>;
 }
 export type Connector = UnisatConnector | OkxConnector | Sat20Connector;
 export interface BtcConnectors {
@@ -405,14 +406,15 @@ declare class BtcWalletConnect {
 	getAccounts(): Promise<string[]>;
 	getNetwork(): Promise<WalletNetwork>;
 	switchNetwork(network: BtcWalletNetwork): Promise<void>;
-	sendToAddress(toAddress: string, amount: number): Promise<string>;
+	sendToAddress(toAddress: string, amount: number): Promise<any>;
 	signMessage(message: string, type?: MessageType): Promise<string>;
 	signPsbt(psbtHex: string, options?: any): Promise<string>;
 	signPsbts(psbtHexs: string[], options?: any): Promise<string[]>;
-	pushTx(rawTx: string): Promise<string>;
-	pushPsbt(psbtHex: string): Promise<string>;
+	pushTx(rawTx: string): Promise<any>;
+	pushPsbt(psbtHex: string): Promise<any>;
 	on(event: "networkChanged" | "accountsChanged" | "accountChanged", handler: any): void;
 	removeListener(event: "networkChanged" | "accountsChanged" | "accountChanged", handler: any): void;
+	getInscriptions(cursor: number, size: number): Promise<Sat20WalletTypes.GetInscriptionsResult | OkxWalletTypes.GetInscriptionsResult | UnisatWalletTypes.GetInscriptionsResult>;
 }
 
 export {
