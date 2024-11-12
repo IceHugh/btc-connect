@@ -196,7 +196,7 @@ export class OkxConnector extends BtcConnector {
   constructor(network: Network) {
     super(network);
     this.network = Network.LIVENET;
-    this.okxwallet = window.okxwallet.bitcoin;
+    this.okxwallet = window.okxwallet?.bitcoin;
   }
 
   /**
