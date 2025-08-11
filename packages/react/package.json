@@ -1,0 +1,58 @@
+{
+  "name": "@btc-connect/react",
+  "version": "0.1.0",
+  "description": "BTC Connect React 适配模块 - 提供React Hooks与Context",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "lint": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@btc-connect/core": "workspace:*",
+    "@btc-connect/shared": "workspace:*",
+    "@btc-connect/ui": "workspace:*",
+    "@lit/react": "^1.0.8",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.0",
+    "vite-plugin-dts": "4.5.4"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "keywords": [
+    "bitcoin",
+    "btc",
+    "wallet",
+    "web3",
+    "connect",
+    "react",
+    "hooks"
+  ],
+  "author": "btc-connect",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/btc-connect.git",
+    "directory": "packages/react"
+  }
+}

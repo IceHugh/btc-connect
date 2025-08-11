@@ -1,0 +1,28 @@
+{
+  "name": "btc-connect",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build:ui": "cd packages/ui && bun run build",
+    "build": "bun run --filter @btc-connect/core build && bun run --filter @btc-connect/shared build && bun run --filter @btc-connect/ui build && bun run --filter @btc-connect/react build",
+    "dev": "bun run --filter @btc-connect/* dev",
+    "test": "bun test",
+    "lint": "bun run --filter @btc-connect/* lint",
+    "format": "bun run --filter @btc-connect/* format",
+    "typecheck": "bun run --filter @btc-connect/* typecheck",
+    "install:all": "bun install && bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.19",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^2.1.3",
+    "vue": "^3.5.18"
+  }
+}

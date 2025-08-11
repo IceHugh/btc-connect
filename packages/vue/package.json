@@ -1,0 +1,53 @@
+{
+  "name": "@btc-connect/vue",
+  "version": "0.1.0",
+  "description": "BTC Connect Vue 适配模块 - 提供Vue组件与组合式API",
+  "type": "module",
+  "main": "dist/index.es.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "bunx vite build --watch",
+    "build": "bunx vue-tsc -b && bunx vite build",
+    "preview": "vite preview",
+    "lint": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "bunx vue-tsc -b"
+  },
+  "dependencies": {
+    "vue": "^3.5.18",
+    "@btc-connect/core": "workspace:*",
+    "@btc-connect/shared": "workspace:*",
+    "@btc-connect/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.7.0",
+    "vite-plugin-dts": "^4.2.3",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.0",
+    "vue-tsc": "^3.0.5"
+  },
+  "keywords": [
+    "bitcoin",
+    "btc",
+    "wallet",
+    "web3",
+    "connect",
+    "vue",
+    "composables"
+  ],
+  "author": "btc-connect",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/btc-connect.git",
+    "directory": "packages/vue"
+  }
+}
