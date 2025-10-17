@@ -4,9 +4,9 @@ import type {
   WalletInfo,
   WalletManagerConfig,
   WalletState,
-} from '@btc-connect/core';
-import { BTCWalletManager } from '@btc-connect/core';
-import { storage } from '@btc-connect/shared';
+} from '../types/core';
+import { BTCWalletManager } from '../types/core';
+import { storage } from '../utils';
 import type { ConnectionPolicy, BalanceDetail } from '../types';
 import {
   createContext,
@@ -26,13 +26,22 @@ interface WalletContextType {
   isConnected: boolean;
   isConnecting: boolean;
 
+  // 模态框状态
+  isModalOpen: boolean;
+
+  // 主题
+  theme: 'light' | 'dark';
+
   // 操作
   connect: (walletId: string) => Promise<AccountInfo[]>;
   disconnect: () => Promise<void>;
   switchWallet: (walletId: string) => Promise<AccountInfo[]>;
+  openModal: () => void;
+  closeModal: () => void;
+  toggleModal: () => void;
 
-  // 管理器
-  manager: BTCWalletManager;
+  // 管理器（可能为 null，在 SSR 环境下）
+  manager: BTCWalletManager | null;
 }
 
 // 创建钱包上下文
@@ -45,6 +54,7 @@ interface WalletProviderProps {
   autoConnect?: boolean;
   connectTimeout?: number;
   connectionPolicy?: ConnectionPolicy;
+  theme?: 'light' | 'dark';
 }
 
 /**
@@ -56,41 +66,80 @@ export function BTCWalletProvider({
   autoConnect = false,
   connectTimeout = 5000,
   connectionPolicy,
+  theme = 'light',
 }: WalletProviderProps) {
-  const [manager] = useState(() => new BTCWalletManager(config));
-  const [state, setState] = useState<WalletState>(manager.getState());
-  const [currentWallet, setCurrentWallet] = useState<WalletInfo | null>(
-    manager.getCurrentWallet(),
-  );
-  const [availableWallets, setAvailableWallets] = useState<WalletInfo[]>(
-    manager.getAvailableWallets(),
-  );
+  // SSR 保护：只在客户端初始化 manager
+  const [manager] = useState(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    return new BTCWalletManager(config);
+  });
+  
+  // SSR 保护：提供默认状态
+  const [state, setState] = useState<WalletState>(() => {
+    if (typeof window === 'undefined' || !manager) {
+      return { status: 'disconnected', accounts: [] };
+    }
+    return manager.getState();
+  });
+  
+  const [currentWallet, setCurrentWallet] = useState<WalletInfo | null>(() => {
+    if (typeof window === 'undefined' || !manager) {
+      return null;
+    }
+    return manager.getCurrentWallet();
+  });
+  
+  const [availableWallets, setAvailableWallets] = useState<WalletInfo[]>(() => {
+    if (typeof window === 'undefined' || !manager) {
+      return [];
+    }
+    return manager.getAvailableWallets();
+  });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isPolicyRunning, setIsPolicyRunning] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const STORAGE_KEY_LAST_WALLET = 'btc-connect:last-wallet-id';
+
+  // 在客户端安全地初始化适配器
+  useEffect(() => {
+    if (typeof window !== 'undefined' && manager) {
+      manager.initializeAdapters();
+      // 初始化后更新可用钱包列表
+      setAvailableWallets(manager.getAvailableWallets());
+    }
+  }, [manager]);
 
   // 更新状态
   const updateState = useCallback(() => {
-    setState(manager.getState());
-    setCurrentWallet(manager.getCurrentWallet());
-    setAvailableWallets(manager.getAvailableWallets());
+    if (manager) {
+      setState(manager.getState());
+      setCurrentWallet(manager.getCurrentWallet());
+      setAvailableWallets(manager.getAvailableWallets());
+    }
   }, [manager]);
 
   // 监听状态变化
   useEffect(() => {
-    if (config?.onStateChange) {
-      config.onStateChange = (newState: WalletState) => {
-        updateState();
-        config.onStateChange?.(newState);
-      };
-    } else {
-      manager.config.onStateChange = updateState;
+    if (manager) {
+      if (config?.onStateChange) {
+        config.onStateChange = (newState: WalletState) => {
+          updateState();
+          config.onStateChange?.(newState);
+        };
+      } else {
+        manager.config.onStateChange = updateState;
+      }
     }
   }, [manager, config, updateState]);
 
   // 连接钱包
   const connect = useCallback(
     async (walletId: string): Promise<AccountInfo[]> => {
+      if (!manager) {
+        throw new Error('Wallet manager not initialized');
+      }
       setIsConnecting(true);
       try {
         // 先建立底层连接，但在策略完成前不暴露给外部
@@ -241,7 +290,9 @@ export function BTCWalletProvider({
             if (hasFatalError) {
               // 策略失败：回滚连接状态
               try {
-                await manager.disconnect();
+                if (manager) {
+                  await manager.disconnect();
+                }
               } catch {}
             } else {
               // 成功：确保记录 last wallet（如果存在）
@@ -262,6 +313,9 @@ export function BTCWalletProvider({
 
   // 断开连接
   const disconnect = async (): Promise<void> => {
+    if (!manager) {
+      return;
+    }
     setIsConnecting(true);
     try {
       await manager.disconnect();
@@ -273,6 +327,9 @@ export function BTCWalletProvider({
 
   // 切换钱包
   const switchWallet = async (walletId: string): Promise<AccountInfo[]> => {
+    if (!manager) {
+      throw new Error('Wallet manager not initialized');
+    }
     setIsConnecting(true);
     try {
       const accounts = await manager.switchWallet(walletId);
@@ -282,6 +339,19 @@ export function BTCWalletProvider({
       setIsConnecting(false);
     }
   };
+
+  // 模态框操作
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  const toggleModal = useCallback(() => {
+    setIsModalOpen(prev => !prev);
+  }, []);
 
   // 对外暴露的状态（在策略执行期间隐藏账户和连接态）
   const exposedState: WalletState = isPolicyRunning
@@ -302,9 +372,14 @@ export function BTCWalletProvider({
     availableWallets,
     isConnected,
     isConnecting: isConnectingState,
+    isModalOpen,
+    theme,
     connect,
     disconnect,
     switchWallet,
+    openModal,
+    closeModal,
+    toggleModal,
     manager,
   };
 
@@ -328,7 +403,7 @@ export function useWalletContext(): WalletContextType {
  * 使用钱包状态的Hook
  */
 export function useWallet() {
-  const { state, currentWallet, isConnected, isConnecting } =
+  const { state, currentWallet, isConnected, isConnecting, disconnect, theme } =
     useWalletContext();
 
   return {
@@ -341,6 +416,7 @@ export function useWallet() {
     currentWallet,
     isConnected,
     isConnecting,
+    theme,
 
     // 账户信息
     address: state.currentAccount?.address || null,
@@ -349,6 +425,9 @@ export function useWallet() {
         ? (state.currentAccount.balance as BalanceDetail)
         : null,
     publicKey: state.currentAccount?.publicKey || null,
+
+    // 操作
+    disconnect,
   };
 }
 
@@ -400,6 +479,8 @@ export function useWalletEvent(
   const { manager } = useWalletContext();
 
   useEffect(() => {
+    if (!manager) return;
+    
     manager.on(event, handler);
     return () => {
       manager.off(event, handler);
@@ -415,6 +496,8 @@ export function useNetwork() {
   const [network, setNetwork] = useState(state.network);
 
   useEffect(() => {
+    if (!manager) return;
+
     const handleNetworkChange = (newNetwork: any) => {
       setNetwork(newNetwork);
     };
@@ -427,6 +510,20 @@ export function useNetwork() {
 
   return {
     network,
-    switchNetwork: manager.getCurrentAdapter()?.switchNetwork,
+    switchNetwork: manager?.getCurrentAdapter()?.switchNetwork,
+  };
+}
+
+/**
+ * 使用钱包模态框的Hook
+ */
+export function useWalletModal() {
+  const { isModalOpen, openModal, closeModal, toggleModal } = useWalletContext();
+
+  return {
+    isModalOpen,
+    openModal,
+    closeModal,
+    toggleModal,
   };
 }

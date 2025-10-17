@@ -5,8 +5,11 @@ export * from './composables';
 // 组件
 export * from './components';
 
-// 工具 & 类型复用（按需透出 shared 类型/工具）
-export { formatAddress } from '@btc-connect/shared';
+// 类型导出
+export * from './types';
+
+// 工具函数导出
+export * from './utils';
 
 export const version = '0.1.0';
 

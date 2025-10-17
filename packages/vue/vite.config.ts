@@ -2,9 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,23 +10,34 @@ export default defineConfig({
     dts({
       outDir: 'dist',
       entryRoot: 'src',
-      tsconfigPath: resolve(__dirname, 'tsconfig.app.json'),
-      copyDtsFiles: true,
-      rollupTypes: true,
-      // 保守设置，避免生产中断
+      // 使用标准的 TypeScript 声明文件生成
+      rollupTypes: false,
+      // 确保生成单一的类型声明文件
+      insertTypesEntry: true,
       logLevel: 'info',
-    }) as any,
+      tsconfigPath: resolve(__dirname, 'tsconfig.app.json'),
+    }),
   ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'BtcConnectVue',
-      fileName: (format) => `index.${format}.js`,
+      fileName: 'index',
       formats: ['es'],
     },
     rollupOptions: {
-      external: [/^vue/, /^@btc-connect\//],
+      // 只将 vue 和 core 设为 external
+      external: (id) => {
+        return id === 'vue' || 
+               id.startsWith('@btc-connect/core')
+      },
     },
     target: 'es2019',
+    sourcemap: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
   },
 })

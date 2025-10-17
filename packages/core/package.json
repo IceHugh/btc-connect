@@ -1,11 +1,20 @@
 {
   "name": "@btc-connect/core",
-  "version": "0.1.0",
-  "description": "BTC Connect 核心模块 - 框架无关的钱包适配器层",
+  "version": "0.1.1",
+  "description": "The framework-agnostic core module for BTC Connect, providing a wallet adapter layer.",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -13,7 +22,7 @@
     }
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --declaration --emitDeclarationOnly --outDir dist/types && bun build src/index.ts --outdir=dist --format=esm --target=node --splitting",
+    "build": "tsc --emitDeclarationOnly && bun run build.js",
     "dev": "bun run build --watch",
     "test": "bun test --config tsconfig.test.json",
     "lint": "biome check --write .",
@@ -23,6 +32,7 @@
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "bun-plugin-dts": "^0.3.0",
     "typescript": "^5.0.0"
   },
   "keywords": [
@@ -39,7 +49,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/btc-connect.git",
+    "url": "https://github.com/IceHugh/btc-connect.git",
     "directory": "packages/core"
   }
 }

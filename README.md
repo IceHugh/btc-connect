@@ -24,9 +24,6 @@ This project is a monorepo containing the following packages:
 | `@btc-connect/core`       | The framework-agnostic core, handling adapters, connection logic, and events. |
 | `@btc-connect/react`      | React Hooks and Components for easy integration with React applications.     |
 | `@btc-connect/vue`        | Vue Composables and Components for seamless integration with Vue applications. |
-| `@btc-connect/design-system` | The core design system, styles, and theming utilities.                      |
-| `@btc-connect/shared`     | Shared utilities and types used across the ecosystem.                        |
-| `@btc-connect/types`      | Centralized TypeScript type definitions for the entire project.              |
 
 ## Getting Started
 

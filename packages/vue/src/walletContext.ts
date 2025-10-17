@@ -1,19 +1,8 @@
 import { inject, provide, reactive, type App, type InjectionKey, type Plugin } from 'vue'
 import type { AccountInfo, WalletInfo, WalletManagerConfig, WalletState, WalletEvent } from '@btc-connect/core'
 import { BTCWalletManager } from '@btc-connect/core'
-import { storage } from '@btc-connect/shared'
-
-export interface ConnectionPolicyTaskResult { success: boolean }
-export interface ConnectionPolicyTaskContext { manager: BTCWalletManager }
-export interface ConnectionPolicyTask {
-  run: (ctx: ConnectionPolicyTaskContext) => Promise<ConnectionPolicyTaskResult>
-  required?: boolean
-  autoBehavior?: 'run' | 'skip'
-}
-export interface ConnectionPolicy {
-  emitEventsOnAutoConnect?: boolean
-  tasks: ConnectionPolicyTask[]
-}
+import { storage } from './utils'
+import type { ConnectionPolicy } from './types'
 
 export interface WalletContextValue {
   state: WalletState

@@ -23,15 +23,12 @@ export class BTCWalletManager implements WalletManager {
 
   constructor(config: WalletManagerConfig = {}) {
     this.config = { ...config };
-
-    // 初始化适配器
-    this.initializeAdapters();
   }
 
   /**
    * 初始化适配器
    */
-  private initializeAdapters(): void {
+  public initializeAdapters(): void {
     const availableAdapters = getAvailableAdapters();
 
     for (const adapter of availableAdapters) {

@@ -14,8 +14,8 @@ export function createAdapter(type: 'unisat' | 'okx' | 'xverse') {
       return new UniSatAdapter();
     case 'okx':
       return new OKXAdapter();
-    case 'xverse':
-      return new XverseAdapter();
+    // case 'xverse':
+    //   return new XverseAdapter();
     default:
       throw new Error(`Unsupported wallet type: ${type}`);
   }
@@ -23,7 +23,7 @@ export function createAdapter(type: 'unisat' | 'okx' | 'xverse') {
 
 // 获取所有可用的适配器
 export function getAllAdapters() {
-  return [new UniSatAdapter(), new OKXAdapter(), new XverseAdapter()];
+  return [new UniSatAdapter(), new OKXAdapter()];
 }
 
 // 获取可用的适配器（已安装的钱包）

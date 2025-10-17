@@ -1,4 +1,4 @@
-// 钱包事件类型
+export type Network = 'livenet' | 'testnet' | 'regtest' | 'mainnet';
 export type WalletEvent =
   | 'connect'
   | 'disconnect'
@@ -166,9 +166,7 @@ export class WalletDisconnectedError extends WalletError {
   }
 }
 
-import type { Network } from '@btc-connect/shared';
 
-export type { Network };
 
 // 交易相关类型
 export interface BitcoinTransaction {

@@ -1,4 +1,5 @@
-import type {  AccountInfo,
+import type {
+  AccountInfo,
   UniSatBalance,
   UniSatChainInfo,
   UniSatInscriptionsResponse,
@@ -149,12 +150,11 @@ declare global {
  */
 export class UniSatAdapter
   extends BaseWalletAdapter
-  implements UniSatWalletAdapter
-{
+  implements UniSatWalletAdapter {
   readonly id = 'unisat';
   readonly name = 'UniSat Wallet';
   readonly icon =
-    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iI0Y3QjUwMCIvPgo8cGF0aCBkPSJNMTYgOEMxMi42ODYyIDggMTAgMTAuNjg2MiAxMCAxNEMxMCAxNy4zMTM4IDEyLjY4NjIgMjAgMTYgMjBDMTkuMzEzOCAyMCAyMiAxNy4zMTM4IDIyIDE0QzIyIDEwLjY4NjIgMTkuMzEzOCA4IDE2IDhaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=';
+    'https://next-cdn.unisat.io/_/2025-v1242/logo/color.svg';
 
   isReady(): boolean {
     return typeof window !== 'undefined' && !!window.unisat;

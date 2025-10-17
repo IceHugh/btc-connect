@@ -1,14 +1,23 @@
 {
   "name": "@btc-connect/vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "BTC Connect Vue 适配模块 - 提供Vue组件与组合式API",
   "type": "module",
-  "main": "dist/index.es.js",
-  "module": "dist/index.es.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "exports": {
     ".": {
-      "import": "./dist/index.es.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -21,10 +30,7 @@
     "typecheck": "bunx vue-tsc -b"
   },
   "dependencies": {
-    "vue": "^3.5.18",
-    "@btc-connect/core": "workspace:*",
-    "@btc-connect/shared": "workspace:*",
-    "@btc-connect/ui": "workspace:*"
+    "@btc-connect/core": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
@@ -33,6 +39,10 @@
     "typescript": "~5.8.3",
     "vite": "^7.1.0",
     "vue-tsc": "^3.0.5"
+  },
+  "peerDependencies": {
+    "vue": ">=3.2.0",
+    "@btc-connect/core": ">=0.1.1"
   },
   "keywords": [
     "bitcoin",
@@ -47,7 +57,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/btc-connect.git",
+    "url": "https://github.com/IceHugh/btc-connect.git",
     "directory": "packages/vue"
   }
 }

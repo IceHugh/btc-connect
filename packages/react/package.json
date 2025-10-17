@@ -1,11 +1,20 @@
 {
   "name": "@btc-connect/react",
-  "version": "0.1.0",
-  "description": "BTC Connect React 适配模块 - 提供React Hooks与Context",
+  "version": "0.1.4",
+  "description": "React adapter for BTC Connect, providing React Hooks and Context for easy integration.",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -21,12 +30,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@btc-connect/core": "workspace:*",
-    "@btc-connect/shared": "workspace:*",
-    "@btc-connect/ui": "workspace:*",
-    "@lit/react": "^1.0.8",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "@btc-connect/core": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.1.9",
@@ -37,7 +41,8 @@
     "vite-plugin-dts": "4.5.4"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "keywords": [
     "bitcoin",
@@ -52,7 +57,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/btc-connect.git",
+    "url": "https://github.com/IceHugh/btc-connect.git",
     "directory": "packages/react"
   }
 }

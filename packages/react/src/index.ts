@@ -1,3 +1,5 @@
+/// <reference types="./types/jsx" />
+
 // 上下文和提供者
 export {
   BTCWalletProvider,
@@ -24,36 +26,30 @@ export {
 
 // 类型定义
 export type {
-  // Hook 类型
-  BalanceResult,
-  // 核心类型
-  ConnectWalletContext,
   Network,
-  NetworkContext,
-  SignatureResult,
   ThemeMode,
-  TransactionResult,
-  // 上下文类型
   WalletContext,
-  WalletModalResult,
-  // 连接策略类型
   ConnectionPolicy,
   ConnectionPolicyTask,
   ConnectionPolicyTaskContext,
   ConnectionPolicyTaskResult,
 } from './types';
 
+// 从 core 包重新导出的类型
+export type {
+  AccountInfo,
+  WalletEvent,
+  WalletInfo,
+  WalletManagerConfig,
+  WalletState,
+  ConnectionStatus,
+} from './types/core';
+
 // 工具函数
-export {
-  cn,
-  copyToClipboard,
-  formatAddress,
-  formatBalance,
-  getNetworkDisplayName,
-} from './utils';
+export * from './utils';
 
 // 版本信息
-export const version = '0.1.0';
+export const version = '0.1.4';
 
 // 默认配置
 export const defaultConfig = {

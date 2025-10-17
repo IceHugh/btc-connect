@@ -1,4 +1,4 @@
-import { type AccountInfo, Network } from '../types';
+import type { AccountInfo, Network } from '../types';
 import { BaseWalletAdapter } from './base';
 
 declare global {
@@ -103,7 +103,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   readonly id = 'okx';
   readonly name = 'OKX Wallet';
   readonly icon =
-    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzE5MTkxOSIvPgo8cGF0aCBkPSJNMTYgOEMxMi42ODYyIDggMTAgMTAuNjg2MiAxMCAxNEMxMCAxNy4zMTM4IDEyLjY4NjIgMjAgMTYgMjBDMTkuMzEzOCAyMCAyMiAxNy4zMTM4IDIyIDE0QzIyIDEwLjY4NjIgMTkuMzEzOCA4IDE2IDhaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=';
+    'https://web3.okx.com/cdn/assets/imgs/254/5678AFAB27871136.png';
 
   isReady(): boolean {
     return typeof window !== 'undefined' && !!window.okxwallet?.bitcoin;

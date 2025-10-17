@@ -1,7 +1,6 @@
 import { computed } from 'vue'
 import { useWallet } from './useCore'
-
-export interface BalanceDetail { confirmed: number; unconfirmed: number; total: number }
+import type { BalanceDetail } from '../types'
 
 export function useBalance() {
   const { state } = useWallet()

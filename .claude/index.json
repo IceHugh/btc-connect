@@ -1,0 +1,247 @@
+{
+  "timestamp": "2025-10-16T09:31:52.000Z",
+  "project": "btc-connect",
+  "summary": {
+    "totalFiles": 94,
+    "scannedFiles": 50,
+    "coveragePercentage": 53.2,
+    "modulesIdentified": 4,
+    "examplesIdentified": 2,
+    "documentsGenerated": 7
+  },
+  "modules": [
+    {
+      "name": "@btc-connect/core",
+      "path": "packages/core",
+      "language": "TypeScript",
+      "entryPoint": "src/index.ts",
+      "testDirectory": "tests",
+      "hasTests": false,
+      "hasConfig": true,
+      "coverage": {
+        "scannedFiles": 12,
+        "totalFiles": 12,
+        "percentage": 100.0
+      },
+      "keyComponents": [
+        "src/adapters",
+        "src/managers",
+        "src/events",
+        "src/types",
+        "src/utils"
+      ],
+      "gaps": [
+        "缺少测试文件",
+        "Xverse适配器实现不完整"
+      ],
+      "status": "文档已完成"
+    },
+    {
+      "name": "@btc-connect/react",
+      "path": "packages/react",
+      "language": "TypeScript/React",
+      "entryPoint": "src/index.ts",
+      "testDirectory": null,
+      "hasTests": false,
+      "hasConfig": true,
+      "coverage": {
+        "scannedFiles": 16,
+        "totalFiles": 20,
+        "percentage": 80.0
+      },
+      "keyComponents": [
+        "src/context",
+        "src/components",
+        "src/hooks",
+        "src/types",
+        "src/utils"
+      ],
+      "gaps": [
+        "缺少测试文件",
+        "需要补充高级Hook示例"
+      ],
+      "status": "文档已完成"
+    },
+    {
+      "name": "@btc-connect/vue",
+      "path": "packages/vue",
+      "language": "TypeScript/Vue",
+      "entryPoint": "src/index.ts",
+      "testDirectory": null,
+      "hasTests": false,
+      "hasConfig": true,
+      "coverage": {
+        "scannedFiles": 16,
+        "totalFiles": 18,
+        "percentage": 88.9
+      },
+      "keyComponents": [
+        "src/composables",
+        "src/components",
+        "src/context",
+        "src/types",
+        "src/utils"
+      ],
+      "gaps": [
+        "缺少测试文件",
+        "需要补充Pinia集成示例"
+      ],
+      "status": "文档已完成"
+    },
+    {
+      "name": "@btc-connect/ui",
+      "path": "packages/ui",
+      "language": "TypeScript/Lit",
+      "entryPoint": "src/index.ts",
+      "testDirectory": null,
+      "hasTests": false,
+      "hasConfig": true,
+      "coverage": {
+        "scannedFiles": 6,
+        "totalFiles": 8,
+        "percentage": 75.0
+      },
+      "keyComponents": [
+        "src/connect-button",
+        "src/wallet-modal",
+        "src/design-tokens",
+        "src/utils"
+      ],
+      "gaps": [
+        "缺少测试文件",
+        "需要补充自定义主题示例"
+      ],
+      "status": "文档已完成"
+    }
+  ],
+  "examples": [
+    {
+      "name": "react-example",
+      "path": "examples/react",
+      "framework": "React",
+      "entryPoint": "src/main.tsx",
+      "coverage": {
+        "scannedFiles": 6,
+        "totalFiles": 6,
+        "percentage": 100.0
+      },
+      "status": "文档已完成"
+    },
+    {
+      "name": "vue-example",
+      "path": "examples/vue-example",
+      "framework": "Vue",
+      "entryPoint": "src/main.ts",
+      "coverage": {
+        "scannedFiles": 7,
+        "totalFiles": 7,
+        "percentage": 100.0
+      },
+      "status": "文档已完成"
+    }
+  ],
+  "qualityTools": {
+    "linter": "Biome",
+    "formatter": "Biome",
+    "typeChecker": "TypeScript",
+    "bundler": "Vite",
+    "packageManager": "Bun",
+    "testRunner": "Bun Test"
+  },
+  "architecture": {
+    "type": "Monorepo",
+    "workspaceManager": "Bun Workspaces",
+    "corePattern": "Adapter Pattern",
+    "supportedWallets": ["UniSat", "OKX", "Xverse"],
+    "frameworkSupport": ["React", "Vue"]
+  },
+  "documentsGenerated": [
+    {
+      "file": "CLAUDE.md",
+      "location": "根目录",
+      "type": "项目总览文档",
+      "status": "已完成"
+    },
+    {
+      "file": "packages/core/CLAUDE.md",
+      "location": "core模块",
+      "type": "模块文档",
+      "status": "已完成"
+    },
+    {
+      "file": "packages/react/CLAUDE.md",
+      "location": "react模块",
+      "type": "模块文档",
+      "status": "已完成"
+    },
+    {
+      "file": "packages/vue/CLAUDE.md",
+      "location": "vue模块",
+      "type": "模块文档",
+      "status": "已完成"
+    },
+    {
+      "file": "packages/ui/CLAUDE.md",
+      "location": "ui模块",
+      "type": "模块文档",
+      "status": "已完成"
+    },
+    {
+      "file": "examples/react/CLAUDE.md",
+      "location": "react示例",
+      "type": "示例文档",
+      "status": "已完成"
+    },
+    {
+      "file": "examples/vue-example/CLAUDE.md",
+      "location": "vue示例",
+      "type": "示例文档",
+      "status": "已完成"
+    }
+  ],
+  "ignoredDirectories": [
+    "node_modules",
+    "dist",
+    ".git",
+    ".vite",
+    ".tmp"
+  ],
+  "ignoredFiles": [
+    "*.lock",
+    "*.log",
+    "*.d.ts.map"
+  ],
+  "truncated": false,
+  "scanSummary": {
+    "phaseA": {
+      "name": "全仓清点（轻量）",
+      "status": "已完成",
+      "findings": "识别出4个核心模块和2个示例项目"
+    },
+    "phaseB": {
+      "name": "模块优先扫描（中等）",
+      "status": "已完成",
+      "findings": "深入扫描了所有模块的入口文件、类型定义、关键组件"
+    },
+    "phaseC": {
+      "name": "深度补捞（按需）",
+      "status": "已完成",
+      "findings": "对关键文件进行了详细分析，生成了完整文档"
+    }
+  },
+  "nextSteps": [
+    "添加单元测试和集成测试",
+    "完善Xverse钱包适配器的实现",
+    "补充TypeDoc或类似工具生成API文档",
+    "添加Storybook展示UI组件",
+    "补充CI/CD配置"
+  ],
+  "recommendations": [
+    "建立完整的测试体系",
+    "添加性能监控和错误追踪",
+    "完善国际化支持",
+    "考虑添加Angular适配模块",
+    "添加移动端适配和PWA支持"
+  ],
+  "completionStatus": "已完成基础架构分析和文档生成"
+}

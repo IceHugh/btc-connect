@@ -4,6 +4,9 @@ export function useTransactions() {
   const { manager } = useWalletContext();
 
   const sendBitcoin = async (to: string, amount: number): Promise<string> => {
+    if (!manager) {
+      throw new Error('Wallet manager not initialized');
+    }
     const adapter = manager.getCurrentAdapter();
     if (!adapter || !adapter.sendBitcoin) {
       throw new Error('Send Bitcoin is not supported by current wallet');

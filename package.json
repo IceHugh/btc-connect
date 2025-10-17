@@ -7,8 +7,7 @@
     "examples/*"
   ],
   "scripts": {
-    "build:ui": "cd packages/ui && bun run build",
-    "build": "bun run --filter @btc-connect/core build && bun run --filter @btc-connect/shared build && bun run --filter @btc-connect/ui build && bun run --filter @btc-connect/react build",
+    "build": "bun run --filter @btc-connect/core build && bun run --filter @btc-connect/react build && bun run --filter @btc-connect/vue build",
     "dev": "bun run --filter @btc-connect/* dev",
     "test": "bun test",
     "lint": "bun run --filter @btc-connect/* lint",
