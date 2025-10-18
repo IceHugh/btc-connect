@@ -8,8 +8,14 @@ export function useTransactions() {
   const { manager } = useWalletContext();
   const isSending = ref(false);
 
-  const sendBitcoin = async (toAddress: string, amount: number): Promise<string> => {
-    console.log('🚀 [Vue useTransactions] sendBitcoin called', { toAddress, amount });
+  const sendBitcoin = async (
+    toAddress: string,
+    amount: number,
+  ): Promise<string> => {
+    console.log('🚀 [Vue useTransactions] sendBitcoin called', {
+      toAddress,
+      amount,
+    });
 
     if (!manager.value) {
       console.error('❌ [Vue useTransactions] Manager not initialized');
@@ -17,10 +23,17 @@ export function useTransactions() {
     }
 
     const adapter = manager.value.getCurrentAdapter();
-    console.log('🔍 [Vue useTransactions] Current adapter:', adapter?.name, 'has sendBitcoin:', !!adapter?.sendBitcoin);
+    console.log(
+      '🔍 [Vue useTransactions] Current adapter:',
+      adapter?.name,
+      'has sendBitcoin:',
+      !!adapter?.sendBitcoin,
+    );
 
     if (!adapter || !adapter.sendBitcoin) {
-      console.error('❌ [Vue useTransactions] Adapter or sendBitcoin method not available');
+      console.error(
+        '❌ [Vue useTransactions] Adapter or sendBitcoin method not available',
+      );
       throw new Error('Send Bitcoin is not supported by current wallet');
     }
 
@@ -59,6 +72,6 @@ export function useTransactions() {
   return {
     sendBitcoin,
     sendTransaction,
-    isSending
+    isSending,
   };
 }

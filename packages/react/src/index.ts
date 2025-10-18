@@ -18,10 +18,10 @@ export {
 // Hooks
 export {
   useBalance,
+  useRefreshAccountInfo,
   useSignature,
   useTransactions,
   useWalletModal,
-  useRefreshAccountInfo,
 } from './hooks';
 
 // 类型定义

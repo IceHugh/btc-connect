@@ -97,7 +97,7 @@ export const createMockAdapter = (id = 'test-wallet') => {
     _emit: jest.fn((event, ...args) => {
       const handlers = listeners.get(event);
       if (handlers) {
-        handlers.forEach(handler => handler(...args));
+        handlers.forEach((handler) => handler(...args));
       }
     }),
     _setState: jest.fn((newState) => {
@@ -108,4 +108,5 @@ export const createMockAdapter = (id = 'test-wallet') => {
   return adapter;
 };
 
-export const flushPromises = () => new Promise(resolve => setImmediate(resolve));
+export const flushPromises = () =>
+  new Promise((resolve) => setImmediate(resolve));

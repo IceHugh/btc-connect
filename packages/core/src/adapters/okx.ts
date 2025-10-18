@@ -117,8 +117,10 @@ export class OKXAdapter extends BaseWalletAdapter {
     const wallet = okxwallet.bitcoin;
 
     // 确保钱包有必要的接口
-    if (typeof wallet.connect === 'function' ||
-        typeof wallet.requestAccounts === 'function') {
+    if (
+      typeof wallet.connect === 'function' ||
+      typeof wallet.requestAccounts === 'function'
+    ) {
       return wallet;
     }
 

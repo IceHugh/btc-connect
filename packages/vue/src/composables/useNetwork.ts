@@ -1,25 +1,25 @@
-import { ref, watch, computed } from 'vue';
 import type { Network } from '@btc-connect/core';
+import { computed, ref, watch } from 'vue';
 import { useWalletContext } from '../walletContext';
 
 // 本地网络信息映射
 const NETWORK_INFO: Record<Network, { name: string; type: string }> = {
   livenet: {
     name: 'Mainnet',
-    type: 'main'
+    type: 'main',
   },
   testnet: {
     name: 'Testnet',
-    type: 'test'
+    type: 'test',
   },
   regtest: {
     name: 'Regtest',
-    type: 'regtest'
+    type: 'regtest',
   },
   mainnet: {
     name: 'Mainnet',
-    type: 'main'
-  }
+    type: 'main',
+  },
 };
 
 function getNetworkName(network?: Network): string {
@@ -42,7 +42,7 @@ export function useNetwork() {
     (newState) => {
       currentNetwork.value = newState.network;
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   const switchNetwork = async (targetNetwork: Network): Promise<void> => {
@@ -58,7 +58,7 @@ export function useNetwork() {
     return {
       network: net,
       name: getNetworkName(net),
-      type: getNetworkType(net)
+      type: getNetworkType(net),
     };
   });
 
@@ -66,6 +66,6 @@ export function useNetwork() {
     network,
     currentNetwork,
     switchNetwork,
-    name: computed(() => getNetworkName(currentNetwork.value))
+    name: computed(() => getNetworkName(currentNetwork.value)),
   };
 }

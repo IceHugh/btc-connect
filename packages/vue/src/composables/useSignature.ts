@@ -17,10 +17,17 @@ export function useSignature() {
     }
 
     const adapter = manager.value.getCurrentAdapter();
-    console.log('🔍 [Vue useSignature] Current adapter:', adapter?.name, 'has signMessage:', !!adapter?.signMessage);
+    console.log(
+      '🔍 [Vue useSignature] Current adapter:',
+      adapter?.name,
+      'has signMessage:',
+      !!adapter?.signMessage,
+    );
 
     if (!adapter || !adapter.signMessage) {
-      console.error('❌ [Vue useSignature] Adapter or signMessage method not available');
+      console.error(
+        '❌ [Vue useSignature] Adapter or signMessage method not available',
+      );
       throw new Error('Sign message is not supported by current wallet');
     }
 
@@ -59,6 +66,6 @@ export function useSignature() {
   return {
     signMessage,
     signPsbt,
-    isSigning
+    isSigning,
   };
 }

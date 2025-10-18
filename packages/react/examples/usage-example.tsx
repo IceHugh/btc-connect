@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   AccountInfo,
   AccountInfoGroup,
-    BTCThemeProvider,
+  BTCThemeProvider,
   BTCWalletProvider,
   ConnectButton,
   MinimalConnectButton,

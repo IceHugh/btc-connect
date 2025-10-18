@@ -1,6 +1,13 @@
-import { ref, computed, type Ref, type ComputedRef } from 'vue';
+import {
+  type AccountInfo,
+  BTCWalletManager,
+  type ConnectionStatus,
+  type Network,
+  type WalletInfo,
+  type WalletState,
+} from '@btc-connect/core';
 import type { App } from 'vue';
-import { BTCWalletManager, type WalletState, type WalletInfo, type AccountInfo, type Network, type ConnectionStatus } from '@btc-connect/core';
+import { type ComputedRef, computed, type Ref, ref } from 'vue';
 import { storage } from './utils';
 
 // 定义 Context 类型
@@ -59,15 +66,19 @@ export function createWalletContext(): WalletContext {
       accounts: [],
       currentAccount: undefined,
       network: 'livenet' as Network,
-      error: undefined
+      error: undefined,
     };
 
     return managerState;
   });
 
-  const currentWallet = computed(() => manager.value?.getCurrentWallet() || null);
+  const currentWallet = computed(
+    () => manager.value?.getCurrentWallet() || null,
+  );
   const isConnected = computed(() => state.value.status === 'connected');
-  const isConnecting = computed(() => isConnectingValue.value || state.value.status === 'connecting');
+  const isConnecting = computed(
+    () => isConnectingValue.value || state.value.status === 'connecting',
+  );
 
   // 连接方法
   const connect = async (walletId: string): Promise<AccountInfo[]> => {
@@ -144,7 +155,6 @@ export function createWalletContext(): WalletContext {
     isModalOpen.value = !isModalOpen.value;
   };
 
-  
   const context: WalletContext = {
     manager: manager as Ref<BTCWalletManager | null>,
     state,
@@ -184,7 +194,7 @@ export function useWalletContext(): WalletContext {
       if (context && context.manager?.value) {
         const currentState = context.manager.value.getState();
         if (currentState.status === 'connected') {
-                  }
+        }
       }
     }, 3000); // 每3秒检查一次
   }
@@ -194,11 +204,14 @@ export function useWalletContext(): WalletContext {
 
 // Vue 插件
 export const BTCWalletPlugin = {
-  install(app: App, options: {
-    autoConnect?: boolean;
-    connectTimeout?: number;
-    theme?: 'light' | 'dark';
-  } = {}) {
+  install(
+    app: App,
+    options: {
+      autoConnect?: boolean;
+      connectTimeout?: number;
+      theme?: 'light' | 'dark';
+    } = {},
+  ) {
     const context = createWalletContext();
     const { autoConnect = true, connectTimeout = 5000 } = options;
 
@@ -221,7 +234,7 @@ export const BTCWalletPlugin = {
         },
         onError: (error) => {
           console.error('❌ [walletContext] Wallet error:', error);
-        }
+        },
       }) as BTCWalletManager;
 
       context.manager.value = walletManager as BTCWalletManager;
@@ -256,34 +269,45 @@ export const BTCWalletPlugin = {
     // 提供全局属性
     app.config.globalProperties.$btc = context;
     app.provide('btc', context);
-  }
+  },
 };
 
 // 尝试自动连接的辅助函数 - 与React包保持一致的逻辑
-async function attemptAutoConnect(manager: BTCWalletManager, connectTimeout: number = 5000) {
+async function attemptAutoConnect(
+  manager: BTCWalletManager,
+  connectTimeout: number = 5000,
+) {
   try {
     // 使用storage工具获取上次连接的钱包ID（与React包保持一致）
     const lastWalletId = storage.get<string>('btc-connect:last-wallet-id');
 
     if (!lastWalletId) {
-      console.log('📝 [attemptAutoConnect] No previous wallet connection found');
+      console.log(
+        '📝 [attemptAutoConnect] No previous wallet connection found',
+      );
       return;
     }
 
-    console.log(`🔄 [attemptAutoConnect] Attempting to restore connection to: ${lastWalletId}`);
+    console.log(
+      `🔄 [attemptAutoConnect] Attempting to restore connection to: ${lastWalletId}`,
+    );
 
     // 检查钱包是否可用
     const availableWallets = manager.getAvailableWallets();
-    const isWalletAvailable = availableWallets.some(w => w.id === lastWalletId);
+    const isWalletAvailable = availableWallets.some(
+      (w) => w.id === lastWalletId,
+    );
 
     if (!isWalletAvailable) {
-      console.warn(`⚠️ [attemptAutoConnect] Wallet ${lastWalletId} is not available`);
+      console.warn(
+        `⚠️ [attemptAutoConnect] Wallet ${lastWalletId} is not available`,
+      );
       storage.remove('btc-connect:last-wallet-id');
       return;
     }
 
     // 添加超时处理，与React包保持一致
-    const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+    const withTimeout = <T>(p: Promise<T>, ms: number) =>
       new Promise<T>((resolve, reject) => {
         const t = setTimeout(
           () => reject(new Error('autoConnect timeout')),
@@ -305,16 +329,23 @@ async function attemptAutoConnect(manager: BTCWalletManager, connectTimeout: num
     );
 
     if (result && result.length > 0) {
-      console.log(`✅ [attemptAutoConnect] Successfully restored connection to ${lastWalletId}:`, result);
+      console.log(
+        `✅ [attemptAutoConnect] Successfully restored connection to ${lastWalletId}:`,
+        result,
+      );
       // 确保记录last wallet（与React包保持一致）
       storage.set('btc-connect:last-wallet-id', lastWalletId);
     } else {
-      console.log(`❌ [attemptAutoConnect] No active session found for ${lastWalletId}`);
+      console.log(
+        `❌ [attemptAutoConnect] No active session found for ${lastWalletId}`,
+      );
       // 如果没有活跃会话，不清除存储，等待下次手动连接
     }
-
   } catch (error) {
-    console.error('❌ [attemptAutoConnect] Failed to restore wallet connection:', error);
+    console.error(
+      '❌ [attemptAutoConnect] Failed to restore wallet connection:',
+      error,
+    );
     // 超时或失败，忽略，不清除存储
   }
 }

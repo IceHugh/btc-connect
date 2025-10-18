@@ -167,8 +167,10 @@ export class UniSatAdapter
     if (!wallet) return undefined;
 
     // 确保钱包有必要的接口
-    if (typeof wallet.requestAccounts === 'function' ||
-        typeof wallet.connect === 'function') {
+    if (
+      typeof wallet.requestAccounts === 'function' ||
+      typeof wallet.connect === 'function'
+    ) {
       return wallet;
     }
 

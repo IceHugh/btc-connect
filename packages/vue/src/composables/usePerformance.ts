@@ -1,12 +1,12 @@
 // 性能优化相关的 composables
 // 提供基本的性能监控功能
 
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 // 防抖hook
 export function useDebounce<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number = 300
+  delay: number = 300,
 ): {
   debouncedFn: (...args: Parameters<T>) => void;
   cancel: () => void;
@@ -40,7 +40,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 // 节流hook
 export function useThrottle<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number = 300
+  delay: number = 300,
 ): {
   throttledFn: (...args: Parameters<T>) => void;
   cancel: () => void;
@@ -59,10 +59,13 @@ export function useThrottle<T extends (...args: any[]) => any>(
         clearTimeout(timeoutId);
       }
 
-      timeoutId = setTimeout(() => {
-        lastExecution = Date.now();
-        fn(...args);
-      }, delay - (now - lastExecution));
+      timeoutId = setTimeout(
+        () => {
+          lastExecution = Date.now();
+          fn(...args);
+        },
+        delay - (now - lastExecution),
+      );
     }
   };
 
@@ -95,7 +98,7 @@ export function usePerformanceMonitor() {
     switchTime: 0,
     balanceRefreshTime: 0,
     errorCount: 0,
-    successCount: 0
+    successCount: 0,
   });
 
   const timerStart = ref<number | null>(null);
@@ -127,7 +130,7 @@ export function usePerformanceMonitor() {
       switchTime: 0,
       balanceRefreshTime: 0,
       errorCount: 0,
-      successCount: 0
+      successCount: 0,
     };
   };
 
@@ -161,7 +164,7 @@ export function useMemoryMonitor() {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
         limit: memory.jsHeapSizeLimit,
-        percentage: (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100
+        percentage: (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100,
       };
     }
   };
@@ -183,7 +186,7 @@ export function useMemoryMonitor() {
   return {
     memoryInfo,
     isSupported,
-    updateMemoryInfo
+    updateMemoryInfo,
   };
 }
 

@@ -15,7 +15,9 @@ export function useAccount() {
     error: computed(() => ctx.state.value.error || null),
     // 添加address和publicKey的响应式访问
     address: computed(() => ctx.state.value.currentAccount?.address || null),
-    publicKey: computed(() => ctx.state.value.currentAccount?.publicKey || null),
+    publicKey: computed(
+      () => ctx.state.value.currentAccount?.publicKey || null,
+    ),
     hasAddress: computed(() => !!ctx.state.value.currentAccount?.address),
     hasPublicKey: computed(() => !!ctx.state.value.currentAccount?.publicKey),
   };

@@ -9,6 +9,6 @@ export function useAccount() {
     accounts,
     hasAccounts: accounts.length > 0,
     hasPublicKey: !!publicKey,
-    hasAddress: !!address
+    hasAddress: !!address,
   };
 }

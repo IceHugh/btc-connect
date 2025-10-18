@@ -22,20 +22,20 @@ export type OnNetworkChange = (network: Network) => void;
 export const NETWORK_INFO: Record<Network, { name: string; type: string }> = {
   livenet: {
     name: 'Mainnet',
-    type: 'main'
+    type: 'main',
   },
   testnet: {
     name: 'Testnet',
-    type: 'test'
+    type: 'test',
   },
   regtest: {
     name: 'Regtest',
-    type: 'regtest'
+    type: 'regtest',
   },
   mainnet: {
     name: 'Mainnet',
-    type: 'main'
-  }
+    type: 'main',
+  },
 };
 
 // 获取网络名称

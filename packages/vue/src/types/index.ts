@@ -1,13 +1,13 @@
 // 重新导出核心类型
 export type {
-  WalletState,
-  WalletInfo,
   AccountInfo,
-  Network,
   BalanceDetail,
   ConnectionStatus,
+  Network,
   WalletEvent,
-  WalletManagerConfig
+  WalletInfo,
+  WalletManagerConfig,
+  WalletState,
 } from '@btc-connect/core';
 
 export { BTCWalletManager } from '@btc-connect/core';

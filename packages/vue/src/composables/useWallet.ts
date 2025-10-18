@@ -18,9 +18,9 @@ export function useWallet() {
   const address = computed(() => currentAccount.value?.address || null);
   const balance = computed(() => {
     const accBalance = currentAccount.value?.balance;
-    const result = accBalance && typeof accBalance === 'object' ? accBalance : null;
+    const result =
+      accBalance && typeof accBalance === 'object' ? accBalance : null;
 
-    
     return result;
   });
   const publicKey = computed(() => currentAccount.value?.publicKey || null);

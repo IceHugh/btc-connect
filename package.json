@@ -10,9 +10,9 @@
     "build": "bun run --filter @btc-connect/core build && bun run --filter @btc-connect/react build && bun run --filter @btc-connect/vue build",
     "dev": "bun run --filter @btc-connect/* dev",
     "test": "bun test",
-    "lint": "bun run --filter @btc-connect/* lint",
-    "format": "bun run --filter @btc-connect/* format",
-    "typecheck": "bun run --filter @btc-connect/* typecheck",
+    "lint": "bun run --filter @btc-connect/core lint && bun run --filter @btc-connect/react lint && bun run --filter @btc-connect/vue lint",
+    "format": "bun run --filter @btc-connect/core format && bun run --filter @btc-connect/react format && bun run --filter @btc-connect/vue format",
+    "typecheck": "bun run --filter @btc-connect/core typecheck && bun run --filter @btc-connect/react typecheck && bun run --filter @btc-connect/vue typecheck",
     "install:all": "bun install && bun run build"
   },
   "devDependencies": {
