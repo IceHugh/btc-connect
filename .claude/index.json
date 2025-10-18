@@ -1,13 +1,20 @@
 {
-  "timestamp": "2025-10-16T09:31:52.000Z",
-  "project": "btc-connect",
+  "timestamp": "2025-10-18T21:43:21.000Z",
+  "project": {
+    "name": "btc-connect",
+    "version": "0.1.0",
+    "type": "monorepo",
+    "packageManager": "bun",
+    "summary": "比特币Web3钱包连接工具包，支持SSR完整兼容"
+  },
   "summary": {
-    "totalFiles": 94,
-    "scannedFiles": 50,
-    "coveragePercentage": 53.2,
-    "modulesIdentified": 4,
-    "examplesIdentified": 2,
-    "documentsGenerated": 7
+    "totalFiles": 151,
+    "scannedFiles": 120,
+    "coveragePercentage": 79.5,
+    "modulesIdentified": 3,
+    "examplesIdentified": 4,
+    "documentsGenerated": 8,
+    "updateType": "full_update"
   },
   "modules": [
     {
@@ -15,40 +22,51 @@
       "path": "packages/core",
       "language": "TypeScript",
       "entryPoint": "src/index.ts",
-      "testDirectory": "tests",
       "hasTests": false,
       "hasConfig": true,
-      "coverage": {
-        "scannedFiles": 12,
-        "totalFiles": 12,
-        "percentage": 100.0
-      },
+      "status": "文档已更新",
+      "description": "核心钱包适配层和管理系统，包含缓存和错误处理",
       "keyComponents": [
         "src/adapters",
         "src/managers",
         "src/events",
         "src/types",
-        "src/utils"
+        "src/utils",
+        "src/cache"
       ],
+      "supportedWallets": ["UniSat", "OKX"],
+      "coverage": {
+        "scannedFiles": 20,
+        "totalFiles": 25,
+        "percentage": 80.0
+      },
       "gaps": [
         "缺少测试文件",
-        "Xverse适配器实现不完整"
+        "Xverse适配器被注释掉"
       ],
-      "status": "文档已完成"
+      "interfaces": [
+        "BTCWalletAdapter",
+        "WalletManager",
+        "EventHandler",
+        "AccountInfo",
+        "WalletState"
+      ],
+      "newFeatures": [
+        "智能缓存系统",
+        "完整错误处理机制",
+        "事件系统优化",
+        "缓存装饰器"
+      ]
     },
     {
       "name": "@btc-connect/react",
       "path": "packages/react",
       "language": "TypeScript/React",
       "entryPoint": "src/index.ts",
-      "testDirectory": null,
       "hasTests": false,
       "hasConfig": true,
-      "coverage": {
-        "scannedFiles": 16,
-        "totalFiles": 20,
-        "percentage": 80.0
-      },
+      "status": "文档已更新",
+      "description": "React Context 和 Hooks 集成，使用useReducer优化",
       "keyComponents": [
         "src/context",
         "src/components",
@@ -56,25 +74,46 @@
         "src/types",
         "src/utils"
       ],
+      "features": [
+        "SSR兼容",
+        "自动连接",
+        "连接策略",
+        "主题系统",
+        "useReducer状态管理"
+      ],
+      "coverage": {
+        "scannedFiles": 22,
+        "totalFiles": 25,
+        "percentage": 88.0
+      },
       "gaps": [
         "缺少测试文件",
         "需要补充高级Hook示例"
       ],
-      "status": "文档已完成"
+      "hooks": [
+        "useWallet",
+        "useConnectWallet",
+        "useWalletEvent",
+        "useBalance",
+        "useSignature",
+        "useTransactions"
+      ],
+      "optimizations": [
+        "Provider使用useReducer优化",
+        "SSR保护机制",
+        "连接策略增强",
+        "自动连接超时处理"
+      ]
     },
     {
       "name": "@btc-connect/vue",
       "path": "packages/vue",
       "language": "TypeScript/Vue",
       "entryPoint": "src/index.ts",
-      "testDirectory": null,
       "hasTests": false,
       "hasConfig": true,
-      "coverage": {
-        "scannedFiles": 16,
-        "totalFiles": 18,
-        "percentage": 88.9
-      },
+      "status": "文档已更新",
+      "description": "Vue 3 组合式 API 和插件系统，响应式状态管理",
       "keyComponents": [
         "src/composables",
         "src/components",
@@ -82,36 +121,37 @@
         "src/types",
         "src/utils"
       ],
+      "features": [
+        "SSR友好",
+        "插件系统",
+        "响应式状态管理",
+        "自动连接",
+        "性能优化"
+      ],
+      "coverage": {
+        "scannedFiles": 20,
+        "totalFiles": 22,
+        "percentage": 90.9
+      },
       "gaps": [
         "缺少测试文件",
         "需要补充Pinia集成示例"
       ],
-      "status": "文档已完成"
-    },
-    {
-      "name": "@btc-connect/ui",
-      "path": "packages/ui",
-      "language": "TypeScript/Lit",
-      "entryPoint": "src/index.ts",
-      "testDirectory": null,
-      "hasTests": false,
-      "hasConfig": true,
-      "coverage": {
-        "scannedFiles": 6,
-        "totalFiles": 8,
-        "percentage": 75.0
-      },
-      "keyComponents": [
-        "src/connect-button",
-        "src/wallet-modal",
-        "src/design-tokens",
-        "src/utils"
+      "composables": [
+        "useCore",
+        "useAccount",
+        "useBalance",
+        "useSignature",
+        "useTransactions",
+        "useWalletModal",
+        "usePerformance"
       ],
-      "gaps": [
-        "缺少测试文件",
-        "需要补充自定义主题示例"
-      ],
-      "status": "文档已完成"
+      "newFeatures": [
+        "性能监控composable",
+        "网络管理composable",
+        "钱包信息composable",
+        "连接钱包composable"
+      ]
     }
   ],
   "examples": [
@@ -120,24 +160,81 @@
       "path": "examples/react",
       "framework": "React",
       "entryPoint": "src/main.tsx",
+      "status": "文档已更新",
+      "description": "React 应用集成示例，Web Components集成",
+      "features": [
+        "Web Components集成",
+        "SSR兼容演示",
+        "主题切换"
+      ],
       "coverage": {
-        "scannedFiles": 6,
-        "totalFiles": 6,
+        "scannedFiles": 8,
+        "totalFiles": 8,
         "percentage": 100.0
-      },
-      "status": "文档已完成"
+      }
     },
     {
       "name": "vue-example",
       "path": "examples/vue-example",
       "framework": "Vue",
       "entryPoint": "src/main.ts",
+      "status": "文档已更新",
+      "description": "Vue 应用集成示例，组合式API演示",
+      "features": [
+        "组合式API演示",
+        "插件系统使用"
+      ],
       "coverage": {
         "scannedFiles": 7,
         "totalFiles": 7,
         "percentage": 100.0
+      }
+    },
+    {
+      "name": "nextjs-example",
+      "path": "examples/nextjs",
+      "framework": "React/Next.js",
+      "entryPoint": "src/app/page.tsx",
+      "status": "文档已更新",
+      "description": "Next.js SSR 兼容示例，多主题支持",
+      "features": [
+        "SSR测试",
+        "客户端组件",
+        "钱包提供者封装",
+        "多主题支持",
+        "连接策略演示"
+      ],
+      "coverage": {
+        "scannedFiles": 12,
+        "totalFiles": 12,
+        "percentage": 100.0
+      }
+    },
+    {
+      "name": "nuxt-example",
+      "path": "examples/nuxt-example",
+      "framework": "Vue/Nuxt 3",
+      "entryPoint": "pages/index.vue",
+      "status": "文档已更新",
+      "description": "Nuxt 3 完整SSR示例，性能监控集成",
+      "features": [
+        "完整SSR支持",
+        "客户端插件加载",
+        "性能监控",
+        "组件保护机制",
+        "状态检测面板"
+      ],
+      "coverage": {
+        "scannedFiles": 15,
+        "totalFiles": 15,
+        "percentage": 100.0
       },
-      "status": "文档已完成"
+      "highlights": [
+        "完整的SSR兼容方案",
+        "性能监控系统",
+        "客户端插件模式",
+        "多组件钱包管理"
+      ]
     }
   ],
   "qualityTools": {
@@ -146,57 +243,85 @@
     "typeChecker": "TypeScript",
     "bundler": "Vite",
     "packageManager": "Bun",
-    "testRunner": "Bun Test"
+    "testRunner": "Bun Test",
+    "configFiles": [
+      "biome.json",
+      "package.json",
+      "bun.lock",
+      "tsconfig.json"
+    ]
   },
   "architecture": {
     "type": "Monorepo",
     "workspaceManager": "Bun Workspaces",
     "corePattern": "Adapter Pattern",
-    "supportedWallets": ["UniSat", "OKX", "Xverse"],
-    "frameworkSupport": ["React", "Vue"]
+    "supportedWallets": ["UniSat", "OKX"],
+    "frameworkSupport": ["React", "Vue", "Next.js", "Nuxt 3"],
+    "keyFeatures": [
+      "统一钱包接口",
+      "事件驱动架构",
+      "完整SSR兼容",
+      "TypeScript支持",
+      "智能缓存系统",
+      "错误处理机制"
+    ]
   },
   "documentsGenerated": [
     {
       "file": "CLAUDE.md",
       "location": "根目录",
       "type": "项目总览文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     },
     {
       "file": "packages/core/CLAUDE.md",
       "location": "core模块",
       "type": "模块文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     },
     {
       "file": "packages/react/CLAUDE.md",
       "location": "react模块",
       "type": "模块文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     },
     {
       "file": "packages/vue/CLAUDE.md",
       "location": "vue模块",
       "type": "模块文档",
-      "status": "已完成"
-    },
-    {
-      "file": "packages/ui/CLAUDE.md",
-      "location": "ui模块",
-      "type": "模块文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     },
     {
       "file": "examples/react/CLAUDE.md",
       "location": "react示例",
       "type": "示例文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     },
     {
       "file": "examples/vue-example/CLAUDE.md",
       "location": "vue示例",
       "type": "示例文档",
-      "status": "已完成"
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
+    },
+    {
+      "file": "examples/nextjs/CLAUDE.md",
+      "location": "nextjs示例",
+      "type": "示例文档",
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
+    },
+    {
+      "file": "examples/nuxt-example/CLAUDE.md",
+      "location": "nuxt示例",
+      "type": "示例文档",
+      "status": "已更新",
+      "lastModified": "2025-10-18T21:43:21.000Z"
     }
   ],
   "ignoredDirectories": [
@@ -204,44 +329,86 @@
     "dist",
     ".git",
     ".vite",
-    ".tmp"
+    ".tmp",
+    ".next"
   ],
   "ignoredFiles": [
     "*.lock",
     "*.log",
-    "*.d.ts.map"
+    "*.d.ts.map",
+    "Thumbs.db"
   ],
   "truncated": false,
   "scanSummary": {
     "phaseA": {
       "name": "全仓清点（轻量）",
       "status": "已完成",
-      "findings": "识别出4个核心模块和2个示例项目"
+      "findings": "识别出3个核心模块和4个示例项目，发现UI模块已被删除，新增Nuxt 3示例"
     },
     "phaseB": {
       "name": "模块优先扫描（中等）",
       "status": "已完成",
-      "findings": "深入扫描了所有模块的入口文件、类型定义、关键组件"
+      "findings": "深入扫描了所有模块的入口文件、类型定义、关键组件和示例文件，发现缓存系统和错误处理的重大改进"
     },
     "phaseC": {
       "name": "深度补捞（按需）",
       "status": "已完成",
-      "findings": "对关键文件进行了详细分析，生成了完整文档"
+      "findings": "对React Provider、Vue Composables、缓存系统等关键组件进行了深度分析"
     }
   },
+  "changesSinceLastScan": {
+    "deletedModules": [
+      {
+        "name": "@btc-connect/ui",
+        "reason": "模块已从项目中移除"
+      }
+    ],
+    "addedExamples": [
+      {
+        "name": "nextjs-example",
+        "reason": "新增Next.js SSR示例"
+      },
+      {
+        "name": "nuxt-example",
+        "reason": "新增Nuxt 3完整SSR示例"
+      }
+    ],
+    "updatedModules": [
+      {
+        "name": "core",
+        "changes": "添加了完整的缓存系统、错误处理机制、事件系统优化"
+      },
+      {
+        "name": "react",
+        "changes": "使用useReducer优化状态管理，增强SSR兼容性，完善连接策略"
+      },
+      {
+        "name": "vue",
+        "changes": "新增性能监控、网络管理等composables，完善插件系统"
+      }
+    ]
+  },
+  "architectureHighlights": [
+    "完整的SSR兼容方案（Next.js + Nuxt 3）",
+    "智能缓存系统提升性能",
+    "完善的错误处理和恢复机制",
+    "React useReducer状态管理优化",
+    "Vue响应式系统和插件完善",
+    "统一的类型系统和接口设计"
+  ],
   "nextSteps": [
-    "添加单元测试和集成测试",
-    "完善Xverse钱包适配器的实现",
-    "补充TypeDoc或类似工具生成API文档",
-    "添加Storybook展示UI组件",
-    "补充CI/CD配置"
+    "补充所有模块的测试套件",
+    "重新激活Xverse钱包适配器",
+    "添加CI/CD配置和自动化",
+    "完善API文档和使用指南",
+    "性能监控和持续优化"
   ],
   "recommendations": [
-    "建立完整的测试体系",
-    "添加性能监控和错误追踪",
-    "完善国际化支持",
-    "考虑添加Angular适配模块",
-    "添加移动端适配和PWA支持"
+    "建立完整的测试体系（单元测试、集成测试、E2E测试）",
+    "完善错误处理和日志系统",
+    "考虑添加移动端适配和更多钱包支持",
+    "添加性能监控和指标收集",
+    "完善国际化支持和文档本地化"
   ],
-  "completionStatus": "已完成基础架构分析和文档生成"
+  "completionStatus": "全面更新完成 - 发现并记录了项目的重大架构升级，包括SSR完整兼容、缓存系统、错误处理等关键改进"
 }

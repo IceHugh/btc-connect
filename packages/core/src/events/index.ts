@@ -1,9 +1,18 @@
-import type { EventHandler, WalletEvent } from '../types';
+import type {
+  AccountChangeEventParams,
+  ConnectEventParams,
+  DisconnectEventParams,
+  ErrorEventParams,
+  LegacyEventHandler,
+  Network,
+  NetworkChangeEventParams,
+  WalletEvent,
+} from '../types';
 
 // 事件监听器接口
 interface EventListener {
   event: WalletEvent;
-  handler: EventHandler;
+  handler: LegacyEventHandler;
   once?: boolean;
 }
 
@@ -17,21 +26,21 @@ export class EventEmitter {
   /**
    * 添加事件监听器
    */
-  on(event: WalletEvent, handler: EventHandler): void {
+  on(event: WalletEvent, handler: LegacyEventHandler): void {
     this.addListener(event, handler, false);
   }
 
   /**
    * 添加一次性事件监听器
    */
-  once(event: WalletEvent, handler: EventHandler): void {
+  once(event: WalletEvent, handler: LegacyEventHandler): void {
     this.addListener(event, handler, true);
   }
 
   /**
    * 移除事件监听器
    */
-  off(event: WalletEvent, handler: EventHandler): void {
+  off(event: WalletEvent, handler: LegacyEventHandler): void {
     const listeners = this.listeners.get(event);
     if (!listeners) return;
 
@@ -121,7 +130,7 @@ export class EventEmitter {
    */
   private addListener(
     event: WalletEvent,
-    handler: EventHandler,
+    handler: LegacyEventHandler,
     once: boolean,
   ): void {
     const listeners = this.listeners.get(event) || [];
@@ -147,41 +156,94 @@ export class WalletEventManager extends EventEmitter {
   /**
    * 发射连接事件
    */
-  emitConnect(accounts: any[]): boolean {
+  emitConnect(
+    walletId: string,
+    accounts: ConnectEventParams['accounts'],
+  ): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('connect', accounts);
+    return this.emit('connect', { walletId, accounts });
+  }
+
+  /**
+   * 发射连接事件（兼容旧版本）
+   */
+  emitConnectLegacy(accounts: ConnectEventParams['accounts']): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('connect', accounts as any);
   }
 
   /**
    * 发射断开连接事件
    */
-  emitDisconnect(): boolean {
+  emitDisconnect(walletId: string): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('disconnect');
+    return this.emit('disconnect', { walletId });
+  }
+
+  /**
+   * 发射断开连接事件（兼容旧版本）
+   */
+  emitDisconnectLegacy(): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('disconnect', undefined as any);
   }
 
   /**
    * 发射账户变化事件
    */
-  emitAccountChange(accounts: any[]): boolean {
+  emitAccountChange(
+    walletId: string,
+    accounts: AccountChangeEventParams['accounts'],
+  ): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('accountChange', accounts);
+    return this.emit('accountChange', { walletId, accounts });
+  }
+
+  /**
+   * 发射账户变化事件（兼容旧版本）
+   */
+  emitAccountChangeLegacy(
+    accounts: AccountChangeEventParams['accounts'],
+  ): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('accountChange', accounts as any);
   }
 
   /**
    * 发射网络变化事件
    */
-  emitNetworkChange(network: any): boolean {
+  emitNetworkChange(
+    walletId: string,
+    network: NetworkChangeEventParams['network'],
+  ): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('networkChange', network);
+    return this.emit('networkChange', { walletId, network });
+  }
+
+  /**
+   * 发射网络变化事件（兼容旧版本）
+   */
+  emitNetworkChangeLegacy(
+    network: NetworkChangeEventParams['network'],
+  ): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('networkChange', network as any);
   }
 
   /**
    * 发射错误事件
    */
-  emitError(error: Error): boolean {
+  emitError(walletId: string, error: ErrorEventParams['error']): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('error', error);
+    return this.emit('error', { walletId, error });
+  }
+
+  /**
+   * 发射错误事件（兼容旧版本）
+   */
+  emitErrorLegacy(error: Error): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('error', error as any);
   }
 
   /**

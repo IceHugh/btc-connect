@@ -1,10 +1,19 @@
+import { CacheKeyBuilder, CacheManager, type MemoryCache } from '../cache';
 import { WalletEventManager } from '../events';
-import type { AccountInfo, BTCWalletAdapter, Network, WalletEvent, WalletState } from '../types';
+import type {
+  AccountInfo,
+  BTCWalletAdapter,
+  ErrorContext,
+  Network,
+  WalletEvent,
+  WalletState,
+} from '../types';
 import {
   WalletConnectionError,
   WalletDisconnectedError,
   WalletNotInstalledError,
 } from '../types';
+import { WalletErrorHandler } from '../utils/error-handler';
 
 /**
  * 钱包适配器基类
@@ -17,14 +26,227 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
   };
   protected isConnected = false;
 
+  // 缓存实例
+  protected cacheManager = CacheManager.getInstance();
+  protected balanceCache: MemoryCache;
+  protected networkCache: MemoryCache;
+  protected accountsCache: MemoryCache;
+  protected publicKeyCache: MemoryCache;
+
   abstract readonly id: string;
   abstract readonly name: string;
   abstract readonly icon: string;
 
+  constructor() {
+    // 初始化不同类型的缓存
+    this.balanceCache = this.cacheManager.getCache('balance', {
+      ttl: 10000, // 10秒
+      maxSize: 100, // 最大100个条目
+      enableAutoCleanup: true,
+      cleanupInterval: 30000, // 30秒清理一次
+    });
+
+    this.networkCache = this.cacheManager.getCache('network', {
+      ttl: 60000, // 1分钟
+      maxSize: 50,
+      enableAutoCleanup: true,
+      cleanupInterval: 60000, // 1分钟清理一次
+    });
+
+    this.accountsCache = this.cacheManager.getCache('accounts', {
+      ttl: 30000, // 30秒
+      maxSize: 50,
+      enableAutoCleanup: true,
+      cleanupInterval: 30000,
+    });
+
+    this.publicKeyCache = this.cacheManager.getCache('publicKey', {
+      ttl: 30000, // 30秒
+      maxSize: 20,
+      enableAutoCleanup: true,
+      cleanupInterval: 30000,
+    });
+  }
+
+  /**
+   * 获取钱包实例，子类必须实现
+   */
+  protected abstract getWalletInstance(): any;
+
   /**
    * 检查钱包是否可用
    */
-  abstract isReady(): boolean;
+  protected checkWalletAvailability(): void {
+    if (!this.getWalletInstance()) {
+      throw new Error(`${this.name} wallet not found`);
+    }
+  }
+
+  /**
+   * 标准化网络字符串
+   */
+  protected normalizeNetwork(network: string): Network {
+    switch (network) {
+      case 'livenet':
+      case 'mainnet':
+        return 'mainnet';
+      case 'testnet':
+        return 'testnet';
+      case 'regtest':
+        return 'regtest';
+      default:
+        return 'mainnet'; // 默认主网
+    }
+  }
+
+  /**
+   * 创建账户信息
+   */
+  protected createAccountInfo(
+    address: string,
+    publicKey?: string,
+    network?: Network,
+  ): AccountInfo {
+    return {
+      address,
+      publicKey,
+      balance: undefined,
+      network: network || this.normalizeNetwork('livenet'),
+    };
+  }
+
+  /**
+   * 获取当前地址（用于缓存键）
+   */
+  protected getCurrentAddress(): string | null {
+    return this.state.currentAccount?.address || null;
+  }
+
+  /**
+   * 清除指定类型的缓存
+   */
+  protected clearCache(
+    type: 'balance' | 'network' | 'accounts' | 'publicKey' | 'all',
+  ): void {
+    switch (type) {
+      case 'balance':
+        this.balanceCache.clear();
+        break;
+      case 'network':
+        this.networkCache.clear();
+        break;
+      case 'accounts':
+        this.accountsCache.clear();
+        break;
+      case 'publicKey':
+        this.publicKeyCache.clear();
+        break;
+      case 'all':
+        this.balanceCache.clear();
+        this.networkCache.clear();
+        this.accountsCache.clear();
+        this.publicKeyCache.clear();
+        break;
+    }
+  }
+
+  /**
+   * 清除与当前账户相关的缓存
+   */
+  protected clearCurrentAccountCache(): void {
+    const currentAddress = this.getCurrentAddress();
+    if (!currentAddress) return;
+
+    // 清除余额缓存
+    const balanceKey = CacheKeyBuilder.balance(this.id, currentAddress);
+    this.balanceCache.delete(balanceKey);
+
+    // 清除公钥缓存
+    const publicKeyKey = `publicKey:${this.id}`;
+    this.publicKeyCache.delete(publicKeyKey);
+  }
+
+  /**
+   * 清除钱包所有缓存
+   */
+  protected clearWalletCache(): void {
+    this.clearCache('all');
+  }
+
+  /**
+   * 批量创建账户信息
+   */
+  protected createAccountInfos(
+    addresses: string[],
+    network?: Network,
+  ): AccountInfo[] {
+    return addresses.map((address) =>
+      this.createAccountInfo(address, undefined, network),
+    );
+  }
+
+  /**
+   * 安全执行钱包操作
+   */
+  protected async executeWalletOperation<T>(
+    operation: (wallet: any) => Promise<T>,
+    operationName: string,
+    context?: Partial<ErrorContext>,
+  ): Promise<T> {
+    return WalletErrorHandler.safeExecute(
+      () => {
+        const wallet = this.getWalletInstance();
+        this.checkWalletAvailability();
+        return operation(wallet);
+      },
+      (error: Error) =>
+        WalletErrorHandler.createConnectionError(
+          this.id,
+          `${operationName} failed: ${error instanceof Error ? error.message : String(error)}`,
+          error,
+          {
+            operation: operationName,
+            ...context,
+          },
+        ),
+      context,
+    );
+  }
+
+  /**
+   * 设置事件监听器的通用逻辑
+   */
+  protected setupWalletEventListeners(
+    eventMap: Record<string, (...args: any[]) => void>,
+  ): void {
+    const wallet = this.getWalletInstance();
+    if (!wallet || !wallet.on) return;
+
+    Object.entries(eventMap).forEach(([event, handler]) => {
+      wallet.on(event, handler);
+    });
+  }
+
+  /**
+   * 移除事件监听器的通用逻辑
+   */
+  protected removeWalletEventListeners(
+    eventMap: Record<string, (...args: any[]) => void>,
+  ): void {
+    const wallet = this.getWalletInstance();
+    if (!wallet || !wallet.removeListener) return;
+
+    Object.entries(eventMap).forEach(([event, handler]) => {
+      wallet.removeListener(event, handler);
+    });
+  }
+
+  /**
+   * 检查钱包是否可用
+   */
+  isReady(): boolean {
+    return typeof window !== 'undefined' && !!this.getWalletInstance();
+  }
 
   /**
    * 获取当前状态
@@ -54,13 +276,13 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
       this.state.currentAccount = accounts[0];
       this.isConnected = true;
 
-      this.eventManager.emitConnect(accounts);
+      this.eventManager.emitConnectLegacy(accounts);
       return accounts;
     } catch (error) {
       this.state.status = 'error';
       this.state.error =
         error instanceof Error ? error : new Error(String(error));
-      this.eventManager.emitError(this.state.error);
+      this.eventManager.emitErrorLegacy(this.state.error);
       throw new WalletConnectionError(
         this.id,
         error instanceof Error ? error.message : String(error),
@@ -85,12 +307,12 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
       this.state.network = undefined;
       this.isConnected = false;
 
-      this.eventManager.emitDisconnect();
+      this.eventManager.emitDisconnectLegacy();
     } catch (error) {
       this.state.status = 'error';
       this.state.error =
         error instanceof Error ? error : new Error(String(error));
-      this.eventManager.emitError(this.state.error);
+      this.eventManager.emitErrorLegacy(this.state.error);
       throw new WalletDisconnectedError(this.id);
     }
   }
@@ -128,7 +350,22 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     }
 
     if (this.handleGetPublicKey) {
-      return await this.handleGetPublicKey();
+      // 尝试从缓存获取
+      const publicKeyKey = `publicKey:${this.id}`;
+      let publicKey = this.publicKeyCache.get(publicKeyKey);
+      if (publicKey) {
+        return publicKey;
+      }
+
+      // 缓存未命中，调用底层API
+      publicKey = await this.handleGetPublicKey();
+
+      // 缓存结果（只缓存有效的公钥）
+      if (publicKey && typeof publicKey === 'string' && publicKey.length > 0) {
+        this.publicKeyCache.set(publicKeyKey, publicKey);
+      }
+
+      return publicKey;
     }
 
     throw new Error(`${this.name} does not support getPublicKey`);
@@ -143,7 +380,27 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     }
 
     if (this.handleGetBalance) {
-      return await this.handleGetBalance();
+      const currentAddress = this.getCurrentAddress();
+      if (!currentAddress) {
+        return await this.handleGetBalance();
+      }
+
+      // 尝试从缓存获取
+      const balanceKey = CacheKeyBuilder.balance(this.id, currentAddress);
+      let balance = this.balanceCache.get(balanceKey);
+      if (balance) {
+        return balance;
+      }
+
+      // 缓存未命中，调用底层API
+      balance = await this.handleGetBalance();
+
+      // 缓存结果（只缓存有效的余额数据）
+      if (balance && typeof balance === 'object' && 'total' in balance) {
+        this.balanceCache.set(balanceKey, balance);
+      }
+
+      return balance;
     }
 
     throw new Error(`${this.name} does not support getBalance`);
@@ -234,8 +491,22 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
    */
   async getNetwork(): Promise<Network> {
     // 放开静默探测：未连接也允许调用底层 API 获取网络
-    const network = await this.handleGetNetwork();
+    const networkKey = CacheKeyBuilder.network(this.id);
+
+    // 尝试从缓存获取
+    let network = this.networkCache.get(networkKey);
+    if (network) {
+      this.state.network = network;
+      return network;
+    }
+
+    // 缓存未命中，调用底层API
+    network = await this.handleGetNetwork();
     this.state.network = network;
+
+    // 缓存结果
+    this.networkCache.set(networkKey, network);
+
     return network;
   }
 
@@ -246,7 +517,18 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     if (!this.isConnected) {
       throw new WalletDisconnectedError(this.id);
     }
+
     await this.handleSwitchNetwork(network);
+
+    // 清除网络相关缓存
+    const networkKey = CacheKeyBuilder.network(this.id);
+    this.networkCache.delete(networkKey);
+
+    // 清除账户缓存（因为不同网络的账户可能不同）
+    this.accountsCache.clear();
+
+    // 更新状态中的网络信息
+    this.state.network = network;
   }
 
   /**
@@ -336,7 +618,14 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
   protected updateAccounts(accounts: AccountInfo[]): void {
     this.state.accounts = accounts;
     this.state.currentAccount = accounts[0] || undefined;
-    this.eventManager.emitAccountChange(accounts);
+
+    // 清除当前账户相关的缓存（因为账户发生了变化）
+    this.clearCurrentAccountCache();
+
+    // 清除账户缓存
+    this.accountsCache.clear();
+
+    this.eventManager.emitAccountChangeLegacy(accounts);
   }
 
   /**
@@ -344,7 +633,15 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
    */
   protected updateNetwork(network: Network): void {
     this.state.network = network;
-    this.eventManager.emitNetworkChange(network);
+
+    // 清除网络相关缓存
+    const networkKey = CacheKeyBuilder.network(this.id);
+    this.networkCache.delete(networkKey);
+
+    // 清除账户缓存（因为不同网络的账户可能不同）
+    this.accountsCache.clear();
+
+    this.eventManager.emitNetworkChangeLegacy(network);
   }
 
   /**
@@ -352,6 +649,10 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
    */
   destroy(): void {
     this.eventManager.destroy();
+
+    // 清除所有缓存
+    this.clearWalletCache();
+
     this.state = {
       status: 'disconnected',
       accounts: [],

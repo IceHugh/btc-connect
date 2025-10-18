@@ -34,20 +34,32 @@ export const copyToClipboard = async (text: string): Promise<void> => {
 export const formatAddress = (address: string, length = 6): string => {
   if (!address) return '';
   if (address.length <= length * 2) return address;
-  
+
   return `${address.slice(0, length)}...${address.slice(-length)}`;
+};
+
+// 只显示地址后几位
+export const formatAddressShort = (
+  address: string,
+  suffixLength = 4,
+): string => {
+  if (!address) return '';
+  if (address.length <= suffixLength) return address;
+
+  return address.slice(-suffixLength);
 };
 
 // 按需保留最多 6 位小数并去掉末尾 0（仅当传入为小数时）
 export const formatDecimal = (
   value: number | string,
-  maxFractionDigits = 6
+  maxFractionDigits = 6,
 ): string => {
   const num = typeof value === 'string' ? Number(value) : value;
   if (!Number.isFinite(num)) return '0';
 
   const isDecimalInput =
-    (typeof value === 'string' && value.includes('.')) || !Number.isInteger(num);
+    (typeof value === 'string' && value.includes('.')) ||
+    !Number.isInteger(num);
 
   if (!isDecimalInput) {
     return num.toString();
@@ -59,7 +71,10 @@ export const formatDecimal = (
 };
 
 // 格式化余额
-export const formatBalance = (balance: number | string, decimals = 8): string => {
+export const formatBalance = (
+  balance: number | string,
+  decimals = 8,
+): string => {
   const num = typeof balance === 'string' ? parseFloat(balance) : balance;
 
   if (num === 0) return '0 BTC';
@@ -82,9 +97,9 @@ export const formatBTCBalance = (satoshis: number): string => {
 
   // 定义单位转换
   const units = [
-    { threshold: 1e9, suffix: 'M', divisor: 1e9 },  // 百万级 BTC
-    { threshold: 1e6, suffix: 'K', divisor: 1e6 },  // 千级 BTC
-    { threshold: 1, suffix: '', divisor: 1 },        // 1-999 BTC
+    { threshold: 1e9, suffix: 'M', divisor: 1e9 }, // 百万级 BTC
+    { threshold: 1e6, suffix: 'K', divisor: 1e6 }, // 千级 BTC
+    { threshold: 1, suffix: '', divisor: 1 }, // 1-999 BTC
   ];
 
   // 找到合适的单位
@@ -107,7 +122,9 @@ export const formatBTCBalance = (satoshis: number): string => {
   }
 
   // 格式化数字，确保不超过最大小数位数，且不使用科学计数法
-  const formatted = Number(value.toPrecision(maxDecimalPlaces + 2)).toFixed(maxDecimalPlaces);
+  const formatted = Number(value.toPrecision(maxDecimalPlaces + 2)).toFixed(
+    maxDecimalPlaces,
+  );
 
   // 去除末尾多余的0，但保留至少1位小数（如果需要）
   const trimmed = formatted.replace(/\.?0+$/, '');
@@ -118,12 +135,12 @@ export const formatBTCBalance = (satoshis: number): string => {
 // 获取网络显示名称
 export const getNetworkDisplayName = (network: string): string => {
   const networkMap: Record<string, string> = {
-    'livenet': '主网',
-    'testnet': '测试网',
-    'regtest': '本地测试网',
-    'mainnet': '主网'
+    livenet: '主网',
+    testnet: '测试网',
+    regtest: '本地测试网',
+    mainnet: '主网',
   };
-  
+
   return networkMap[network] || network;
 };
 
@@ -136,7 +153,8 @@ export const formatTimestamp = (timestamp: number): string => {
 // 验证比特币地址
 export const isValidBitcoinAddress = (address: string): boolean => {
   // 简单的比特币地址验证
-  const bitcoinAddressRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[ac-hj-np-z02-9]{8,87}$/;
+  const bitcoinAddressRegex =
+    /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[ac-hj-np-z02-9]{8,87}$/;
   return bitcoinAddressRegex.test(address);
 };
 
@@ -144,23 +162,23 @@ export const isValidBitcoinAddress = (address: string): boolean => {
 export const formatHash = (hash: string, length = 8): string => {
   if (!hash) return '';
   if (hash.length <= length * 2) return hash;
-  
+
   return `${hash.slice(0, length)}...${hash.slice(-length)}`;
 };
 
 // 延迟函数
 export const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 // 重试函数
 export const retry = async <T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  delayMs = 1000
+  delayMs = 1000,
 ): Promise<T> => {
   let lastError: Error | undefined;
-  
+
   for (let i = 0; i < maxAttempts; i++) {
     try {
       return await fn();
@@ -171,17 +189,17 @@ export const retry = async <T>(
       }
     }
   }
-  
+
   throw lastError ?? new Error('Unknown error');
 };
 
 // 防抖函数
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  wait: number
-): (...args: Parameters<T>) => void => {
+  wait: number,
+): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -191,10 +209,10 @@ export const debounce = <T extends (...args: any[]) => any>(
 // 节流函数
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  limit: number
-): (...args: Parameters<T>) => void => {
+  limit: number,
+): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
-  
+
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args);
@@ -217,7 +235,7 @@ export const storage = {
       return defaultValue || null;
     }
   },
-  
+
   set: <T>(key: string, value: T): void => {
     if (typeof window === 'undefined') return;
     try {
@@ -226,7 +244,7 @@ export const storage = {
       // 忽略
     }
   },
-  
+
   remove: (key: string): void => {
     if (typeof window === 'undefined') return;
     try {
@@ -235,7 +253,7 @@ export const storage = {
       // 忽略
     }
   },
-  
+
   clear: (): void => {
     if (typeof window === 'undefined') return;
     try {
@@ -243,7 +261,7 @@ export const storage = {
     } catch {
       // 忽略
     }
-  }
+  },
 };
 
 // 生成唯一 ID
@@ -252,17 +270,24 @@ export const generateId = (prefix = ''): string => {
 };
 
 // 深度合并对象
-export const deepMerge = <T extends Record<string, any>>(target: T, source: Partial<T>): T => {
+export const deepMerge = <T extends Record<string, any>>(
+  target: T,
+  source: Partial<T>,
+): T => {
   const result = { ...target };
-  
+
   for (const key in source) {
-    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+    if (
+      source[key] &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key])
+    ) {
       result[key] = deepMerge((result[key] as any) || {}, source[key] as any);
     } else {
       result[key] = source[key] as any;
     }
   }
-  
+
   return result;
 };
 
@@ -287,15 +312,13 @@ export const safeJsonParse = <T>(jsonString: string, defaultValue: T): T => {
 // 格式化文件大小
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / k ** i).toFixed(2)) + ' ' + sizes[i];
+
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 };
-
-
 
 // 获取浏览器信息
 export const getBrowserInfo = (): { name: string; version: string } => {
@@ -305,7 +328,7 @@ export const getBrowserInfo = (): { name: string; version: string } => {
   const ua = window.navigator.userAgent;
   let browserName = 'Unknown';
   let browserVersion = '0';
-  
+
   if (ua.indexOf('Chrome') > -1) {
     browserName = 'Chrome';
     browserVersion = ua.match(/Chrome\/(\d+)/)?.[1] || '0';
@@ -319,6 +342,6 @@ export const getBrowserInfo = (): { name: string; version: string } => {
     browserName = 'IE';
     browserVersion = ua.match(/(?:MSIE |rv:)(\d+)/)?.[1] || '0';
   }
-  
+
   return { name: browserName, version: browserVersion };
 };

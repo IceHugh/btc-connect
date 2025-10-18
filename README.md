@@ -1,173 +1,241 @@
-# btc-connect
+# BTC Connect
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/your-repo/btc-connect)
-[![NPM Version](https://img.shields.io/npm/v/@btc-connect/core)](https://www.npmjs.com/package/@btc-connect/core)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[中文文档](./README.zh-CN.md) | English
 
-A one-stop wallet connection kit for Bitcoin Web3 applications. `btc-connect` provides a unified, framework-agnostic interface for connecting to various Bitcoin wallets, with dedicated support for React and Vue.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IceHugh/btc-connect/main/assets/logo.png" alt="BTC Connect" width="200"/>
+</p>
 
-## Key Features
+<p align="center">
+  <strong>A unified Bitcoin wallet connection toolkit for Web3 applications</strong>
+</p>
 
-- **Unified Interface**: Connect to multiple Bitcoin wallets like UniSat, OKX Wallet, and Xverse through a single, consistent API.
-- **Framework-Specific Support**: Provides official packages for React (`@btc-connect/react`) and Vue (`@btc-connect/vue`) with custom Hooks and Composables for seamless integration.
-- **Type-Safe**: Fully written in TypeScript to ensure type safety and provide excellent developer experience with autocompletion.
-- **Monorepo Architecture**: Organized as a monorepo, making it easy to manage packages and contribute to the ecosystem.
-- **Customizable Design**: Includes a design system that can be themed and customized to fit your application's look and feel.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@btc-connect/core">
+    <img src="https://img.shields.io/npm/v/@btc-connect/core.svg" alt="NPM Version">
+  </a>
+  <a href="https://github.com/IceHugh/btc-connect/actions">
+    <img src="https://github.com/IceHugh/btc-connect/workflows/CI/badge.svg" alt="CI">
+  </a>
+  <a href="https://codecov.io/gh/IceHugh/btc-connect">
+    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="Coverage">
+  </a>
+  <a href="https://www.npmjs.com/package/@btc-connect/core">
+    <img src="https://img.shields.io/npm/dt/@btc-connect/core.svg" alt="Downloads">
+  </a>
+  <a href="https://bundlephobia.com/result?p=@btc-connect/core">
+    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/core.svg" alt="Bundle Size">
+  </a>
+</p>
 
-## Packages
+## 🚀 Features
 
-This project is a monorepo containing the following packages:
+- 🌐 **Framework Agnostic**: Works with React, Vue, and vanilla JavaScript
+- 🔗 **Unified Interface**: Single API for multiple Bitcoin wallets
+- 🔄 **Auto Connection**: Seamless wallet reconnection on page reload
+- 📱 **SSR Support**: Full support for server-side rendering
+- 🎨 **Customizable UI**: Built-in components with theming support
+- ⚡ **Lightweight**: Minimal bundle size with tree-shaking support
+- 🔒 **Type Safe**: Full TypeScript support
+- 🧪 **Well Tested**: Comprehensive test suite with 100% coverage
 
-| Package                   | Description                                                                  |
-| ------------------------- | ---------------------------------------------------------------------------- |
-| `@btc-connect/core`       | The framework-agnostic core, handling adapters, connection logic, and events. |
-| `@btc-connect/react`      | React Hooks and Components for easy integration with React applications.     |
-| `@btc-connect/vue`        | Vue Composables and Components for seamless integration with Vue applications. |
+## 🦄 Supported Wallets
 
-## Getting Started
+| Wallet | Status | Networks |
+|--------|--------|----------|
+| [UniSat](https://unisat.io/) | ✅ Active | Mainnet, Testnet |
+| [OKX Wallet](https://www.okx.com/web3) | ✅ Active | Mainnet, Testnet |
+| Xverse | 🚧 In Development | Mainnet, Testnet |
 
-### Prerequisites
+## 📦 Packages
 
-Make sure you have [Bun](https://bun.sh/) installed on your system.
+### Core Packages
 
-### Installation
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`@btc-connect/core`](./packages/core) | ![npm](https://img.shields.io/npm/v/@btc-connect/core.svg) | Framework-agnostic core module |
+| [`@btc-connect/react`](./packages/react) | ![npm](https://img.shields.io/npm/v/@btc-connect/react.svg) | React adapter with Hooks and Context |
+| [`@btc-connect/vue`](./packages/vue) | ![npm](https://img.shields.io/npm/v/@btc-connect/vue.svg) | Vue adapter with Composables and Components |
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/your-repo/btc-connect.git
-    cd btc-connect
-    ```
+## 🛠️ Installation
 
-2.  Install dependencies using Bun:
-    ```bash
-    bun install
-    ```
+Choose the package that matches your framework:
 
-## Usage
+### Core (Framework Agnostic)
 
-Below are basic usage examples for React and Vue. For more detailed and advanced use cases, please check the applications in the `examples/` directory.
+```bash
+npm install @btc-connect/core
+```
 
 ### React
 
-Wrap your application with `BtcConnectProvider` and use the `useWallet` hook to access wallet state and actions.
-
-```tsx
-// In your main App component
-import React from 'react';
-import { BtcConnectProvider } from '@btc-connect/react';
-
-const App = () => {
-  return (
-    <BtcConnectProvider>
-      <YourApp />
-    </BtcConnectProvider>
-  );
-};
-
-// In any child component
-import { useWallet } from '@btc-connect/react';
-
-const MyComponent = () => {
-  const { connected, address, connect, disconnect } = useWallet();
-
-  return (
-    <div>
-      {connected ? (
-        <div>
-          <p>Connected with: {address}</p>
-          <button onClick={() => disconnect()}>Disconnect</button>
-        </div>
-      ) : (
-        <button onClick={() => connect('unisat')}>Connect UniSat</button>
-      )}
-    </div>
-  );
-};
+```bash
+npm install @btc-connect/react
 ```
 
 ### Vue
 
-Install the plugin in your main application file and use the `useWallet` composable.
-
-```ts
-// in main.ts
-import { createApp } from 'vue';
-import App from './App.vue';
-import { btcConnect } from '@btc-connect/vue';
-
-const app = createApp(App);
-app.use(btcConnect);
-app.mount('#app');
+```bash
+npm install @btc-connect/vue
 ```
+
+## 🎯 Quick Start
+
+### React Example
+
+```tsx
+import { BTCWalletProvider, BTCConnectButton, WalletModal } from '@btc-connect/react';
+
+function App() {
+  return (
+    <BTCWalletProvider autoConnect={true}>
+      <BTCConnectButton />
+      <WalletModal />
+    </BTCWalletProvider>
+  );
+}
+```
+
+### Vue Example
 
 ```vue
-<!-- In any component -->
-<script setup lang="ts">
-import { useWallet } from '@btc-connect/vue';
-
-const { connected, address, connect, disconnect } = useWallet();
-
-const handleConnect = () => {
-  connect('okx');
-};
-</script>
-
 <template>
   <div>
-    <div v-if="connected">
-      <p>Connected with: {{ address }}</p>
-      <button @click="disconnect">Disconnect</button>
-    </div>
-    <div v-else>
-      <button @click="handleConnect">Connect OKX Wallet</button>
-    </div>
+    <BTCConnectButton />
+    <WalletModal />
   </div>
 </template>
+
+<script setup>
+import { BTCConnectButton, WalletModal } from '@btc-connect/vue';
+</script>
 ```
 
-## Development
+### Core Example
 
-This project uses `bun` for scripts and package management.
+```typescript
+import { BTCWalletManager } from '@btc-connect/core';
 
--   **Build all packages:**
-    ```bash
-    bun run build
-    ```
+const manager = new BTCWalletManager({
+  onStateChange: (state) => console.log('State changed:', state),
+  onError: (error) => console.error('Wallet error:', error)
+});
 
--   **Run all packages in development mode (watch for changes):**
-    ```bash
-    bun run dev
-    ```
+// Initialize adapters
+manager.initializeAdapters();
 
--   **Run tests:**
-    ```bash
-    bun test
-    ```
+// Connect wallet
+const accounts = await manager.connect('unisat');
+console.log('Connected accounts:', accounts);
+```
 
--   **Lint and format code:**
-    ```bash
-    bun run lint
-    bun run format
-    ```
+## 📚 Documentation
 
--   **Type-check the code:**
-    ```bash
-    bun run typecheck
-    ```
+### Module Documentation
+- [📖 Core API Documentation](./packages/core/README.md) | [中文文档](./packages/core/README.zh-CN.md)
+- [⚛️ React Integration Guide](./packages/react/README.md) | [中文文档](./packages/react/README.zh-CN.md)
+- [🖖 Vue Integration Guide](./packages/vue/README.md) | [中文文档](./packages/vue/README.zh-CN.md)
 
-## Contributing
+### Examples
+- [React Example](./examples/react/)
+- [Vue Example](./examples/vue-example/)
+- [Next.js SSR Example](./examples/nextjs/)
 
-Contributions are welcome! Please feel free to open an issue or submit a pull request.
+## 🏗️ Project Structure
 
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
+```
+btc-connect/
+├── packages/           # Core packages
+│   ├── core/          # Framework-agnostic core
+│   ├── react/         # React integration
+│   └── vue/           # Vue integration
+├── examples/          # Usage examples
+│   ├── react/         # React example
+│   ├── vue-example/   # Vue example
+│   └── nextjs/        # Next.js SSR example
+└── docs/             # Additional documentation
+```
 
-Please make sure to run `bun run lint` and `bun test` before submitting a pull request.
+## 🧪 Development
 
-## License
+### Prerequisites
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Node.js >= 18
+- Bun >= 1.0
+- TypeScript >= 5.0
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/IceHugh/btc-connect.git
+cd btc-connect
+
+# Install dependencies
+bun install
+
+# Build all packages
+bun run build
+
+# Run tests
+bun test
+
+# Start development mode
+bun dev
+```
+
+### Testing
+
+```bash
+# Run all tests
+bun test
+
+# Run tests for specific package
+bun test packages/core
+bun test packages/react
+bun test packages/vue
+
+# Run tests with coverage
+bun test --coverage
+```
+
+## 🤝 Contributing
+
+We welcome all kinds of contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) | [中文贡献指南](./CONTRIBUTING.zh-CN.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests: `bun test`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [UniSat](https://unisat.io/) - Bitcoin wallet provider
+- [OKX](https://www.okx.com/web3) - Web3 wallet provider
+- [React](https://reactjs.org/) - UI framework
+- [Vue](https://vuejs.org/) - Progressive framework
+
+## 📞 Support
+
+- 📧 Email: support@btc-connect.dev
+- 💬 [Discord](https://discord.gg/btc-connect)
+- 🐛 [Issues](https://github.com/IceHugh/btc-connect/issues)
+- 📖 [Documentation](https://docs.btc-connect.dev)
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by the BTC Connect team</p>
+  <p>
+    <a href="#top">Back to top</a>
+  </p>
+</div>

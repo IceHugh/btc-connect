@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  BTCThemeProvider,
+  AccountInfo,
+  AccountInfoGroup,
+    BTCThemeProvider,
   BTCWalletProvider,
   ConnectButton,
-  BTCConnectButton,
   MinimalConnectButton,
-  WalletModal,
-  AccountInfo,
-  NetworkSwitch,
-  WalletSelect,
   NetworkStatus,
+  NetworkSwitch,
   QuickActions,
   ThemeToggle,
   WalletGrid,
-  AccountInfoGroup,
+  WalletModal,
+  WalletSelect,
 } from '../src';
 
 // 基础使用示例
@@ -40,11 +39,9 @@ function BasicExample() {
               </h2>
               <div className="flex flex-wrap gap-4">
                 <ConnectButton />
-                <BTCConnectButton />
+                <ConnectButton />
                 <MinimalConnectButton />
-                <ConnectButton variant="secondary">
-                  自定义按钮
-                </ConnectButton>
+                <ConnectButton variant="secondary">自定义按钮</ConnectButton>
               </div>
             </section>
 
@@ -134,7 +131,7 @@ function BasicExample() {
 // 高级使用示例
 function AdvancedExample() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [_selectedNetwork, setSelectedNetwork] = useState(null);
 
   return (
     <BTCThemeProvider defaultTheme="dark">
@@ -159,7 +156,7 @@ function AdvancedExample() {
                     钱包连接
                   </h3>
                   <div className="space-y-4">
-                    <BTCConnectButton size="lg" />
+                    <ConnectButton size="lg" />
                     <NetworkSwitch
                       variant="button"
                       size="lg"
@@ -254,12 +251,25 @@ function ResponsiveExample() {
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                     欢迎使用 BTC Connect
                   </h2>
-                  
+
                   {!account ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 bg-btc-100 dark:bg-btc-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-btc-600 dark:text-btc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        <svg
+                          className="w-8 h-8 text-btc-600 dark:text-btc-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-label="添加"
+                          role="img"
+                        >
+                          <title>添加</title>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
                         </svg>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -268,7 +278,7 @@ function ResponsiveExample() {
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
                         连接您的比特币钱包来访问所有功能
                       </p>
-                      <BTCConnectButton size="lg" />
+                      <ConnectButton size="lg" />
                     </div>
                   ) : (
                     <div className="space-y-6">
@@ -288,7 +298,7 @@ function ResponsiveExample() {
                           <NetworkStatus variant="badge" size="lg" />
                         </div>
                       </div>
-                      
+
                       <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                           可用钱包
@@ -308,11 +318,7 @@ function ResponsiveExample() {
 }
 
 // 导出示例组件
-export {
-  BasicExample,
-  AdvancedExample,
-  ResponsiveExample,
-};
+export { BasicExample, AdvancedExample, ResponsiveExample };
 
 // 导出示例作为默认导出
 export default function ExampleApp() {

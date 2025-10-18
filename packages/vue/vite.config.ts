@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import dts from 'vite-plugin-dts'
-import { resolve } from 'node:path'
+import { resolve } from 'node:path';
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -28,8 +28,7 @@ export default defineConfig({
     rollupOptions: {
       // 只将 vue 和 core 设为 external
       external: (id) => {
-        return id === 'vue' || 
-               id.startsWith('@btc-connect/core')
+        return id === 'vue' || id.startsWith('@btc-connect/core');
       },
     },
     target: 'es2019',
@@ -40,4 +39,4 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
-})
+});

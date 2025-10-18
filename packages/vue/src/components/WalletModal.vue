@@ -4,13 +4,24 @@
     ref="backdropRef"
     class="btc-modal-backdrop"
     @click="handleBackdropClick"
+    @keydown="handleEscKey"
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
   >
     <div
       :class="['btc-modal-container', `theme-${theme}`, className]"
       :style="buttonStyles"
       @click.stop
+      @keydown="(e) => {
+        if (e.key === 'Tab') {
+          // 允许Tab键在模态框内导航
+          return;
+        }
+        e.stopPropagation();
+      }"
     >
-      <!-- 模态框头部 -->
+      <!-- Modal header -->
       <div :class="['btc-modal-header', `theme-${theme}`]">
         <h2 class="btc-modal-title">{{ title }}</h2>
         <button
@@ -22,7 +33,7 @@
         </button>
       </div>
 
-      <!-- 模态框内容 -->
+      <!-- Modal content -->
       <div class="btc-modal-content">
         <ul class="btc-wallet-list">
           <li
@@ -34,7 +45,7 @@
               class="btc-wallet-button"
               @click="handleWalletSelect(wallet)"
             >
-              <!-- 钱包图标 -->
+              <!-- Wallet icon -->
               <div :class="['btc-wallet-icon', `theme-${theme}`]">
                 <img
                   v-if="wallet.icon.startsWith('http')"
@@ -44,7 +55,7 @@
                 <span v-else>{{ wallet.name.charAt(0).toUpperCase() }}</span>
               </div>
 
-              <!-- 钱包信息 -->
+              <!-- Wallet info -->
               <div class="btc-wallet-info">
                 <h3 class="btc-wallet-name">
                   {{ wallet.name }}
@@ -55,7 +66,7 @@
                 </p>
               </div>
 
-              <!-- 安装状态 -->
+              <!-- Installation status -->
               <div :class="['btc-wallet-status', wallet.installed ? 'installed' : 'not-installed']">
                 {{ wallet.installed ? 'Installed' : 'Not Installed' }}
               </div>
@@ -64,7 +75,7 @@
         </ul>
       </div>
 
-      <!-- 模态框底部 -->
+      <!-- Modal footer -->
       <div :class="['btc-modal-footer', `theme-${theme}`]">
         <p :class="['btc-disclaimer', `theme-${theme}`]">
           By connecting a wallet, you agree to the Terms of Service and Privacy Policy
@@ -76,19 +87,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useConnectWallet, useWalletModal } from '../composables';
+import { useConnectWallet, useWalletModal, useWallet } from '../composables';
 import { getAllAdapters } from '@btc-connect/core';
 
 // Props
 interface Props {
-  theme?: 'light' | 'dark';
   title?: string;
   class?: string;
   style?: Record<string, any>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  theme: 'light',
   title: 'Select Wallet',
   class: '',
   style: () => ({}),
@@ -97,14 +106,17 @@ const props = withDefaults(defineProps<Props>(), {
 // Composables
 const { availableWallets, connect } = useConnectWallet();
 const { isModalOpen, closeModal } = useWalletModal();
+const { theme } = useWallet();
 
 // State
 const backdropRef = ref<HTMLElement>();
 
 // Computed
 const walletInfos = computed(() => {
-  const installedSet = new Set(availableWallets.map((w: any) => w.id));
-  return getAllAdapters().map((adapter) => ({
+  const installedSet = new Set(availableWallets.value.map((w: any) => w.id));
+  const allAdapters = getAllAdapters();
+
+  return allAdapters.map((adapter) => ({
     id: adapter.id,
     name: adapter.name,
     icon: adapter.icon,
@@ -143,7 +155,7 @@ const handleWalletSelect = async (wallet: any) => {
       console.error('Failed to connect wallet:', error);
     }
   } else {
-    // 打开钱包下载页面
+    // Open wallet download page
     if (wallet.id === 'unisat') {
       window.open('https://unisat.io/download', '_blank');
     } else if (wallet.id === 'okx') {
@@ -162,7 +174,7 @@ const handleEscKey = (event: KeyboardEvent) => {
 
 // Lifecycle
 onMounted(() => {
-  // 注入样式
+  // Inject styles
   if (typeof document !== 'undefined') {
     const styleId = 'btc-wallet-modal-styles';
     if (!document.getElementById(styleId)) {
@@ -423,22 +435,22 @@ onMounted(() => {
     }
   }
 
-  // 添加ESC键监听
+  // Add ESC key listener
   document.addEventListener('keydown', handleEscKey);
 
-  // 阻止背景滚动
+  // Prevent background scroll
   document.body.style.overflow = 'hidden';
 });
 
 onUnmounted(() => {
-  // 移除ESC键监听
+  // Remove ESC key listener
   document.removeEventListener('keydown', handleEscKey);
 
-  // 恢复背景滚动
+  // Restore background scroll
   document.body.style.overflow = '';
 });
 
-// 监听模态框状态变化
+// Watch modal state changes
 watch(isModalOpen, (newValue) => {
   if (!newValue) {
     document.body.style.overflow = '';
@@ -449,5 +461,5 @@ watch(isModalOpen, (newValue) => {
 </script>
 
 <style scoped>
-/* 组件样式通过 JavaScript 注入 */
+/* Component styles injected via JavaScript */
 </style>

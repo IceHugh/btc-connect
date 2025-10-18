@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  BTCConnectButton,
+  ConnectButton,
   WalletModal,
   useWallet,
   useWalletModal,
@@ -56,7 +56,7 @@ export function WalletConnectDemo() {
           backgroundColor: '#fff'
         }}>
           <div style={{ marginBottom: 16 }}>
-            <BTCConnectButton label="Connect Wallet" />
+            <ConnectButton label="Connect Wallet" />
           </div>
         </div>
       </section>
@@ -72,7 +72,7 @@ export function WalletConnectDemo() {
           color: '#fff'
         }}>
           <div style={{ marginBottom: 16 }}>
-            <BTCConnectButton label="Connect Wallet" />
+            <ConnectButton label="Connect Wallet" />
           </div>
         </div>
       </section>
@@ -127,13 +127,14 @@ export function WalletConnectDemo() {
           padding: 16,
           backgroundColor: '#f8f9fa',
           fontFamily: 'monospace',
-          fontSize: 14
+          fontSize: 14,
+          color: '#333'
         }}>
           {logs.length === 0 ? (
-            <div style={{ color: '#999' }}>No events yet. Connect a wallet to see events.</div>
+            <div style={{ color: '#666', fontStyle: 'italic' }}>No events yet. Connect a wallet to see events.</div>
           ) : (
             logs.map((log, index) => (
-              <div key={index} style={{ marginBottom: 4 }}>
+              <div key={index} style={{ marginBottom: 4, color: '#333' }}>
                 {log}
               </div>
             ))

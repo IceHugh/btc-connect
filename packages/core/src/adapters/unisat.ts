@@ -1,5 +1,7 @@
 import type {
   AccountInfo,
+  ErrorContext,
+  Network,
   UniSatBalance,
   UniSatChainInfo,
   UniSatInscriptionsResponse,
@@ -8,8 +10,8 @@ import type {
   UniSatSendRunesOptions,
   UniSatSignPsbtOptions,
   UniSatWalletAdapter,
-  Network,
 } from '../types';
+import { WalletErrorHandler } from '../utils/error-handler';
 import { BaseWalletAdapter } from './base';
 
 declare global {
@@ -150,102 +152,144 @@ declare global {
  */
 export class UniSatAdapter
   extends BaseWalletAdapter
-  implements UniSatWalletAdapter {
+  implements UniSatWalletAdapter
+{
   readonly id = 'unisat';
   readonly name = 'UniSat Wallet';
-  readonly icon =
-    'https://next-cdn.unisat.io/_/2025-v1242/logo/color.svg';
+  readonly icon = 'https://next-cdn.unisat.io/_/2025-v1242/logo/color.svg';
 
-  isReady(): boolean {
-    return typeof window !== 'undefined' && !!window.unisat;
+  protected getWalletInstance() {
+    if (typeof window === 'undefined') return undefined;
+
+    // 多种方式检测 UniSat 钱包
+    const wallet = window.unisat;
+
+    if (!wallet) return undefined;
+
+    // 确保钱包有必要的接口
+    if (typeof wallet.requestAccounts === 'function' ||
+        typeof wallet.connect === 'function') {
+      return wallet;
+    }
+
+    return undefined;
   }
 
   protected async handleConnect(): Promise<AccountInfo[]> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const addresses = await wallet.requestAccounts();
 
-    const addresses = await window.unisat.requestAccounts();
+        const accounts = this.createAccountInfos(addresses);
 
-    const accounts: AccountInfo[] = addresses.map((address) => ({
-      address,
-      publicKey: undefined, // UniSat doesn't provide public key directly
-      balance: undefined,
-      network: this.normalizeNetwork('livenet'),
-    }));
+        // 设置事件监听
+        this.setupEventListeners();
 
-    // 设置事件监听
-    this.setupEventListeners();
-
-    return accounts;
+        return accounts;
+      },
+      'Failed to connect UniSat wallet',
+      {
+        operation: 'connect',
+        walletId: this.id,
+        suggestion: 'Please ensure UniSat wallet is installed and unlocked',
+      },
+    );
   }
 
   protected async handleDisconnect(): Promise<void> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    await window.unisat.disconnect();
-    this.removeEventListeners();
+    return this.executeWalletOperation(
+      async (wallet) => {
+        await wallet.disconnect();
+        this.removeEventListeners();
+      },
+      'Failed to disconnect UniSat wallet',
+      {
+        operation: 'disconnect',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleGetAccounts(): Promise<AccountInfo[]> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    const addresses = await window.unisat.getAccounts();
-    return addresses.map((address) => ({
-      address,
-      publicKey: undefined,
-      balance: undefined,
-      network: this.normalizeNetwork('livenet'),
-    }));
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const addresses = await wallet.getAccounts();
+        return addresses.map((address: string) =>
+          this.createAccountInfo(address),
+        );
+      },
+      'Failed to get accounts from UniSat wallet',
+      {
+        operation: 'getAccounts',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleGetNetwork(): Promise<Network> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    const network = await window.unisat.getNetwork();
-    return this.normalizeNetwork(network);
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const network = await wallet.getNetwork();
+        return this.normalizeNetwork(network);
+      },
+      'Failed to get network from UniSat wallet',
+      {
+        operation: 'getNetwork',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSwitchNetwork(network: Network): Promise<void> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    const unisatNetwork = this.convertToUnisatNetwork(network);
-    await window.unisat.switchNetwork(unisatNetwork);
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const unisatNetwork = this.convertToUnisatNetwork(network);
+        await wallet.switchNetwork(unisatNetwork);
+      },
+      'Failed to switch network in UniSat wallet',
+      {
+        operation: 'switchNetwork',
+        walletId: this.id,
+        network,
+      },
+    );
   }
 
   protected async handleSignMessage(message: string): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    return await window.unisat.signMessage(message);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signMessage(message),
+      'Failed to sign message with UniSat wallet',
+      {
+        operation: 'signMessage',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSignPsbt(psbt: string): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    return await window.unisat.signPsbt(psbt);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signPsbt(psbt),
+      'Failed to sign PSBT with UniSat wallet',
+      {
+        operation: 'signPsbt',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSendBitcoin(
     toAddress: string,
     amount: number,
   ): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-
-    return await window.unisat.sendBitcoin(toAddress, amount);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.sendBitcoin(toAddress, amount),
+      'Failed to send bitcoin with UniSat wallet',
+      {
+        operation: 'sendBitcoin',
+        walletId: this.id,
+        address: toAddress,
+      },
+    );
   }
 
   private setupEventListeners(): void {
@@ -284,19 +328,6 @@ export class UniSatAdapter
   /**
    * 将UniSat网络字符串转换为Network枚举
    */
-  private normalizeNetwork(network: string): Network {
-    switch (network) {
-      case 'livenet':
-        return 'mainnet';
-      case 'testnet':
-        return 'testnet';
-      case 'regtest':
-        return 'regtest';
-      default:
-        return 'mainnet'; // 默认主网
-    }
-  }
-
   /**
    * 将Network枚举转换为UniSat网络字符串
    */
@@ -319,20 +350,28 @@ export class UniSatAdapter
    * 获取公钥
    */
   async getPublicKey(): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.getPublicKey();
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getPublicKey(),
+      'Failed to get public key from UniSat wallet',
+      {
+        operation: 'getPublicKey',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 获取余额
    */
   async getBalance(): Promise<UniSatBalance> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.getBalance();
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getBalance(),
+      'Failed to get balance from UniSat wallet',
+      {
+        operation: 'getBalance',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -342,30 +381,42 @@ export class UniSatAdapter
     cursor: number = 0,
     size: number = 10,
   ): Promise<UniSatInscriptionsResponse> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.getInscriptions(cursor, size);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getInscriptions(cursor, size),
+      'Failed to get inscriptions from UniSat wallet',
+      {
+        operation: 'getInscriptions',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 获取链信息
    */
   async getChain(): Promise<UniSatChainInfo> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.getChain();
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getChain(),
+      'Failed to get chain info from UniSat wallet',
+      {
+        operation: 'getChain',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 切换链
    */
   async switchChain(chain: string): Promise<UniSatChainInfo> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.switchChain(chain);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.switchChain(chain),
+      'Failed to switch chain in UniSat wallet',
+      {
+        operation: 'switchChain',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -377,10 +428,16 @@ export class UniSatAdapter
     amount: string,
     options?: UniSatSendRunesOptions,
   ): Promise<{ txid: string }> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.sendRunes(address, runeid, amount, options);
+    return this.executeWalletOperation(
+      async (wallet) =>
+        await wallet.sendRunes(address, runeid, amount, options),
+      'Failed to send runes with UniSat wallet',
+      {
+        operation: 'sendRunes',
+        walletId: this.id,
+        address,
+      },
+    );
   }
 
   /**
@@ -391,25 +448,36 @@ export class UniSatAdapter
     inscriptionId: string,
     options?: UniSatSendInscriptionOptions,
   ): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    const result = await window.unisat.sendInscription(
-      address,
-      inscriptionId,
-      options,
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const result = await wallet.sendInscription(
+          address,
+          inscriptionId,
+          options,
+        );
+        return result.txid;
+      },
+      'Failed to send inscription with UniSat wallet',
+      {
+        operation: 'sendInscription',
+        walletId: this.id,
+        address,
+      },
     );
-    return result.txid;
   }
 
   /**
    * 铭刻 BRC-20 Transfer
    */
   async inscribeTransfer(ticker: string, amount: string): Promise<void> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.inscribeTransfer(ticker, amount);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.inscribeTransfer(ticker, amount),
+      'Failed to inscribe transfer with UniSat wallet',
+      {
+        operation: 'inscribeTransfer',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -419,10 +487,14 @@ export class UniSatAdapter
     psbtHex: string,
     options?: UniSatSignPsbtOptions,
   ): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.signPsbt(psbtHex, options);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signPsbt(psbtHex, options),
+      'Failed to sign advanced PSBT with UniSat wallet',
+      {
+        operation: 'signPsbtAdvanced',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -432,30 +504,42 @@ export class UniSatAdapter
     psbtHexs: string[],
     options?: UniSatSignPsbtOptions,
   ): Promise<string[]> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.signPsbts(psbtHexs, options);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signPsbts(psbtHexs, options),
+      'Failed to sign multiple PSBTs with UniSat wallet',
+      {
+        operation: 'signPsbts',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 推送 PSBT
    */
   async pushPsbt(psbtHex: string): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.pushPsbt(psbtHex);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.pushPsbt(psbtHex),
+      'Failed to push PSBT with UniSat wallet',
+      {
+        operation: 'pushPsbt',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 推送原始交易
    */
   async pushTx(rawtx: string): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.pushTx({ rawtx });
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.pushTx({ rawtx }),
+      'Failed to push transaction with UniSat wallet',
+      {
+        operation: 'pushTx',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -465,10 +549,14 @@ export class UniSatAdapter
     message: string,
     type?: 'ecdsa' | 'bip322-simple',
   ): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.signMessage(message, type);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signMessage(message, type),
+      'Failed to sign advanced message with UniSat wallet',
+      {
+        operation: 'signMessageAdvanced',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -479,9 +567,14 @@ export class UniSatAdapter
     satoshis: number,
     options?: UniSatSendBitcoinOptions,
   ): Promise<string> {
-    if (!window.unisat) {
-      throw new Error('UniSat wallet not found');
-    }
-    return await window.unisat.sendBitcoin(toAddress, satoshis, options);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.sendBitcoin(toAddress, satoshis, options),
+      'Failed to send advanced bitcoin transaction with UniSat wallet',
+      {
+        operation: 'sendBitcoinAdvanced',
+        walletId: this.id,
+        address: toAddress,
+      },
+    );
   }
 }

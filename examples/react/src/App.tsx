@@ -1,5 +1,5 @@
 import './App.css';
-import { BTCConnectButton, WalletModal, useWallet, useWalletModal } from '@btc-connect/react';
+import { ConnectButton, WalletModal, useWallet, useWalletModal } from '@btc-connect/react';
 
 function AccountPreview() {
   const { address, balance, isConnected } = useWallet();
@@ -36,7 +36,7 @@ function App() {
 
       <div style={{ marginBottom: 24 }}>
         <h3>Light Theme</h3>
-        <BTCConnectButton theme="light" label="Connect Wallet" />
+        <ConnectButton theme="light" label="Connect Wallet" />
         <AccountPreview />
         <WalletModal theme="light" />
       </div>
@@ -44,7 +44,7 @@ function App() {
       <div style={{ marginBottom: 24 }}>
         <h3>Dark Theme</h3>
         <div style={{ backgroundColor: '#333', padding: 16, borderRadius: 8 }}>
-          <BTCConnectButton theme="dark" label="Connect Wallet" />
+          <ConnectButton theme="dark" label="Connect Wallet" />
           <WalletModal theme="dark" />
         </div>
       </div>

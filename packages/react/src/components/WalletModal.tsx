@@ -1,7 +1,7 @@
+import { getAllAdapters } from '@btc-connect/core';
 import * as React from 'react';
 import { useCallback, useEffect, useRef } from 'react';
-import { useConnectWallet, useWalletModal, useWallet } from '../context';
-import { getAllAdapters } from '@btc-connect/core';
+import { useConnectWallet, useWallet, useWalletModal } from '../context';
 
 // CSS样式
 const styles = `
@@ -282,29 +282,34 @@ export const WalletModal: React.FC<WalletModalProps> = ({
   const backdropRef = useRef<HTMLDivElement>(null);
 
   // 获取钱包描述
-  const getWalletDescription = (walletId: string): string => {
+  const getWalletDescription = useCallback((walletId: string): string => {
     const descriptions: Record<string, string> = {
       unisat: 'Bitcoin wallet for Chrome',
       okx: 'Multi-chain wallet',
-      xverse: 'Bitcoin wallet for mobile'
+      xverse: 'Bitcoin wallet for mobile',
     };
     return descriptions[walletId] || 'Bitcoin wallet';
-  };
+  }, []);
 
   // 生成钱包信息列表
   const walletInfos = React.useMemo(() => {
-    const installedSet = new Set(availableWallets.map((w) => w.id));
+    const installedSet = new Set(
+      availableWallets.map((w: { id: string }) => w.id),
+    );
     const allAdapters = getAllAdapters();
 
-    return allAdapters.map((adapter) => ({
-      id: adapter.id,
-      name: adapter.name,
-      icon: adapter.icon,
-      description: getWalletDescription(adapter.id),
-      installed: installedSet.has(adapter.id),
-      recommended: ['unisat', 'okx'].includes(adapter.id),
-    } as WalletInfo));
-  }, [availableWallets]);
+    return allAdapters.map(
+      (adapter) =>
+        ({
+          id: adapter.id,
+          name: adapter.name,
+          icon: adapter.icon,
+          description: getWalletDescription(adapter.id),
+          installed: installedSet.has(adapter.id),
+          recommended: ['unisat', 'okx'].includes(adapter.id),
+        }) as WalletInfo,
+    );
+  }, [availableWallets, getWalletDescription]);
 
   // 注入样式
   useEffect(() => {
@@ -320,32 +325,38 @@ export const WalletModal: React.FC<WalletModalProps> = ({
   }, []);
 
   // 处理背景点击
-  const handleBackdropClick = useCallback((event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) {
-      closeModal();
-    }
-  }, [closeModal]);
+  const handleBackdropClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (event.target === event.currentTarget) {
+        closeModal();
+      }
+    },
+    [closeModal],
+  );
 
   // 处理钱包选择
-  const handleWalletSelect = useCallback(async (wallet: WalletInfo) => {
-    if (wallet.installed) {
-      try {
-        await connect(wallet.id);
-        closeModal();
-      } catch (error) {
-        console.error('Failed to connect wallet:', error);
+  const handleWalletSelect = useCallback(
+    async (wallet: WalletInfo) => {
+      if (wallet.installed) {
+        try {
+          await connect(wallet.id);
+          closeModal();
+        } catch (error) {
+          console.error('Failed to connect wallet:', error);
+        }
+      } else {
+        // 打开钱包下载页面
+        if (wallet.id === 'unisat') {
+          window.open('https://unisat.io/download', '_blank');
+        } else if (wallet.id === 'okx') {
+          window.open('https://www.okx.com/web3', '_blank');
+        } else if (wallet.id === 'xverse') {
+          window.open('https://www.xverse.app/download', '_blank');
+        }
       }
-    } else {
-      // 打开钱包下载页面
-      if (wallet.id === 'unisat') {
-        window.open('https://unisat.io/download', '_blank');
-      } else if (wallet.id === 'okx') {
-        window.open('https://www.okx.com/web3', '_blank');
-      } else if (wallet.id === 'xverse') {
-        window.open('https://www.xverse.app/download', '_blank');
-      }
-    }
-  }, [connect, closeModal]);
+    },
+    [connect, closeModal],
+  );
 
   // 处理ESC键关闭
   useEffect(() => {
@@ -383,11 +394,26 @@ export const WalletModal: React.FC<WalletModalProps> = ({
       ref={backdropRef}
       className="btc-modal-backdrop"
       onClick={handleBackdropClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          handleBackdropClick(e as any);
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      tabIndex={-1}
     >
       <div
         className={`btc-modal-container theme-${theme} ${className}`}
         style={style}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === 'Tab') {
+            // 允许Tab键在模态框内导航
+            return;
+          }
+          e.stopPropagation();
+        }}
       >
         {/* 模态框头部 */}
         <div className={`btc-modal-header theme-${theme}`}>
@@ -431,7 +457,9 @@ export const WalletModal: React.FC<WalletModalProps> = ({
                   </div>
 
                   {/* 安装状态 */}
-                  <div className={`btc-wallet-status ${wallet.installed ? 'installed' : 'not-installed'}`}>
+                  <div
+                    className={`btc-wallet-status ${wallet.installed ? 'installed' : 'not-installed'}`}
+                  >
                     {wallet.installed ? 'Installed' : 'Not Installed'}
                   </div>
                 </button>
@@ -443,7 +471,8 @@ export const WalletModal: React.FC<WalletModalProps> = ({
         {/* 模态框底部 */}
         <div className={`btc-modal-footer theme-${theme}`}>
           <p className={`btc-disclaimer theme-${theme}`}>
-            By connecting a wallet, you agree to the Terms of Service and Privacy Policy
+            By connecting a wallet, you agree to the Terms of Service and
+            Privacy Policy
           </p>
         </div>
       </div>

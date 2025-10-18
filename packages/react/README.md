@@ -1,69 +1,671 @@
-# React + TypeScript + Vite
+# @btc-connect/react
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[中文文档](./README.zh-CN.md) | English
 
-Currently, two official plugins are available:
+<p align="center">
+  <strong>React adapter for BTC Connect with Hooks and Context</strong>
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<p align="center">
+  <a href="https://www.npmjs.com/package/@btc-connect/react">
+    <img src="https://img.shields.io/npm/v/@btc-connect/react.svg" alt="NPM Version">
+  </a>
+  <a href="https://github.com/IceHugh/btc-connect/actions">
+    <img src="https://github.com/IceHugh/btc-connect/workflows/CI/badge.svg" alt="CI">
+  </a>
+  <a href="https://codecov.io/gh/IceHugh/btc-connect">
+    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="Coverage">
+  </a>
+  <a href="https://bundlephobia.com/result?p=@btc-connect/react">
+    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/react.svg" alt="Bundle Size">
+  </a>
+</p>
 
-## Expanding the ESLint configuration
+## Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+`@btc-connect/react` provides React-specific bindings for BTC Connect, offering a declarative way to integrate Bitcoin wallet functionality into React applications. It includes custom hooks, context providers, and pre-built components for seamless wallet integration.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- 🎣 **React Hooks**: Declarative wallet state management with custom hooks
+- 📦 **Context Provider**: Centralized wallet state management
+- 🎨 **Pre-built Components**: Ready-to-use wallet connection UI components
+- ⚛️ **React 18+ Support**: Built for modern React with concurrent features
+- 🔄 **Auto Reconnection**: Automatic wallet reconnection on app reload
+- 🛡️ **Type Safe**: Full TypeScript support with proper type definitions
+- 📱 **SSR Compatible**: Server-side rendering support with Next.js
+- 🎯 **Framework Optimized**: Designed specifically for React patterns
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Installation
+
+```bash
+npm install @btc-connect/react
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Peer Dependencies**: Ensure you have React 18+ installed:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install react react-dom
 ```
+
+## Quick Start
+
+```tsx
+import React from 'react';
+import { BTCWalletProvider, BTCConnectButton, WalletModal } from '@btc-connect/react';
+
+function App() {
+  return (
+    <BTCWalletProvider autoConnect={true}>
+      <div>
+        <h1>My Bitcoin App</h1>
+        <BTCConnectButton />
+        <WalletModal />
+      </div>
+    </BTCWalletProvider>
+  );
+}
+
+export default App;
+```
+
+## Core Components
+
+### BTCWalletProvider
+
+The root provider that manages wallet state and provides it to the entire application tree.
+
+```tsx
+interface WalletProviderProps {
+  children: ReactNode;
+  config?: WalletManagerConfig;
+  autoConnect?: boolean;
+  connectTimeout?: number;
+  connectionPolicy?: ConnectionPolicy;
+}
+
+function App() {
+  return (
+    <BTCWalletProvider
+      autoConnect={true}
+      connectTimeout={5000}
+      config={{
+        onStateChange: (state) => console.log('State:', state),
+        onError: (error) => console.error('Error:', error)
+      }}
+    >
+      <YourApp />
+    </BTCWalletProvider>
+  );
+}
+```
+
+### BTCConnectButton
+
+A pre-built button component for wallet connection with customizable styling.
+
+```tsx
+interface BTCConnectButtonProps {
+  theme?: 'light' | 'dark';
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'select' | 'button' | 'compact';
+  label?: string;
+  disabled?: boolean;
+  className?: string;
+  onConnect?: (walletId: string) => void;
+  onDisconnect?: () => void;
+}
+
+function Header() {
+  return (
+    <header>
+      <BTCConnectButton
+        theme="light"
+        size="md"
+        variant="select"
+        label="Connect Wallet"
+      />
+    </header>
+  );
+}
+```
+
+### WalletModal
+
+A modal component for wallet selection and connection management.
+
+```tsx
+interface WalletModalProps {
+  theme?: 'light' | 'dark';
+  isOpen?: boolean;
+  onClose?: () => void;
+  showTestnet?: boolean;
+}
+
+function WalletLayout() {
+  const { isModalOpen, openModal, closeModal } = useWalletModal();
+
+  return (
+    <div>
+      <BTCConnectButton onClick={openModal} />
+      <WalletModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        theme="light"
+      />
+    </div>
+  );
+}
+```
+
+## Hooks API
+
+### useWallet
+
+Get the current wallet state and account information.
+
+```tsx
+function AccountInfo() {
+  const {
+    status,
+    accounts,
+    currentAccount,
+    network,
+    error,
+    isConnected,
+    isConnecting,
+    address,
+    balance,
+    publicKey,
+    currentWallet
+  } = useWallet();
+
+  if (isConnecting) return <div>Connecting...</div>;
+  if (!isConnected) return <div>Not connected</div>;
+
+  return (
+    <div>
+      <h3>Account Information</h3>
+      <p><strong>Status:</strong> {status}</p>
+      <p><strong>Address:</strong> {address}</p>
+      <p><strong>Network:</strong> {network}</p>
+      <p><strong>Balance:</strong> {balance} sats</p>
+      <p><strong>Wallet:</strong> {currentWallet?.name}</p>
+    </div>
+  );
+}
+```
+
+### useConnectWallet
+
+Handle wallet connection operations.
+
+```tsx
+function WalletControls() {
+  const {
+    connect,
+    disconnect,
+    switchWallet,
+    availableWallets
+  } = useConnectWallet();
+
+  const handleConnect = async (walletId: string) => {
+    try {
+      await connect(walletId);
+      console.log('Connected successfully!');
+    } catch (error) {
+      console.error('Connection failed:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h3>Available Wallets</h3>
+      {availableWallets.map(wallet => (
+        <button
+          key={wallet.id}
+          onClick={() => handleConnect(wallet.id)}
+        >
+          {wallet.name}
+        </button>
+      ))}
+      <button onClick={() => disconnect()}>
+        Disconnect
+      </button>
+    </div>
+  );
+}
+```
+
+### useWalletEvent
+
+Listen to wallet events with automatic cleanup.
+
+```tsx
+function EventListener() {
+  useWalletEvent('connect', (accounts) => {
+    console.log('Wallet connected:', accounts);
+    // Show success notification
+  });
+
+  useWalletEvent('disconnect', () => {
+    console.log('Wallet disconnected');
+    // Clear user data
+  });
+
+  useWalletEvent('accountChange', (accounts) => {
+    console.log('Account changed:', accounts);
+    // Update UI
+  });
+
+  useWalletEvent('networkChange', (network) => {
+    console.log('Network changed:', network);
+    // Show network warning if needed
+  });
+
+  return <div>Event listener active</div>;
+}
+```
+
+### useNetwork
+
+Manage network information and switching.
+
+```tsx
+function NetworkInfo() {
+  const { network, switchNetwork } = useNetwork();
+
+  const handleNetworkSwitch = async (targetNetwork: Network) => {
+    try {
+      await switchNetwork(targetNetwork);
+      console.log(`Switched to ${targetNetwork}`);
+    } catch (error) {
+      console.error('Network switch failed:', error);
+    }
+  };
+
+  return (
+    <div>
+      <p><strong>Current Network:</strong> {network}</p>
+      <button onClick={() => handleNetworkSwitch('mainnet')}>
+        Switch to Mainnet
+      </button>
+      <button onClick={() => handleNetworkSwitch('testnet')}>
+        Switch to Testnet
+      </button>
+    </div>
+  );
+}
+```
+
+### useAccount
+
+Get detailed account and balance information.
+
+```tsx
+function AccountDetails() {
+  const {
+    accounts,
+    currentAccount,
+    hasAccounts,
+    refreshAccountInfo
+  } = useAccount();
+
+  useEffect(() => {
+    // Refresh account info every 30 seconds
+    const interval = setInterval(refreshAccountInfo, 30000);
+    return () => clearInterval(interval);
+  }, [refreshAccountInfo]);
+
+  if (!hasAccounts) {
+    return <div>No accounts available</div>;
+  }
+
+  return (
+    <div>
+      <h3>Account Details</h3>
+      <p><strong>Total Accounts:</strong> {accounts.length}</p>
+      {currentAccount && (
+        <div>
+          <p><strong>Current Address:</strong> {currentAccount.address}</p>
+          <p><strong>Balance:</strong> {currentAccount.balance} sats</p>
+          <button onClick={refreshAccountInfo}>
+            Refresh Balance
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### useBalance
+
+Focused balance management with formatting.
+
+```tsx
+function BalanceDisplay() {
+  const {
+    balance,
+    confirmedBalance,
+    unconfirmedBalance,
+    totalBalance,
+    isLoading,
+    error,
+    refreshBalance
+  } = useBalance();
+
+  if (isLoading) return <div>Loading balance...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>Balance Information</h3>
+      <p><strong>Total:</strong> {totalBalance} sats</p>
+      <p><strong>Confirmed:</strong> {confirmedBalance} sats</p>
+      <p><strong>Unconfirmed:</strong> {unconfirmedBalance} sats</p>
+      <button onClick={refreshBalance}>
+        Refresh
+      </button>
+    </div>
+  );
+}
+```
+
+### useWalletModal
+
+Control the wallet selection modal.
+
+```tsx
+function ModalControls() {
+  const { isOpen, open, close, toggle } = useWalletModal();
+
+  return (
+    <div>
+      <button onClick={open}>Open Wallet Modal</button>
+      <button onClick={close}>Close Wallet Modal</button>
+      <button onClick={toggle}>Toggle Modal</button>
+      <p>Modal is {isOpen ? 'open' : 'closed'}</p>
+    </div>
+  );
+}
+```
+
+## Advanced Usage
+
+### Custom Connection Policy
+
+Define custom tasks to run after wallet connection.
+
+```tsx
+const connectionPolicy: ConnectionPolicy = {
+  tasks: [
+    {
+      run: async ({ manager, accounts }) => {
+        // Custom post-connection logic
+        console.log('Connected with accounts:', accounts);
+
+        // Load user data
+        await loadUserData(accounts[0].address);
+
+        return { success: true };
+      },
+      required: false,
+      autoBehavior: 'run'
+    },
+    {
+      run: async ({ manager }) => {
+        // Network validation
+        const network = await manager.getCurrentAdapter()?.getNetwork();
+        if (network === 'mainnet') {
+          // Show mainnet warning
+          showMainnetWarning();
+        }
+        return { success: true };
+      },
+      required: true,
+      autoBehavior: 'run'
+    }
+  ],
+  emitEventsOnAutoConnect: true
+};
+
+function App() {
+  return (
+    <BTCWalletProvider connectionPolicy={connectionPolicy}>
+      {/* Your app */}
+    </BTCWalletProvider>
+  );
+}
+```
+
+### Custom Theme Integration
+
+Integrate with your existing theme system.
+
+```tsx
+import { useTheme } from './theme-context';
+
+function ThemedWalletButton() {
+  const { theme } = useTheme();
+
+  return (
+    <BTCConnectButton
+      theme={theme.mode}
+      size="lg"
+      variant="select"
+      className={theme.colors.primary}
+    />
+  );
+}
+```
+
+### Error Boundaries
+
+Implement proper error handling for wallet operations.
+
+```tsx
+import { WalletError, WalletConnectionError } from '@btc-connect/core';
+
+class WalletErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Wallet Error:', error, errorInfo);
+
+    // Report to error tracking service
+    trackError(error, {
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div>
+          <h2>Something went wrong with the wallet connection.</h2>
+          <details>
+            {this.state.error && this.state.error.message}
+          </details>
+          <button onClick={() => this.setState({ hasError: false, error: null })}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+function App() {
+  return (
+    <WalletErrorBoundary>
+      <BTCWalletProvider>
+        <YourApp />
+      </BTCWalletProvider>
+    </WalletErrorBoundary>
+  );
+}
+```
+
+## Server-Side Rendering (SSR)
+
+The React adapter is fully compatible with SSR frameworks like Next.js.
+
+### Next.js App Router
+
+```tsx
+// app/layout.tsx
+import { BTCWalletProvider } from '@btc-connect/react';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <BTCWalletProvider>
+          {children}
+        </BTCWalletProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Client-Side Only Components
+
+```tsx
+// components/WalletConnectButton.tsx
+'use client';
+
+import { BTCConnectButton } from '@btc-connect/react';
+
+export default function WalletConnectButton() {
+  return <BTCConnectButton />;
+}
+```
+
+## Testing
+
+The library provides utilities for testing your wallet integration.
+
+```tsx
+// __tests__/wallet-component.test.tsx
+import { render, screen } from '@testing-library/react';
+import { BTCWalletProvider } from '@btc-connect/react';
+import { createMockManager } from '@btc-connect/core/test-utils';
+
+// Mock the wallet manager
+jest.mock('@btc-connect/core', () => ({
+  ...jest.requireActual('@btc-connect/core'),
+  createWalletManager: jest.fn(() => createMockManager())
+}));
+
+function TestComponent() {
+  const { isConnected, address } = useWallet();
+
+  return (
+    <div>
+      {isConnected ? (
+        <p>Connected: {address}</p>
+      ) : (
+        <p>Not connected</p>
+      )}
+    </div>
+  );
+}
+
+test('displays connection status', () => {
+  render(
+    <BTCWalletProvider>
+      <TestComponent />
+    </BTCWalletProvider>
+  );
+
+  expect(screen.getByText('Not connected')).toBeInTheDocument();
+});
+```
+
+## Performance Optimization
+
+### Memoization
+
+```tsx
+import { useMemo } from 'react';
+
+function OptimizedWalletDisplay() {
+  const { balance, address } = useWallet();
+
+  const formattedBalance = useMemo(() => {
+    if (!balance) return '0 sats';
+    return `${(balance / 100000000).toFixed(8)} BTC`;
+  }, [balance]);
+
+  const shortAddress = useMemo(() => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }, [address]);
+
+  return (
+    <div>
+      <p>{shortAddress}</p>
+      <p>{formattedBalance}</p>
+    </div>
+  );
+}
+```
+
+### Lazy Loading
+
+```tsx
+import { lazy, Suspense } from 'react';
+
+const WalletModal = lazy(() => import('@btc-connect/react').then(mod => ({
+  default: mod.WalletModal
+})));
+
+function App() {
+  return (
+    <BTCWalletProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <WalletModal />
+      </Suspense>
+    </BTCWalletProvider>
+  );
+}
+```
+
+## Best Practices
+
+1. **Provider Placement**: Place the provider as high as possible in your component tree
+2. **Error Handling**: Always wrap wallet operations in try-catch blocks
+3. **Loading States**: Show appropriate loading states during connection
+4. **Event Cleanup**: Use the provided hooks which handle cleanup automatically
+5. **SSR Considerations**: Use client-side only components for wallet-dependent UI
+6. **Performance**: Memoize expensive calculations and use lazy loading for modals
+
+## Contributing
+
+Please read our [Contributing Guide](../../CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../../LICENSE) file for details.
+
+## Support
+
+- 📧 Email: support@btc-connect.dev
+- 💬 [Discord](https://discord.gg/btc-connect)
+- 🐛 [Issues](https://github.com/IceHugh/btc-connect/issues)

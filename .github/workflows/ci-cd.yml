@@ -1,0 +1,160 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '18'
+  BUN_VERSION: '1.0.0'
+
+jobs:
+  # 代码质量检查和测试
+  test:
+    name: 代码质量检查和测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 获取依赖缓存
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 安装依赖
+        run: bun install --frozen-lockfile
+
+      - name: 类型检查
+        run: bun run typecheck
+
+      - name: 代码规范检查
+        run: bun run lint
+
+      - name: 运行测试
+        run: bun run test
+
+      - name: 构建项目
+        run: bun run build
+
+  # 发布到 NPM（仅 main 分支）
+  publish:
+    name: 发布到 NPM
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    strategy:
+      matrix:
+        package: [core, react, vue]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 获取依赖缓存
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 安装依赖
+        run: bun install --frozen-lockfile
+
+      - name: 构建项目
+        run: bun run build
+
+      - name: 获取包信息
+        id: package-info
+        run: |
+          cd packages/${{ matrix.package }}
+          PACKAGE_VERSION=$(cat package.json | jq -r .version)
+          PACKAGE_NAME=$(cat package.json | jq -r .name)
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: 检查 NPM 是否存在相同版本
+        id: check-npm
+        run: |
+          PACKAGE_NAME="${{ steps.package-info.outputs.name }}"
+          PACKAGE_VERSION="${{ steps.package-info.outputs.version }}"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
+          echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+
+      - name: 发布到 NPM
+        if: steps.check-npm.outputs.status != 200
+        run: |
+          cd packages/${{ matrix.package }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          bun publish --access public
+
+      - name: 创建 GitHub Release
+        if: steps.check-npm.outputs.status != 200
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
+          release_name: ${{ steps.package-info.outputs.name }} v${{ steps.package-info.outputs.version }}
+          draft: false
+          prerelease: false
+          body: |
+            🚀 发布 ${{ steps.package-info.outputs.name }} 版本 ${{ steps.package-info.outputs.version }}
+
+            ## 变更内容
+            - 自动构建和发布
+
+            ## 安装
+            ```bash
+            npm install ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
+            ```
+
+            ## 文档
+            - [README](https://github.com/${{ github.repository }}/tree/main/packages/${{ matrix.package }})
+            - [更新日志](https://github.com/${{ github.repository }}/releases)
+
+  
+  # 通知
+  notify:
+    name: 构建通知
+    runs-on: ubuntu-latest
+    needs: [test, publish]
+    if: always()
+
+    steps:
+      - name: 构建成功通知
+        if: needs.test.result == 'success' && needs.publish.result == 'success'
+        run: |
+          echo "✅ CI/CD 流水线执行成功！"
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "🚀 包已发布到 NPM"
+          else
+            echo "✅ 代码质量检查和测试通过"
+          fi
+
+      - name: 构建失败通知
+        if: needs.test.result == 'failure' || needs.publish.result == 'failure'
+        run: |
+          echo "❌ CI/CD 流水线执行失败！"
+          echo "请检查日志并修复问题"
+          exit 1

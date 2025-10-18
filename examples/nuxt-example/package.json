@@ -1,0 +1,32 @@
+{
+  "name": "@btc-connect/nuxt-example",
+  "version": "1.0.0",
+  "description": "Nuxt 3 example for @btc-connect/vue",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@btc-connect/vue": "workspace:*",
+    "@nuxtjs/tailwindcss": "^6.8.4",
+    "nuxt": "^3.8.0",
+    "vue": "^3.3.8",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxt/eslint-config": "^0.2.0",
+    "@types/node": "^20.9.0",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^8.53.0",
+    "typescript": "^5.2.2",
+    "vue-tsc": "^3.1.1"
+  }
+}

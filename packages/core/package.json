@@ -1,6 +1,6 @@
 {
   "name": "@btc-connect/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "The framework-agnostic core module for BTC Connect, providing a wallet adapter layer.",
   "type": "module",
   "main": "dist/index.js",
@@ -47,6 +47,10 @@
   ],
   "author": "btc-connect",
   "license": "MIT",
+  "homepage": "https://github.com/IceHugh/btc-connect#readme",
+  "bugs": {
+    "url": "https://github.com/IceHugh/btc-connect/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/IceHugh/btc-connect.git",

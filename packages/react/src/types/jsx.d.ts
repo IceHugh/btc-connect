@@ -5,17 +5,16 @@
  * 为React提供Web Components的JSX支持
  */
 
-import type { BTCConnectButtonProps } from '@btc-connect/ui';
-import type { WalletModalProps } from '@btc-connect/ui';
+import type { ConnectButtonProps } from '../components/ConnectButton';
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'btc-connect-button': BTCConnectButtonProps & {
+      'btc-connect-button': ConnectButtonProps & {
         ref?: React.Ref<any>;
         [key: string]: any;
       };
-      'btc-wallet-modal': WalletModalProps & {
+      'btc-wallet-modal': {
         ref?: React.Ref<any>;
         [key: string]: any;
       };

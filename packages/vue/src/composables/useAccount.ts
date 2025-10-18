@@ -1,24 +1,22 @@
-import { computed } from 'vue'
-import { useWalletContext } from '../walletContext'
+import { computed } from 'vue';
+import { useWalletContext } from '../walletContext';
 
+/**
+ * 使用账户信息的Composable
+ */
 export function useAccount() {
-  const ctx = useWalletContext()
-  const address = computed(() => ctx.state.currentAccount?.address || null)
-  const publicKey = computed(() => ctx.state.currentAccount?.publicKey)
-  const balance = computed(() => ctx.state.currentAccount?.balance || null)
-  const currentAccount = computed(() => ctx.state.currentAccount || null)
-  const isConnected = computed(() => ctx.state.status === 'connected')
-  const disconnect = computed(() => ctx.disconnect)
+  const ctx = useWalletContext();
 
   return {
-    address,
-    publicKey,
-    balance,
-    currentAccount,
-    isConnected,
-    disconnect
-  }
+    accounts: computed(() => ctx.state.value.accounts),
+    currentAccount: computed(() => ctx.state.value.currentAccount),
+    hasAccounts: computed(() => ctx.state.value.accounts.length > 0),
+    balance: computed(() => ctx.state.value.currentAccount?.balance || null),
+    error: computed(() => ctx.state.value.error || null),
+    // 添加address和publicKey的响应式访问
+    address: computed(() => ctx.state.value.currentAccount?.address || null),
+    publicKey: computed(() => ctx.state.value.currentAccount?.publicKey || null),
+    hasAddress: computed(() => !!ctx.state.value.currentAccount?.address),
+    hasPublicKey: computed(() => !!ctx.state.value.currentAccount?.publicKey),
+  };
 }
-
-
-

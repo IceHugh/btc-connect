@@ -1,23 +1,26 @@
+// 重新导出 core 类型
+export type {
+  AccountInfo,
+  BalanceDetail,
+  ConnectionStatus,
+  Network,
+  WalletEvent,
+  WalletInfo,
+  WalletManagerConfig,
+  WalletState,
+} from './core';
+
+export { BTCWalletManager } from './core';
+
 // 主题模式类型
 export type ThemeMode = 'light' | 'dark';
-
-// 网络类型
-export type Network = 'livenet' | 'testnet' | 'regtest' | 'mainnet';
-
-
-// 余额详情类型
-export interface BalanceDetail {
-  confirmed: number;
-  unconfirmed: number;
-  total: number;
-}
 
 // React 钱包上下文类型
 export interface WalletContext {
   isConnected: boolean;
   isConnecting: boolean;
   address: string | null;
-  balance: BalanceDetail | null;
+  balance: import('./core').BalanceDetail | null;
   currentWallet: any; // 来自 core 的 WalletInfo
   network: any; // 来自 core 的 Network
   error: Error | null;
@@ -40,7 +43,9 @@ export interface ConnectionPolicyTask {
   required?: boolean;
   interactive?: boolean;
   autoBehavior?: 'run' | 'skip';
-  run: (ctx: ConnectionPolicyTaskContext) => Promise<ConnectionPolicyTaskResult>;
+  run: (
+    ctx: ConnectionPolicyTaskContext,
+  ) => Promise<ConnectionPolicyTaskResult>;
 }
 
 // 连接策略类型

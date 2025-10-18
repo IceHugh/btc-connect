@@ -29,7 +29,8 @@ export function SSRWalletProvider({ children, theme = 'light' }: SSRWalletProvid
           borderRadius: 8,
           padding: 16,
           backgroundColor: '#f8f9fa',
-          textAlign: 'center'
+          textAlign: 'center',
+          color: '#333'
         }}>
           <p><strong>SSR Loading State</strong></p>
           <p>Wallet components will be available after client-side hydration.</p>

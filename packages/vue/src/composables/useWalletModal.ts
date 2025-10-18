@@ -1,13 +1,15 @@
-import { ref } from 'vue'
+import { useWalletContext } from '../walletContext';
 
-const isOpen = ref(false)
-
+/**
+ * 使用钱包模态框的Composable
+ */
 export function useWalletModal() {
-  const isModalOpen = isOpen
-  const openModal = () => { isOpen.value = true }
-  const closeModal = () => { isOpen.value = false }
-  return { isModalOpen, openModal, closeModal }
+  const ctx = useWalletContext();
+
+  return {
+    isModalOpen: ctx.isModalOpen,
+    openModal: ctx.openModal,
+    closeModal: ctx.closeModal,
+    toggleModal: ctx.toggleModal,
+  };
 }
-
-
-

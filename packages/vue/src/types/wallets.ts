@@ -4,10 +4,19 @@
 export type WalletType = 'unisat' | 'okx' | 'xverse';
 
 // 钱包状态
-export type WalletConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
+export type WalletConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'error';
 
 // 钱包事件类型
-export type WalletEventType = 'connect' | 'disconnect' | 'accountChange' | 'networkChange' | 'error';
+export type WalletEventType =
+  | 'connect'
+  | 'disconnect'
+  | 'accountChange'
+  | 'networkChange'
+  | 'error';
 
 // 钱包基本信息
 export interface WalletInfo {
@@ -41,7 +50,13 @@ export interface WalletFeature {
 }
 
 // 钱包分类
-export type WalletCategory = 'hot' | 'hardware' | 'mobile' | 'browser' | 'desktop' | 'web';
+export type WalletCategory =
+  | 'hot'
+  | 'hardware'
+  | 'mobile'
+  | 'browser'
+  | 'desktop'
+  | 'web';
 
 // 钱包配置
 export interface WalletConfig {
@@ -206,13 +221,18 @@ export interface WalletAdapter {
   getNetwork: () => Promise<string>;
   switchNetwork: (network: string) => Promise<void>;
   getBalance: (address?: string) => Promise<WalletBalance>;
-  signMessage: (message: string, options?: WalletSignOptions) => Promise<string>;
+  signMessage: (
+    message: string,
+    options?: WalletSignOptions,
+  ) => Promise<string>;
   sendTransaction: (options: WalletSendOptions) => Promise<string>;
   on: (event: WalletEventType, handler: WalletEventHandler) => void;
   off: (event: WalletEventType, handler: WalletEventHandler) => void;
   removeAllListeners: (event?: WalletEventType) => void;
   request: <T = any>(method: string, params?: any[]) => Promise<T>;
-  batchRequest: <T = any>(requests: Array<{ method: string; params?: any[] }>) => Promise<T[]>;
+  batchRequest: <T = any>(
+    requests: Array<{ method: string; params?: any[] }>,
+  ) => Promise<T[]>;
 }
 
 // 钱包管理器
@@ -220,14 +240,23 @@ export interface WalletManager {
   getWallet: (id: WalletType) => WalletAdapter | null;
   getAllWallets: () => WalletAdapter[];
   getAvailableWallets: () => WalletAdapter[];
-  connect: (walletId: WalletType, options?: WalletConnectOptions) => Promise<string[]>;
-  disconnect: (walletId?: WalletType, options?: WalletDisconnectOptions) => Promise<void>;
+  connect: (
+    walletId: WalletType,
+    options?: WalletConnectOptions,
+  ) => Promise<string[]>;
+  disconnect: (
+    walletId?: WalletType,
+    options?: WalletDisconnectOptions,
+  ) => Promise<void>;
   isConnected: (walletId?: WalletType) => boolean;
   getCurrentWallet: () => WalletAdapter | null;
   getCurrentAccount: () => string | null;
   getCurrentNetwork: () => string | null;
   getCurrentBalance: () => Promise<WalletBalance | null>;
-  signMessage: (message: string, options?: WalletSignOptions) => Promise<string>;
+  signMessage: (
+    message: string,
+    options?: WalletSignOptions,
+  ) => Promise<string>;
   sendTransaction: (options: WalletSendOptions) => Promise<string>;
   addWallet: (wallet: WalletAdapter) => void;
   removeWallet: (walletId: WalletType) => void;
@@ -266,7 +295,11 @@ export interface WalletDetector {
 export interface WalletValidator {
   validateAddress: (address: string, network: string) => boolean;
   validatePublicKey: (publicKey: string) => boolean;
-  validateSignature: (message: string, signature: string, publicKey: string) => boolean;
+  validateSignature: (
+    message: string,
+    signature: string,
+    publicKey: string,
+  ) => boolean;
   validateTransaction: (tx: string) => boolean;
   getNetworkFromAddress: (address: string) => string;
   getAddressType: (address: string) => 'segwit' | 'taproot' | 'legacy';
@@ -281,7 +314,11 @@ export interface WalletUtils {
   generateQrCode: (data: string, size?: number) => string;
   copyToClipboard: (text: string) => Promise<void>;
   share: (data: string, title?: string) => Promise<void>;
-  openInExplorer: (type: 'address' | 'tx' | 'block', value: string, network?: string) => void;
+  openInExplorer: (
+    type: 'address' | 'tx' | 'block',
+    value: string,
+    network?: string,
+  ) => void;
   estimateFee: (network: string, priority: 'low' | 'medium' | 'high') => number;
   estimateGas: (network: string, data: string) => number;
   getWalletIcon: (walletId: WalletType) => string;

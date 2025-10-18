@@ -1,4 +1,5 @@
-import type { AccountInfo, Network } from '../types';
+import type { AccountInfo, ErrorContext, Network } from '../types';
+import { WalletErrorHandler } from '../utils/error-handler';
 import { BaseWalletAdapter } from './base';
 
 declare global {
@@ -105,115 +106,140 @@ export class OKXAdapter extends BaseWalletAdapter {
   readonly icon =
     'https://web3.okx.com/cdn/assets/imgs/254/5678AFAB27871136.png';
 
-  isReady(): boolean {
-    return typeof window !== 'undefined' && !!window.okxwallet?.bitcoin;
+  protected getWalletInstance() {
+    if (typeof window === 'undefined') return undefined;
+
+    // 多种方式检测 OKX 钱包
+    const okxwallet = window.okxwallet;
+
+    if (!okxwallet || !okxwallet.bitcoin) return undefined;
+
+    const wallet = okxwallet.bitcoin;
+
+    // 确保钱包有必要的接口
+    if (typeof wallet.connect === 'function' ||
+        typeof wallet.requestAccounts === 'function') {
+      return wallet;
+    }
+
+    return undefined;
   }
 
   protected async handleConnect(): Promise<AccountInfo[]> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const account = await wallet.connect();
 
-    const account = await window.okxwallet.bitcoin.connect();
+        const accounts: AccountInfo[] = [
+          this.createAccountInfo(account.address, account.publicKey),
+        ];
 
-    const accounts: AccountInfo[] = [
-      {
-        address: account.address,
-        publicKey: account.publicKey,
-        balance: undefined,
-        network: this.normalizeNetwork('livenet'),
+        // 设置事件监听
+        this.setupEventListeners();
+
+        return accounts;
       },
-    ];
-
-    // 设置事件监听
-    this.setupEventListeners();
-
-    return accounts;
+      'Failed to connect OKX wallet',
+      {
+        operation: 'connect',
+        walletId: this.id,
+        suggestion: 'Please ensure OKX wallet is installed and unlocked',
+      },
+    );
   }
 
   protected async handleDisconnect(): Promise<void> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    await window.okxwallet.bitcoin.disconnect();
-    // OKX 没有提供移除事件监听器的方法
+    return this.executeWalletOperation(
+      async (wallet) => {
+        await wallet.disconnect();
+        // OKX 没有提供移除事件监听器的方法
+      },
+      'Failed to disconnect OKX wallet',
+      {
+        operation: 'disconnect',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleGetAccounts(): Promise<AccountInfo[]> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    const addresses = await window.okxwallet.bitcoin.getAccounts();
-
-    // 获取每个地址的公钥
-    const accounts: AccountInfo[] = [];
-    for (const address of addresses) {
-      try {
-        // OKX 没有直接提供批量获取公钥的方法，这里使用空字符串
-        accounts.push({
-          address,
-          publicKey: '',
-          balance: undefined,
-          network: this.normalizeNetwork('livenet'),
-        });
-      } catch (_error) {
-        accounts.push({
-          address,
-          publicKey: undefined,
-          balance: undefined,
-          network: this.normalizeNetwork('livenet'),
-        });
-      }
-    }
-
-    return accounts;
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const addresses = await wallet.getAccounts();
+        return this.createAccountInfos(addresses);
+      },
+      'Failed to get accounts from OKX wallet',
+      {
+        operation: 'getAccounts',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleGetNetwork(): Promise<Network> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    const network = await window.okxwallet.bitcoin.getNetwork();
-    return this.normalizeNetwork(network);
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const network = await wallet.getNetwork();
+        return this.normalizeNetwork(network);
+      },
+      'Failed to get network from OKX wallet',
+      {
+        operation: 'getNetwork',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSwitchNetwork(_network: Network): Promise<void> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    // OKX 钱包可能不支持网络切换，抛出错误
-    throw new Error('OKX wallet does not support network switching');
+    throw WalletErrorHandler.createConnectionError(
+      this.id,
+      'OKX wallet does not support network switching',
+      undefined,
+      {
+        operation: 'switchNetwork',
+        walletId: this.id,
+        network: _network,
+        suggestion:
+          'Network switching is not supported by OKX wallet. Please switch networks manually in the wallet.',
+      },
+    );
   }
 
   protected async handleSignMessage(message: string): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.signMessage(message);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signMessage(message),
+      'Failed to sign message with OKX wallet',
+      {
+        operation: 'signMessage',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSignPsbt(psbt: string): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.signPsbt(psbt);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signPsbt(psbt),
+      'Failed to sign PSBT with OKX wallet',
+      {
+        operation: 'signPsbt',
+        walletId: this.id,
+      },
+    );
   }
 
   protected async handleSendBitcoin(
     toAddress: string,
     amount: number,
   ): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.sendBitcoin(toAddress, amount);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.sendBitcoin(toAddress, amount),
+      'Failed to send bitcoin with OKX wallet',
+      {
+        operation: 'sendBitcoin',
+        walletId: this.id,
+        address: toAddress,
+      },
+    );
   }
 
   private setupEventListeners(): void {
@@ -243,34 +269,36 @@ export class OKXAdapter extends BaseWalletAdapter {
    * 请求账户连接
    */
   protected async handleRequestAccounts(): Promise<AccountInfo[]> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
+    return this.executeWalletOperation(
+      async (wallet) => {
+        const addresses = await wallet.requestAccounts();
+        const accounts = this.createAccountInfos(addresses);
 
-    const addresses = await window.okxwallet.bitcoin.requestAccounts();
+        // 设置事件监听
+        this.setupEventListeners();
 
-    const accounts: AccountInfo[] = addresses.map((address) => ({
-      address,
-      publicKey: undefined,
-      balance: undefined,
-      network: this.normalizeNetwork('livenet'),
-    }));
-
-    // 设置事件监听
-    this.setupEventListeners();
-
-    return accounts;
+        return accounts;
+      },
+      'Failed to request accounts from OKX wallet',
+      {
+        operation: 'requestAccounts',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
    * 获取公钥
    */
   protected async handleGetPublicKey(): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.getPublicKey();
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getPublicKey(),
+      'Failed to get public key from OKX wallet',
+      {
+        operation: 'getPublicKey',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -281,11 +309,14 @@ export class OKXAdapter extends BaseWalletAdapter {
     unconfirmed: number;
     total: number;
   }> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.getBalance();
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getBalance(),
+      'Failed to get balance from OKX wallet',
+      {
+        operation: 'getBalance',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -295,11 +326,14 @@ export class OKXAdapter extends BaseWalletAdapter {
     message: string,
     type?: 'ecdsa' | 'bip322-simple',
   ): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.signMessage(message, type);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.signMessage(message, type),
+      'Failed to sign advanced message with OKX wallet',
+      {
+        operation: 'signMessageAdvanced',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -312,14 +346,14 @@ export class OKXAdapter extends BaseWalletAdapter {
       feeRate?: number;
     },
   ): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.sendBitcoin(
-      toAddress,
-      amount,
-      options,
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.sendBitcoin(toAddress, amount, options),
+      'Failed to send advanced bitcoin transaction with OKX wallet',
+      {
+        operation: 'sendBitcoinAdvanced',
+        walletId: this.id,
+        address: toAddress,
+      },
     );
   }
 
@@ -333,14 +367,15 @@ export class OKXAdapter extends BaseWalletAdapter {
       feeRate?: number;
     },
   ): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.sendInscription(
-      address,
-      inscriptionId,
-      options,
+    return this.executeWalletOperation(
+      async (wallet) =>
+        await wallet.sendInscription(address, inscriptionId, options),
+      'Failed to send inscription with OKX wallet',
+      {
+        operation: 'sendInscription',
+        walletId: this.id,
+        address,
+      },
     );
   }
 
@@ -348,11 +383,14 @@ export class OKXAdapter extends BaseWalletAdapter {
    * 推送交易
    */
   protected async handlePushTx(rawTx: string): Promise<string> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.pushTx(rawTx);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.pushTx(rawTx),
+      'Failed to push transaction with OKX wallet',
+      {
+        operation: 'pushTx',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -377,11 +415,14 @@ export class OKXAdapter extends BaseWalletAdapter {
       location: string;
     }>;
   }> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.getInscriptions(cursor, size);
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.getInscriptions(cursor, size),
+      'Failed to get inscriptions from OKX wallet',
+      {
+        operation: 'getInscriptions',
+        walletId: this.id,
+      },
+    );
   }
 
   /**
@@ -395,26 +436,14 @@ export class OKXAdapter extends BaseWalletAdapter {
     memo?: string;
     memoPos?: number;
   }): Promise<{ txhash: string }> {
-    if (!window.okxwallet?.bitcoin) {
-      throw new Error('OKX wallet not found');
-    }
-
-    return await window.okxwallet.bitcoin.send(options);
-  }
-
-  /**
-   * 将OKX网络字符串转换为Network枚举
-   */
-  private normalizeNetwork(network: string): Network {
-    switch (network) {
-      case 'livenet':
-        return 'mainnet';
-      case 'testnet':
-        return 'testnet';
-      case 'regtest':
-        return 'regtest';
-      default:
-        return 'mainnet'; // 默认主网
-    }
+    return this.executeWalletOperation(
+      async (wallet) => await wallet.send(options),
+      'Failed to send transaction with OKX wallet',
+      {
+        operation: 'send',
+        walletId: this.id,
+        address: options.to,
+      },
+    );
   }
 }

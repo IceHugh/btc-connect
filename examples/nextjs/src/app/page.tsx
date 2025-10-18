@@ -1,24 +1,16 @@
 import { SSRWalletProvider } from '@/components/SSRWalletProvider';
-import { WalletConnectDemo } from '@/components/WalletConnectDemo';
+import { Header } from '@/components/Header';
+import { WalletTestSuite } from '@/components/WalletTestSuite';
 
 export default function Home() {
   return (
-    <div>
-      {/* Light Theme Example */}
-      <SSRWalletProvider theme="light">
-        <div style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
-          <h2>Light Theme Example</h2>
-          <WalletConnectDemo />
-        </div>
-      </SSRWalletProvider>
-
-      {/* Dark Theme Example */}
-      <SSRWalletProvider theme="dark">
-        <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', backgroundColor: '#2a2a2a', color: '#fff' }}>
-          <h2>Dark Theme Example</h2>
-          <WalletConnectDemo />
-        </div>
-      </SSRWalletProvider>
-    </div>
+    <SSRWalletProvider theme="light">
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+        <Header theme="light" />
+        <main style={{ paddingTop: '0' }}>
+          <WalletTestSuite />
+        </main>
+      </div>
+    </SSRWalletProvider>
   );
 }

@@ -12,6 +12,12 @@ export interface Storage {
 }
 
 // 格式化函数类型
-export type FormatAddressFunction = (address: string, length?: number) => string;
-export type FormatBalanceFunction = (balance: number | string, decimals?: number) => string;
+export type FormatAddressFunction = (
+  address: string,
+  length?: number,
+) => string;
+export type FormatBalanceFunction = (
+  balance: number | string,
+  decimals?: number,
+) => string;
 export type IsValidBitcoinAddressFunction = (address: string) => boolean;

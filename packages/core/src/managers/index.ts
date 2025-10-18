@@ -98,11 +98,22 @@ export class BTCWalletManager implements WalletManager {
    * 获取可用的钱包列表
    */
   getAvailableWallets(): WalletInfo[] {
-    return this.getAllAdapters().map((adapter) => ({
+    console.log('=== getAvailableWallets Debug ===');
+    const allAdapters = this.getAllAdapters();
+    const availableWallets = allAdapters.filter((adapter) => {
+      const isReady = adapter.isReady();
+      console.log(`Adapter ${adapter.id}: isReady = ${isReady}`);
+      return isReady;
+    });
+
+    const walletInfos = availableWallets.map((adapter) => ({
       id: adapter.id,
       name: adapter.name,
       icon: adapter.icon,
     }));
+
+    console.log('Available wallet infos:', walletInfos);
+    return walletInfos;
   }
 
   /**
@@ -130,7 +141,7 @@ export class BTCWalletManager implements WalletManager {
       this.currentAdapter = adapter;
 
       // 发射连接事件
-      this.eventManager.emitConnect(accounts);
+      this.eventManager.emitConnectLegacy(accounts);
 
       // 调用状态变化回调
       if (this.config.onStateChange) {
@@ -147,7 +158,7 @@ export class BTCWalletManager implements WalletManager {
       }
 
       // 发射错误事件
-      this.eventManager.emitError(
+      this.eventManager.emitErrorLegacy(
         error instanceof Error ? error : new Error(String(error)),
       );
 
@@ -189,13 +200,13 @@ export class BTCWalletManager implements WalletManager {
       // 尝试补充只读信息（忽略失败）
       try {
         await adapter.getNetwork();
-      } catch { }
+      } catch {}
       try {
         const pk = await (adapter as any).getPublicKey?.();
         if (pk && (adapter as any).state?.currentAccount) {
           (adapter as any).state.currentAccount.publicKey = pk;
         }
-      } catch { }
+      } catch {}
       try {
         const bal = await (adapter as any).getBalance?.();
         console.log('bal', bal);
@@ -207,9 +218,9 @@ export class BTCWalletManager implements WalletManager {
         if (Array.isArray(s?.accounts) && s.accounts.length > 0) {
           s.accounts[0].balance = bal;
         }
-      } catch { }
+      } catch {}
 
-      this.eventManager.emitConnect((adapter as any).state.accounts);
+      this.eventManager.emitConnectLegacy((adapter as any).state.accounts);
       if (this.config.onStateChange) {
         this.config.onStateChange(this.getState());
       }
@@ -231,7 +242,7 @@ export class BTCWalletManager implements WalletManager {
         console.warn('Error disconnecting wallet:', error);
       } finally {
         this.currentAdapter = null;
-        this.eventManager.emitDisconnect();
+        this.eventManager.emitDisconnectLegacy();
 
         // 调用状态变化回调
         if (this.config.onStateChange) {

@@ -1,25 +1,28 @@
-import { computed } from 'vue'
-import { useWalletContext } from '../walletContext'
+import { useWalletContext } from '../walletContext';
 
-export function useWallet() {
-  const ctx = useWalletContext()
+/**
+ * 使用核心钱包功能的Composable - 提供对manager的访问
+ */
+export function useCore() {
+  const ctx = useWalletContext();
+
   return {
-    state: computed(() => ctx.state),
-    currentWallet: computed(() => ctx.currentWallet),
-    isConnected: computed(() => ctx.isConnected),
-    isConnecting: computed(() => ctx.isConnecting),
-  }
+    // 核心管理器
+    manager: ctx.manager,
+
+    // 状态
+    state: ctx.state,
+    isConnected: ctx.isConnected,
+    isConnecting: ctx.isConnecting,
+    currentWallet: ctx.currentWallet,
+    availableWallets: ctx.availableWallets,
+
+    // 主题
+    theme: ctx.theme,
+
+    // 操作方法
+    connect: ctx.connect,
+    disconnect: ctx.disconnect,
+    switchWallet: ctx.switchWallet,
+  };
 }
-
-export function useConnectWallet() {
-  const { connect, disconnect, switchWallet, availableWallets } = useWalletContext()
-  return {
-    connect,
-    disconnect,
-    switchWallet,
-    availableWallets,
-  }
-}
-
-
-

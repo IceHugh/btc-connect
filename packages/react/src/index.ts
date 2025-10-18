@@ -1,5 +1,10 @@
 /// <reference types="./types/jsx" />
 
+// 组件
+export {
+  ConnectButton,
+  WalletModal,
+} from './components';
 // 上下文和提供者
 export {
   BTCWalletProvider,
@@ -10,39 +15,34 @@ export {
   useWalletEvent,
 } from './context';
 
-// 组件
-export {
-  BTCConnectButton,
-  WalletModal,
-} from './components';
-
 // Hooks
 export {
   useBalance,
   useSignature,
   useTransactions,
   useWalletModal,
+  useRefreshAccountInfo,
 } from './hooks';
 
 // 类型定义
 export type {
-  Network,
-  ThemeMode,
-  WalletContext,
   ConnectionPolicy,
   ConnectionPolicyTask,
   ConnectionPolicyTaskContext,
   ConnectionPolicyTaskResult,
+  Network,
+  ThemeMode,
+  WalletContext,
 } from './types';
 
 // 从 core 包重新导出的类型
 export type {
   AccountInfo,
+  ConnectionStatus,
   WalletEvent,
   WalletInfo,
   WalletManagerConfig,
   WalletState,
-  ConnectionStatus,
 } from './types/core';
 
 // 工具函数

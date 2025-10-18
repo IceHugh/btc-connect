@@ -1,2 +1,2 @@
-export * from './BTCConnectButton';
+export * from './ConnectButton';
 export * from './WalletModal';

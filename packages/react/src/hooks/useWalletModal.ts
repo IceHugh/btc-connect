@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 // Simple global store for modal open state
 type Subscriber = () => void;
