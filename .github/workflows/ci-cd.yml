@@ -48,6 +48,14 @@ jobs:
       - name: 构建项目
         run: bun run build
 
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v3
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        with:
+          name: build-artifacts
+          path: packages/*/dist/
+          retention-days: 7
+
   # 发布到 NPM（仅 main 分支）
   publish:
     name: 发布到 NPM
@@ -81,8 +89,19 @@ jobs:
       - name: 安装依赖
         run: bun install
 
-      - name: 构建项目
-        run: bun run build
+      - name: 下载构建产物
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: packages/
+
+      - name: 验证下载的构建产物
+        run: |
+          echo "检查下载的构建产物..."
+          find packages/ -name "dist" -type d | while read dir; do
+            echo "找到 dist 目录: $dir"
+            ls -la "$dir" || echo "目录为空或不存在"
+          done
 
       - name: 获取包信息
         id: package-info
@@ -101,12 +120,23 @@ jobs:
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
           echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
 
+      - name: 配置 NPM 认证
+        if: steps.check-npm.outputs.status != 200
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: 验证构建产物
+        run: |
+          echo "检查构建产物..."
+          ls -la packages/${{ matrix.package }}/dist/
+          echo "验证 package.json..."
+          cat packages/${{ matrix.package }}/package.json | jq '.name, .version'
+
       - name: 发布到 NPM
         if: steps.check-npm.outputs.status != 200
         run: |
           cd packages/${{ matrix.package }}
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-          bun publish --access public
+          bun publish --access public --verbose
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
