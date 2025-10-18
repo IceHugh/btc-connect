@@ -1,4 +1,4 @@
-import { type AccountInfo, ErrorContext, type Network } from '../types';
+import { type AccountInfo, type Network } from '../types';
 import { WalletErrorHandler } from '../utils/error-handler';
 import { BaseWalletAdapter } from './base';
 
