@@ -13,7 +13,8 @@
     "declarationDir": "./dist/types",
     "declarationMap": true,
     "sourceMap": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "composite": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

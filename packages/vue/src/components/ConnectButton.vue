@@ -125,7 +125,7 @@ const { openModal } = useWalletModal();
 // State
 const showDropdown = ref(false);
 const copied = ref(false);
-const copiedTimer = ref<number | null>(null);
+const copiedTimer = ref<NodeJS.Timeout | null>(null);
 const containerRef = ref<HTMLElement>();
 const dropdownRef = ref<HTMLElement>();
 

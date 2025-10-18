@@ -20,11 +20,6 @@
       "@btc-connect/vue": ["./packages/vue/src"]
     }
   },
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/react" },
-    { "path": "./packages/vue" }
-  ],
   "include": [
     "packages/*/src/**/*"
   ],

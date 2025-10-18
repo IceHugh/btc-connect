@@ -11,7 +11,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
   debouncedFn: (...args: Parameters<T>) => void;
   cancel: () => void;
 } {
-  let timeoutId: number | null = null;
+  let timeoutId: NodeJS.Timeout | null = null;
 
   const debouncedFn = (...args: Parameters<T>) => {
     if (timeoutId) {
@@ -46,7 +46,7 @@ export function useThrottle<T extends (...args: any[]) => any>(
   cancel: () => void;
 } {
   let lastExecution = 0;
-  let timeoutId: number | null = null;
+  let timeoutId: NodeJS.Timeout | null = null;
 
   const throttledFn = (...args: Parameters<T>) => {
     const now = Date.now();
@@ -170,7 +170,7 @@ export function useMemoryMonitor() {
   };
 
   // 定期更新内存信息
-  let intervalId: number | null = null;
+  let intervalId: NodeJS.Timeout | null = null;
 
   onMounted(() => {
     updateMemoryInfo();
