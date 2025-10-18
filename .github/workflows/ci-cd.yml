@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: '18'
-  BUN_VERSION: '1.0.0'
+  NODE_VERSION: "22"
+  BUN_VERSION: "1.3.1"
 
 jobs:
   # 代码质量检查和测试
@@ -133,7 +133,6 @@ jobs:
             - [README](https://github.com/${{ github.repository }}/tree/main/packages/${{ matrix.package }})
             - [更新日志](https://github.com/${{ github.repository }}/releases)
 
-  
   # 通知
   notify:
     name: 构建通知
