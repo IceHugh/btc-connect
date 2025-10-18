@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { EventEmitter, BaseWalletAdapter } from '../index';
+import { EventEmitter, BaseWalletAdapter, Network, WalletEvent } from '../index';
 
 describe('Core Package Basic Tests', () => {
   describe('EventEmitter', () => {
@@ -12,11 +12,11 @@ describe('Core Package Basic Tests', () => {
       const emitter = new EventEmitter();
       let called = false;
 
-      emitter.on('test-event', () => {
+      emitter.on('connect', () => {
         called = true;
       });
 
-      emitter.emit('test-event');
+      emitter.emit('connect', { walletId: 'test-wallet', accounts: [] });
       expect(called).toBe(true);
     });
 
@@ -25,12 +25,12 @@ describe('Core Package Basic Tests', () => {
       let calls = 0;
 
       const handler = () => calls++;
-      emitter.on('test-event', handler);
-      emitter.emit('test-event');
+      emitter.on('connect', handler);
+      emitter.emit('connect', { walletId: 'test-wallet', accounts: [] });
       expect(calls).toBe(1);
 
-      emitter.off('test-event', handler);
-      emitter.emit('test-event');
+      emitter.off('connect', handler);
+      emitter.emit('connect', { walletId: 'test-wallet', accounts: [] });
       expect(calls).toBe(1); // Should still be 1
     });
 
@@ -38,10 +38,10 @@ describe('Core Package Basic Tests', () => {
       const emitter = new EventEmitter();
       let calls = 0;
 
-      emitter.on('test-event', () => calls++);
-      emitter.on('test-event', () => calls++);
+      emitter.on('connect', () => calls++);
+      emitter.on('connect', () => calls++);
 
-      emitter.emit('test-event');
+      emitter.emit('connect', { walletId: 'test-wallet', accounts: [] });
       expect(calls).toBe(2);
     });
   });
