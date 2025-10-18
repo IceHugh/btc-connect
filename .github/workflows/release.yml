@@ -201,12 +201,10 @@ ${{ steps.packages.outputs.packages }}
           git push origin "v$NEW_VERSION"
 
       - name: 创建 GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.new_version }}
-          release_name: 🚀 Release v${{ steps.version.outputs.new_version }}
+          name: 🚀 Release v${{ steps.version.outputs.new_version }}
           draft: false
           prerelease: false
           body: |
@@ -247,6 +245,8 @@ ${{ steps.packages.outputs.packages }}
             ---
 
             ⭐ 如果这个项目对你有帮助，请给我们一个 Star！
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 发布到 NPM
         env:

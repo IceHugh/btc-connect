@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: 安装依赖
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: 类型检查
         run: bun run typecheck
@@ -79,7 +79,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: 安装依赖
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: 构建项目
         run: bun run build
