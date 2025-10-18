@@ -1,0 +1,279 @@
+name: 自动化发布
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: '版本类型'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      packages:
+        description: '要发布的包 (用逗号分隔，留空发布全部)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  BUN_VERSION: '1.0.0'
+
+jobs:
+  # 版本更新和发布
+  release:
+    name: 发布新版本
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 配置 Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 安装 Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 获取依赖缓存
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 安装依赖
+        run: bun install
+
+      - name: 运行测试
+        run: bun run test
+
+      - name: 构建项目
+        run: bun run build
+
+      - name: 确定要发布的包
+        id: packages
+        run: |
+          if [[ -n "${{ github.event.inputs.packages }}" ]]; then
+            PACKAGES="${{ github.event.inputs.packages }}"
+            echo "发布指定包: $PACKAGES"
+          else
+            PACKAGES="core,react,vue"
+            echo "发布所有包: $PACKAGES"
+          fi
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+
+      - name: 更新版本号
+        id: version
+        run: |
+          VERSION_TYPE="${{ github.event.inputs.version_type }}"
+          PACKAGES="${{ steps.packages.outputs.packages }}"
+
+          echo "版本类型: $VERSION_TYPE"
+          echo "发布包: $PACKAGES"
+
+          # 获取当前版本
+          CURRENT_VERSION=$(cat package.json | jq -r .version)
+          echo "当前版本: $CURRENT_VERSION"
+
+          # 计算新版本号
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+
+          case $VERSION_TYPE in
+            "patch")
+              NEW_PATCH=$((PATCH + 1))
+              NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+              ;;
+            "minor")
+              NEW_MINOR=$((MINOR + 1))
+              NEW_VERSION="$MAJOR.$NEW_MINOR.0"
+              ;;
+            "major")
+              NEW_MAJOR=$((MAJOR + 1))
+              NEW_VERSION="$NEW_MAJOR.0.0"
+              ;;
+          esac
+
+          echo "新版本号: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # 更新根目录版本
+          jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # 更新各个包的版本
+          for package in $(echo $PACKAGES | tr ',' ' '); do
+            echo "更新 $package 包版本到 $NEW_VERSION"
+            jq --arg new_version "$NEW_VERSION" '.version = $new_version' packages/$package/package.json > packages/$package/package.json.tmp
+            mv packages/$package/package.json.tmp packages/$package/package.json
+          done
+
+      - name: 更新 CHANGELOG
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          VERSION_TYPE="${{ github.event.inputs.version_type }}"
+          PACKAGES="${{ steps.packages.outputs.packages }}"
+
+          # 创建变更日志条目
+          CHANGELOG_ENTRY="## [$NEW_VERSION] - $(date +%Y-%m-%d)
+
+### 🚀 新版本发布
+- 版本类型: $VERSION_TYPE
+- 发布包: $PACKAGES
+- 自动化构建和发布
+
+### 📦 包更新"
+
+          # 为每个包添加更新信息
+          for package in $(echo $PACKAGES | tr ',' ' '); do
+            PACKAGE_NAME="@btc-connect/$package"
+            CHANGELOG_ENTRY="$CHANGELOG_ENTRY
+- **$PACKAGE_NAME**: 版本更新至 $NEW_VERSION"
+          done
+
+          CHANGELOG_ENTRY="$CHANGELOG_ENTRY
+
+### 🔗 链接
+- [安装指南](https://github.com/${{ github.repository }}/blob/main/README.md)
+- [文档](https://github.com/${{ github.repository }}/tree/main/packages)
+- [变更日志](https://github.com/${{ github.repository }}/releases)
+
+"
+
+          # 如果 CHANGELOG.md 不存在，创建它
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# 变更日志" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+
+          # 在文件开头插入新条目
+          sed -i "3i$CHANGELOG_ENTRY" CHANGELOG.md
+
+      - name: 提交版本更新
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+
+          git add .
+          git commit -m "chore(release): 发布版本 $NEW_VERSION
+
+🤖 自动化发布
+- 版本类型: ${{ github.event.inputs.version_type }}
+- 发布包: ${{ steps.packages.outputs.packages }}
+- 更新所有相关包版本和文档"
+
+      - name: 创建并推送标签
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION
+
+🚀 btc-connect 版本 $NEW_VERSION
+
+包含以下包更新:
+${{ steps.packages.outputs.packages }}
+
+📅 发布时间: $(date +%Y-%m-%d)"
+
+          git push origin main
+          git push origin "v$NEW_VERSION"
+
+      - name: 创建 GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          release_name: 🚀 Release v${{ steps.version.outputs.new_version }}
+          draft: false
+          prerelease: false
+          body: |
+            # 🚀 btc-connect v${{ steps.version.outputs.new_version }}
+
+            🎉 **新版本发布！** 这是 btc-connect 的版本 ${{ steps.version.outputs.new_version }}，包含重要的功能更新和改进。
+
+            ## 📦 包更新
+            ${{ steps.packages.outputs.packages }} 包已更新至新版本。
+
+            ## 🔄 版本类型
+            - **类型**: ${{ github.event.inputs.version_type }}
+            - **发布日期**: $(date +%Y-%m-%d)
+
+            ## 🚀 快速开始
+
+            ```bash
+            # 安装核心包
+            npm install @btc-connect/core@${{ steps.version.outputs.new_version }}
+
+            # 安装 React 集成
+            npm install @btc-connect/react@${{ steps.version.outputs.new_version }}
+
+            # 安装 Vue 集成
+            npm install @btc-connect/vue@${{ steps.version.outputs.new_version }}
+            ```
+
+            ## 📚 文档
+
+            - 📖 [完整文档](https://github.com/${{ github.repository }})
+            - 🔧 [API 参考](https://github.com/${{ github.repository }}/tree/main/packages)
+            - 📋 [变更日志](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+
+            ## 🤝 贡献
+
+            欢迎贡献代码！请查看 [贡献指南](https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md)。
+
+            ---
+
+            ⭐ 如果这个项目对你有帮助，请给我们一个 Star！
+
+      - name: 发布到 NPM
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          PACKAGES="${{ steps.packages.outputs.packages }}"
+
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+
+          for package in $(echo $PACKAGES | tr ',' ' '); do
+            echo "正在发布 @btc-connect/$package@$NEW_VERSION..."
+            cd packages/$package
+
+            # 检查包是否已存在
+            PACKAGE_NAME="@btc-connect/$package"
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$NEW_VERSION")
+
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "⚠️ $PACKAGE_NAME@$NEW_VERSION 已存在于 NPM，跳过发布"
+            else
+              echo "📦 发布 $PACKAGE_NAME@$NEW_VERSION..."
+              bun publish --access public
+              echo "✅ $PACKAGE_NAME@$NEW_VERSION 发布成功"
+            fi
+
+            cd ../..
+          done
+
+      - name: 通知发布完成
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          PACKAGES="${{ steps.packages.outputs.packages }}"
+
+          echo "🎉 发布完成！"
+          echo "📦 版本: v$NEW_VERSION"
+          echo "📦 包: $PACKAGES"
+          echo "🔗 NPM: https://www.npmjs.com/package/@btc-connect"
+          echo "🔗 GitHub: https://github.com/${{ github.repository }}/releases/tag/v$NEW_VERSION"
