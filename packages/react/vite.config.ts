@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     dts({
       insertTypesEntry: true,
-      rollupTypes: true,
+      rollupTypes: false,
       exclude: ['**/*.test.*', '**/*.spec.*'],
     }),
   ],
