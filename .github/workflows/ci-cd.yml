@@ -26,7 +26,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
 
       - name: 获取依赖缓存
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -49,7 +49,7 @@ jobs:
         run: bun run build
 
       - name: 上传构建产物
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         with:
           name: build-artifacts
@@ -79,7 +79,7 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
 
       - name: 获取依赖缓存
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
@@ -90,7 +90,7 @@ jobs:
         run: bun install
 
       - name: 下载构建产物
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: packages/
@@ -140,12 +140,12 @@ jobs:
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
-          release_name: ${{ steps.package-info.outputs.name }} v${{ steps.package-info.outputs.version }}
+          name: ${{ steps.package-info.outputs.name }} v${{ steps.package-info.outputs.version }}
           draft: false
           prerelease: false
           body: |
