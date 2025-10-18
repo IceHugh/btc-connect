@@ -129,30 +129,36 @@ jobs:
           PACKAGES="${{ steps.packages.outputs.packages }}"
 
           # 创建变更日志条目
-          CHANGELOG_ENTRY="## [$NEW_VERSION] - $(date +%Y-%m-%d)
+          cat > CHANGELOG_ENTRY.tmp << 'EOF'
+## [NEW_VERSION_PLACEHOLDER] - DATE_PLACEHOLDER
 
 ### 🚀 新版本发布
-- 版本类型: $VERSION_TYPE
-- 发布包: $PACKAGES
+- 版本类型: VERSION_TYPE_PLACEHOLDER
+- 发布包: PACKAGES_PLACEHOLDER
 - 自动化构建和发布
 
-### 📦 包更新"
+### 📦 包更新
+
+EOF
 
           # 为每个包添加更新信息
           for package in $(echo $PACKAGES | tr ',' ' '); do
             PACKAGE_NAME="@btc-connect/$package"
-            CHANGELOG_ENTRY="$CHANGELOG_ENTRY
-- **$PACKAGE_NAME**: 版本更新至 $NEW_VERSION"
+            echo "- **$PACKAGE_NAME**: 版本更新至 $NEW_VERSION" >> CHANGELOG_ENTRY.tmp
           done
 
-          CHANGELOG_ENTRY="$CHANGELOG_ENTRY
+          echo "" >> CHANGELOG_ENTRY.tmp
+          echo "### 🔗 链接" >> CHANGELOG_ENTRY.tmp
+          echo "- [安装指南](https://github.com/${{ github.repository }}/blob/main/README.md)" >> CHANGELOG_ENTRY.tmp
+          echo "- [文档](https://github.com/${{ github.repository }}/tree/main/packages)" >> CHANGELOG_ENTRY.tmp
+          echo "- [变更日志](https://github.com/${{ github.repository }}/releases)" >> CHANGELOG_ENTRY.tmp
+          echo "" >> CHANGELOG_ENTRY.tmp
 
-### 🔗 链接
-- [安装指南](https://github.com/${{ github.repository }}/blob/main/README.md)
-- [文档](https://github.com/${{ github.repository }}/tree/main/packages)
-- [变更日志](https://github.com/${{ github.repository }}/releases)
-
-"
+          # 替换占位符
+          sed -i.bak "s/NEW_VERSION_PLACEHOLDER/$NEW_VERSION/g" CHANGELOG_ENTRY.tmp
+          sed -i.bak "s/DATE_PLACEHOLDER/$(date +%Y-%m-%d)/g" CHANGELOG_ENTRY.tmp
+          sed -i.bak "s/VERSION_TYPE_PLACEHOLDER/$VERSION_TYPE/g" CHANGELOG_ENTRY.tmp
+          sed -i.bak "s/PACKAGES_PLACEHOLDER/$PACKAGES/g" CHANGELOG_ENTRY.tmp
 
           # 如果 CHANGELOG.md 不存在，创建它
           if [ ! -f CHANGELOG.md ]; then
@@ -161,7 +167,10 @@ jobs:
           fi
 
           # 在文件开头插入新条目
-          sed -i "3i$CHANGELOG_ENTRY" CHANGELOG.md
+          sed -i "3r CHANGELOG_ENTRY.tmp" CHANGELOG.md
+
+          # 清理临时文件
+          rm -f CHANGELOG_ENTRY.tmp CHANGELOG_ENTRY.tmp.bak
 
       - name: 提交版本更新
         run: |
