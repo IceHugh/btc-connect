@@ -107,8 +107,15 @@ jobs:
         run: |
           PACKAGE_NAME="${{ steps.package-info.outputs.name }}"
           PACKAGE_VERSION="${{ steps.package-info.outputs.version }}"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
-          echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+
+          # 使用 npm view 检查版本，更可靠的方法
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1; then
+            echo "✅ 版本 $PACKAGE_VERSION 已存在"
+            echo "status=200" >> $GITHUB_OUTPUT
+          else
+            echo "ℹ️  版本 $PACKAGE_VERSION 不存在，可以发布"
+            echo "status=404" >> $GITHUB_OUTPUT
+          fi
 
       - name: 验证构建产物
         run: |
