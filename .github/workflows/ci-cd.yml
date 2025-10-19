@@ -120,10 +120,19 @@ jobs:
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
           echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
 
-      - name: 配置 NPM 认证
+      - name: 配置 Bun 认证
         if: steps.check-npm.outputs.status != 200
+        env:
+          BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          # 验证 token 是否设置
+          echo "BUN_NPM_TOKEN length: ${#BUN_NPM_TOKEN}"
+          if [ -n "$BUN_NPM_TOKEN" ]; then
+            echo "✅ NPM token 环境变量已设置"
+          else
+            echo "❌ NPM token 环境变量未设置"
+            exit 1
+          fi
 
       - name: 验证构建产物
         run: |
@@ -134,9 +143,30 @@ jobs:
 
       - name: 发布到 NPM
         if: steps.check-npm.outputs.status != 200
+        env:
+          BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          bun publish --access public --verbose
+          echo "当前目录: $(pwd)"
+          echo "包名: ${{ matrix.package }}"
+          echo "NPM Token 长度: ${#BUN_NPM_TOKEN}"
+
+          # 显示当前认证状态
+          echo "=== 检查 Bun 认证状态 ==="
+          bunx npm whoami || echo "认证检查失败，继续尝试发布"
+
+          echo "=== 尝试发布 ==="
+          bun publish --access public --verbose || {
+            echo "=== 发布失败，检查认证状态 ==="
+            echo "环境变量检查:"
+            echo "BUN_NPM_TOKEN set: ${BUN_NPM_TOKEN:+yes}"
+            echo "BUN_NPM_TOKEN length: ${#BUN_NPM_TOKEN}"
+
+            # 尝试使用 npm token 创建 .npmrc 文件
+            echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+            echo "=== 尝试使用 .npmrc 配置重新发布 ==="
+            bun publish --access public --verbose
+          }
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
