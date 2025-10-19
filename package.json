@@ -13,7 +13,13 @@
     "lint": "bun run --filter @btc-connect/core lint && bun run --filter @btc-connect/react lint && bun run --filter @btc-connect/vue lint",
     "format": "bun run --filter @btc-connect/core format && bun run --filter @btc-connect/react format && bun run --filter @btc-connect/vue format",
     "typecheck": "bun run --filter @btc-connect/core typecheck && bun run --filter @btc-connect/react typecheck && bun run --filter @btc-connect/vue typecheck",
-    "install:all": "bun install && bun run build"
+    "install:all": "bun install && bun run build",
+    "version:patch": "./scripts/update-version.sh patch",
+    "version:minor": "./scripts/update-version.sh minor",
+    "version:major": "./scripts/update-version.sh major",
+    "version:patch:push": "./scripts/update-version.sh patch --push",
+    "version:minor:push": "./scripts/update-version.sh minor --push",
+    "version:major:push": "./scripts/update-version.sh major --push"
   },
   "devDependencies": {
     "@types/bun": "^1.2.19",
