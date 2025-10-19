@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { EventEmitter, BaseWalletAdapter, Network, WalletEvent } from '../index';
+import { EventEmitter, BaseWalletAdapter, Network, WalletEvent, AccountInfo } from '../index';
 
 describe('Core Package Basic Tests', () => {
   describe('EventEmitter', () => {
@@ -68,6 +68,10 @@ describe('Core Package Basic Tests', () => {
 
     it('should handle network operations', async () => {
       const adapter = new TestWalletAdapter();
+
+      // 先连接钱包
+      await adapter.connect();
+
       const network = await adapter.getNetwork();
       expect(network).toBe('livenet');
 
@@ -78,6 +82,10 @@ describe('Core Package Basic Tests', () => {
 
     it('should handle signing operations', async () => {
       const adapter = new TestWalletAdapter();
+
+      // 先连接钱包
+      await adapter.connect();
+
       const signature = await adapter.signMessage('test message');
       expect(signature).toBe('mock-signature');
 
@@ -87,6 +95,10 @@ describe('Core Package Basic Tests', () => {
 
     it('should handle sending bitcoin', async () => {
       const adapter = new TestWalletAdapter();
+
+      // 先连接钱包
+      await adapter.connect();
+
       const txid = await adapter.sendBitcoin('test-address', 1000);
       expect(txid).toBe('mock-txid');
     });
@@ -99,52 +111,67 @@ class TestWalletAdapter extends BaseWalletAdapter {
   name = 'Test Wallet';
   icon = 'test-icon.png';
 
+  // 实现抽象方法：获取钱包实例
+  protected getWalletInstance(): any {
+    return {
+      id: 'test-wallet',
+      name: 'Test Wallet',
+      // Mock wallet methods
+      on: () => {},
+      removeListener: () => {},
+    };
+  }
+
+  // 重写 isReady 方法，在测试环境中始终返回 true
   isReady(): boolean {
     return true;
   }
 
-  async connect(): Promise<any[]> {
+  // 实现抽象方法：连接处理
+  protected async handleConnect(): Promise<AccountInfo[]> {
     return [{
       address: 'test-address',
       publicKey: 'test-public-key',
+      network: 'livenet',
     }];
   }
 
-  async disconnect(): Promise<void> {
+  // 实现抽象方法：断开连接处理
+  protected async handleDisconnect(): Promise<void> {
     // Mock implementation
   }
 
-  async getAccounts(): Promise<any[]> {
+  // 实现抽象方法：获取账户列表
+  protected async handleGetAccounts(): Promise<AccountInfo[]> {
     return [{
       address: 'test-address',
       publicKey: 'test-public-key',
+      network: 'livenet',
     }];
   }
 
-  async getCurrentAccount(): Promise<any> {
-    return {
-      address: 'test-address',
-      publicKey: 'test-public-key',
-    };
-  }
-
-  async getNetwork(): Promise<string> {
+  // 实现抽象方法：获取网络
+  protected async handleGetNetwork(): Promise<Network> {
     return 'livenet';
   }
 
-  async switchNetwork(network: string): Promise<void> {
+  // 实现抽象方法：切换网络
+  protected async handleSwitchNetwork(network: Network): Promise<void> {
     // Mock implementation
   }
 
-  async signMessage(message: string): Promise<string> {
+  // 实现抽象方法：签名消息
+  protected async handleSignMessage(message: string): Promise<string> {
     return 'mock-signature';
   }
 
-  async signPsbt(psbt: string): Promise<string> {
+  // 实现抽象方法：签名PSBT
+  protected async handleSignPsbt(psbt: string): Promise<string> {
     return 'mock-signed-psbt';
   }
 
-  async sendBitcoin(toAddress: string, amount: number): Promise<string> {
+  // 实现抽象方法：发送比特币
+  protected async handleSendBitcoin(toAddress: string, amount: number): Promise<string> {
     return 'mock-txid';
   }
 }

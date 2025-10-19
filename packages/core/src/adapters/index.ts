@@ -1,6 +1,5 @@
 import { OKXAdapter } from './okx';
 import { UniSatAdapter } from './unisat';
-import { XverseAdapter } from './xverse';
 
 export { BaseWalletAdapter } from './base';
 export { OKXAdapter } from './okx';

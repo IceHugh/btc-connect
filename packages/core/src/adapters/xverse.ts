@@ -1,5 +1,4 @@
-import { type AccountInfo, type Network } from '../types';
-import { WalletErrorHandler } from '../utils/error-handler';
+import type { AccountInfo, Network } from '../types';
 import { BaseWalletAdapter } from './base';
 
 declare global {

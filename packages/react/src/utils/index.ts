@@ -3,6 +3,26 @@
  * 从 shared 包迁移而来，避免外部依赖
  */
 
+import type { BalanceDetail } from '../types';
+
+// 创建 BalanceDetail 对象的辅助函数
+export const createBalanceDetail = (balance: number): BalanceDetail => ({
+  confirmed: balance,
+  unconfirmed: 0,
+  total: balance,
+});
+
+// 从 BalanceDetail 或 number 创建统一的 BalanceDetail
+export const normalizeBalance = (
+  balance: BalanceDetail | number | undefined,
+): BalanceDetail | undefined => {
+  if (balance === undefined) return undefined;
+  if (typeof balance === 'number') {
+    return createBalanceDetail(balance);
+  }
+  return balance;
+};
+
 // 样式工具函数
 export const cn = (
   ...classes: (string | undefined | null | false)[]

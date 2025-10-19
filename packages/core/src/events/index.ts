@@ -1,10 +1,8 @@
 import type {
   AccountChangeEventParams,
   ConnectEventParams,
-  DisconnectEventParams,
   ErrorEventParams,
   LegacyEventHandler,
-  Network,
   NetworkChangeEventParams,
   WalletEvent,
 } from '../types';

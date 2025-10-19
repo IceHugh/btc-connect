@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useWalletContext } from '../context/provider';
-import type { BalanceDetail, Network, WalletEvent } from '../types';
-import { formatAddressShort } from '../utils';
+import type { Network, WalletEvent } from '../types';
+import { formatAddressShort, normalizeBalance } from '../utils';
 
 /**
  * 使用钱包状态的Hook - 优化版本
@@ -19,10 +19,7 @@ export function useWallet() {
 
   // 计算属性
   const address = currentAccount?.address || null;
-  const balance =
-    currentAccount?.balance && typeof currentAccount.balance === 'object'
-      ? (currentAccount.balance as BalanceDetail)
-      : null;
+  const balance = normalizeBalance(currentAccount?.balance);
   const publicKey = currentAccount?.publicKey || null;
 
   return {
@@ -179,11 +176,7 @@ export function useAccount() {
 export function useBalance() {
   const { state } = useWalletContext();
 
-  const balance =
-    state.currentAccount?.balance &&
-    typeof state.currentAccount.balance === 'object'
-      ? (state.currentAccount.balance as BalanceDetail)
-      : null;
+  const balance = normalizeBalance(state.currentAccount?.balance);
 
   return {
     balance,

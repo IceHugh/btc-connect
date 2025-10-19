@@ -71,7 +71,7 @@ export interface BalanceDetail {
 export interface AccountInfo {
   address: string;
   publicKey?: string;
-  balance?: BalanceDetail | number; // 支持详细余额或简单数值
+  balance?: BalanceDetail; // 统一使用详细余额
   network?: Network;
 }
 
@@ -402,7 +402,7 @@ export class SignatureError extends WalletError {
 export class TransactionError extends WalletError {
   constructor(
     message: string,
-    txid?: string,
+    _txid?: string,
     context?: Partial<ErrorContext>,
     originalError?: Error,
   ) {
@@ -505,7 +505,7 @@ export class ErrorHandlerManager {
     if (!this.handlers.has(errorCode)) {
       this.handlers.set(errorCode, []);
     }
-    this.handlers.get(errorCode)!.push(handler);
+    this.handlers.get(errorCode)?.push(handler);
   }
 
   /**

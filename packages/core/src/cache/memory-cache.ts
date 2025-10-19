@@ -3,8 +3,6 @@
  * 支持基于TTL的缓存项自动过期和LRU淘汰策略
  */
 
-import type { CacheConfig } from '../types';
-
 export interface CacheItem<T> {
   data: T;
   timestamp: number;
@@ -138,7 +136,7 @@ export class MemoryCache<T = any> {
    * 手动清理过期缓存
    */
   cleanup(): number {
-    const now = Date.now();
+    const _now = Date.now();
     const expiredKeys: string[] = [];
 
     for (const [key, item] of this.cache.entries()) {
@@ -276,7 +274,7 @@ export class CacheManager {
    * 清空所有缓存
    */
   clearAll(): void {
-    for (const [name, cache] of this.caches.entries()) {
+    for (const [_name, cache] of this.caches.entries()) {
       cache.destroy();
     }
     this.caches.clear();
@@ -319,6 +317,7 @@ export class CacheManager {
 /**
  * 缓存键生成工具
  */
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class CacheKeyBuilder {
   /**
    * 生成余额缓存键

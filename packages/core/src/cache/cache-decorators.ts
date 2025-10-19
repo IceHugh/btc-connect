@@ -3,12 +3,7 @@
  * 为方法添加自动缓存功能
  */
 
-import type { CacheConfig } from '../types';
-import {
-  CacheKeyBuilder,
-  CacheManager,
-  type MemoryCache,
-} from './memory-cache';
+import { CacheKeyBuilder, CacheManager } from './memory-cache';
 
 export interface CachedMethodOptions {
   cacheName: string;
@@ -23,14 +18,18 @@ export interface CachedMethodOptions {
  * 方法缓存装饰器
  */
 export function cached(options: CachedMethodOptions) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    _target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
       const cache = CacheManager.getInstance().getCache(options.cacheName);
 
       // 检查是否应该绕过缓存
-      if (options.bypassCache && options.bypassCache.call(this, ...args)) {
+      if (options.bypassCache?.call(this, ...args)) {
         return await originalMethod.apply(this, args);
       }
 
@@ -103,7 +102,7 @@ export const CachePresets = {
   inscriptions: {
     cacheName: 'inscriptions',
     ttl: 60000,
-    keyBuilder: (walletId: string, address: string, cursor = 0, size = 10) =>
+    keyBuilder: (walletId: string, address: string, cursor = 0, _size = 10) =>
       CacheKeyBuilder.inscriptions(walletId, address, cursor),
     shouldCache: (result: any) =>
       result && typeof result === 'object' && 'list' in result,
@@ -133,7 +132,11 @@ export const CachePresets = {
  * 在方法执行后自动清除相关缓存
  */
 export function invalidateCache(cacheNames: string[]) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    _target: any,
+    _propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -164,7 +167,11 @@ export function smartCached(
     emptyTtl?: number;
   },
 ) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    _target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -228,7 +235,11 @@ export function conditionalCached(
   condition: (...args: any[]) => boolean,
   options: CachedMethodOptions,
 ) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    _target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {

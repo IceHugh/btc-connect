@@ -18,7 +18,10 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "off"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off"
       },
       "a11y": {
         "noStaticElementInteractions": "off",

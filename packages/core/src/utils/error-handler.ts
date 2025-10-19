@@ -176,7 +176,7 @@ export class WalletErrorHandler {
   static async safeExecute<T>(
     operation: () => Promise<T>,
     errorFactory: (error: Error) => WalletError,
-    context?: Partial<ErrorContext>,
+    _context?: Partial<ErrorContext>,
   ): Promise<T> {
     try {
       return await operation();
@@ -234,6 +234,7 @@ export class WalletErrorHandler {
 }
 
 // 错误恢复策略
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ErrorRecoveryStrategy {
   /**
    * 重试策略
@@ -272,6 +273,7 @@ export class ErrorRecoveryStrategy {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     throw lastError!;
   }
 
@@ -311,8 +313,8 @@ export class ErrorRecoveryStrategy {
   static async circuitBreaker<T>(
     operation: () => Promise<T>,
     failureThreshold: number = 3,
-    timeout: number = 60000, // 1分钟
-    context?: Partial<ErrorContext>,
+    _timeout: number = 60000, // 1分钟
+    _context?: Partial<ErrorContext>,
   ): Promise<T> {
     // 这里可以实现更复杂的断路器逻辑
     // 为了简化，我们先使用基本的重试策略
@@ -328,6 +330,7 @@ export class ErrorRecoveryStrategy {
 }
 
 // 错误报告工具
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ErrorReporter {
   /**
    * 报告错误到监控服务

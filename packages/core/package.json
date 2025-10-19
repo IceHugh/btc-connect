@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsc --emitDeclarationOnly && bun run build.js",
     "dev": "bun run build --watch",
-    "test": "bun test --config tsconfig.test.json",
+    "test": "bun test",
     "lint": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit"

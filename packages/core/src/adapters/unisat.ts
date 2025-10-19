@@ -1,6 +1,5 @@
 import type {
   AccountInfo,
-  ErrorContext,
   Network,
   UniSatBalance,
   UniSatChainInfo,
@@ -11,7 +10,6 @@ import type {
   UniSatSignPsbtOptions,
   UniSatWalletAdapter,
 } from '../types';
-import { WalletErrorHandler } from '../utils/error-handler';
 import { BaseWalletAdapter } from './base';
 
 declare global {

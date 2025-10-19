@@ -191,7 +191,7 @@ export function useWalletContext(): WalletContext {
     setInterval(() => {
       // 使用全局状态监听器，但要先确保它存在
       const context = globalContext;
-      if (context && context.manager?.value) {
+      if (context?.manager?.value) {
         const currentState = context.manager.value.getState();
         if (currentState.status === 'connected') {
         }

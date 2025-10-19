@@ -42,7 +42,7 @@ export function useBalance() {
                     (adapter as any).state.accounts[0].balance = validBalance;
                   }
                 }
-              } catch (balanceError) {
+              } catch (_balanceError) {
                 // 静默处理余额错误
               }
             }
@@ -64,12 +64,12 @@ export function useBalance() {
                     (adapter as any).state.accounts[0].publicKey = publicKey;
                   }
                 }
-              } catch (pubKeyError) {
+              } catch (_pubKeyError) {
                 // 静默处理public key错误
               }
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // 静默处理错误
         } finally {
           isLoading.value = false;
@@ -120,7 +120,7 @@ export function useBalance() {
                   (adapter as any).state.accounts[0].balance = validBalance;
                 }
               }
-            } catch (balanceError) {
+            } catch (_balanceError) {
               // 静默处理余额错误
             }
           }
@@ -142,12 +142,12 @@ export function useBalance() {
                   (adapter as any).state.accounts[0].publicKey = publicKey;
                 }
               }
-            } catch (pubKeyError) {
+            } catch (_pubKeyError) {
               // 静默处理public key错误
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // 静默处理错误
       } finally {
         isLoading.value = false;

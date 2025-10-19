@@ -48,6 +48,9 @@ export type {
 // 工具函数
 export * from './utils';
 
+// 导出新的余额工具函数
+export { createBalanceDetail, normalizeBalance } from './utils';
+
 // 版本信息
 export const version = '0.1.4';
 
