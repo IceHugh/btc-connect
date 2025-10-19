@@ -1,6 +1,6 @@
 {
   "name": "@btc-connect/core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "The framework-agnostic core module for BTC Connect, providing a wallet adapter layer.",
   "type": "module",
   "main": "dist/index.js",
