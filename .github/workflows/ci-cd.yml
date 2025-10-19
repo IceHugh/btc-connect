@@ -73,6 +73,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 安装 Node.js 和 NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: 安装 Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -143,29 +148,29 @@ jobs:
 
       - name: 发布到 NPM
         if: steps.check-npm.outputs.status != 200
-        env:
-          BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
           echo "当前目录: $(pwd)"
           echo "包名: ${{ matrix.package }}"
-          echo "NPM Token 长度: ${#BUN_NPM_TOKEN}"
+
+          # 设置 npm 认证
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "✅ NPM 认证配置完成"
 
           # 显示当前认证状态
-          echo "=== 检查 Bun 认证状态 ==="
-          bunx npm whoami || echo "认证检查失败，继续尝试发布"
+          echo "=== 检查 NPM 认证状态 ==="
+          npm whoami || echo "认证检查失败，继续尝试发布"
 
-          echo "=== 尝试发布 ==="
-          bun publish --access public --verbose || {
+          echo "=== 尝试发布到 NPM ==="
+          npm publish --access public --verbose || {
             echo "=== 发布失败，检查认证状态 ==="
-            echo "环境变量检查:"
-            echo "BUN_NPM_TOKEN set: ${BUN_NPM_TOKEN:+yes}"
-            echo "BUN_NPM_TOKEN length: ${#BUN_NPM_TOKEN}"
+            echo "检查 .npmrc 内容:"
+            cat ~/.npmrc || echo "文件不存在"
+            echo "检查 package.json 内容:"
+            cat package.json | jq '.name, .version'
 
-            # 尝试使用 npm token 创建 .npmrc 文件
-            echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-            echo "=== 尝试使用 .npmrc 配置重新发布 ==="
-            bun publish --access public --verbose
+            # 再次尝试
+            npm publish --access public --verbose
           }
 
       - name: 创建 GitHub Release
