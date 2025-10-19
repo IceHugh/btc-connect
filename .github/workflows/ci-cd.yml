@@ -123,7 +123,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          npm publish
+          npm publish --access public
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
