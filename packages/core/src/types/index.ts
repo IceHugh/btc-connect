@@ -135,6 +135,18 @@ export const DEFAULT_CACHE_CONFIG: Record<
   walletState: { ttl: 5000, maxSize: 20 }, // 5秒
 };
 
+// Modal配置接口
+export interface ModalConfig {
+  // z-index值配置
+  zIndex?: number | 'auto' | 'max';
+  // z-index策略
+  strategy?: 'fixed' | 'dynamic' | 'custom';
+}
+
+// z-index策略类型
+export type ZIndexStrategy = 'fixed' | 'dynamic' | 'custom';
+export type ZIndexValue = number | 'auto' | 'max';
+
 // 钱包管理器配置
 export interface WalletManagerConfig {
   // 错误处理
@@ -150,6 +162,8 @@ export interface WalletManagerConfig {
   >;
   // 是否启用缓存
   enableCache?: boolean;
+  // Modal配置
+  modalConfig?: ModalConfig;
 }
 
 // 钱包管理器接口

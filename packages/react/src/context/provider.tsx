@@ -62,6 +62,8 @@ interface WalletProviderProps {
   connectTimeout?: number;
   connectionPolicy?: ConnectionPolicy;
   theme?: 'light' | 'dark';
+  // modal配置
+  modalConfig?: import('../types').ModalConfig;
 }
 
 /**
@@ -74,6 +76,7 @@ export function BTCWalletProvider({
   connectTimeout = 5000,
   connectionPolicy,
   theme = 'light',
+  modalConfig,
 }: WalletProviderProps) {
   // 使用 useReducer 管理状态
   const [state, dispatch] = useReducer(walletReducer, {
@@ -86,8 +89,15 @@ export function BTCWalletProvider({
     if (typeof window === 'undefined') {
       return null;
     }
-    return new BTCWalletManager(config);
-  }, [config]);
+
+    // 合并modal配置到config中
+    const finalConfig = {
+      ...config,
+      modalConfig: modalConfig || config?.modalConfig,
+    };
+
+    return new BTCWalletManager(finalConfig);
+  }, [config, modalConfig]);
 
   // 响应主题 prop 变化
   useEffect(() => {

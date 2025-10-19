@@ -88,28 +88,58 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useConnectWallet, useWalletModal, useWallet } from '../composables';
-import { getAllAdapters } from '@btc-connect/core';
+import { getAllAdapters, ZIndexManager } from '@btc-connect/core';
 
 // Props
 interface Props {
   title?: string;
   class?: string;
   style?: Record<string, any>;
+  // z-index配置
+  zIndex?: number | 'auto' | 'max';
+  strategy?: 'fixed' | 'dynamic' | 'custom';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'Select Wallet',
   class: '',
   style: () => ({}),
+  zIndex: undefined,
+  strategy: undefined,
 });
 
 // Composables
 const { availableWallets, connect } = useConnectWallet();
 const { isModalOpen, closeModal } = useWalletModal();
-const { theme } = useWallet();
+const { theme, manager } = useWallet();
 
 // State
 const backdropRef = ref<HTMLElement>();
+
+// 计算最终的z-index值
+const calculatedZIndex = computed(() => {
+  // 优先级：组件级配置 > 全局配置 > 默认值
+  const componentStrategy = props.strategy || 'fixed';
+  const componentZIndex = props.zIndex;
+
+  // 如果组件有配置，直接使用组件配置
+  if (props.zIndex !== undefined || props.strategy !== undefined) {
+    return ZIndexManager.calculateZIndex(componentStrategy,
+      typeof componentZIndex === 'number' ? componentZIndex : undefined);
+  }
+
+  // 否则使用全局配置
+  const globalConfig = manager?.config.modalConfig;
+  if (globalConfig) {
+    return ZIndexManager.calculateZIndex(
+      globalConfig.strategy || 'fixed',
+      typeof globalConfig.zIndex === 'number' ? globalConfig.zIndex : undefined
+    );
+  }
+
+  // 最后使用默认值
+  return ZIndexManager.calculateZIndex();
+});
 
 // Computed
 const walletInfos = computed(() => {
@@ -174,13 +204,19 @@ const handleEscKey = (event: KeyboardEvent) => {
 
 // Lifecycle
 onMounted(() => {
-  // Inject styles
+  // Inject styles with dynamic z-index
   if (typeof document !== 'undefined') {
     const styleId = 'btc-wallet-modal-styles';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+
+    // 基础样式模板
+    const baseStyles = `
         .btc-modal-backdrop {
           position: fixed;
           top: 0;
@@ -188,7 +224,7 @@ onMounted(() => {
           width: 100vw;
           height: 100vh;
           background-color: rgba(0, 0, 0, 0.5);
-          z-index: 1050;
+          z-index: ${calculatedZIndex.value} !important;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -431,8 +467,8 @@ onMounted(() => {
           animation: btc-modalFadeIn 0.3s ease-out;
         }
       `;
-      document.head.appendChild(style);
-    }
+
+    styleElement.textContent = baseStyles;
   }
 
   // Add ESC key listener
@@ -456,6 +492,21 @@ watch(isModalOpen, (newValue) => {
     document.body.style.overflow = '';
   } else {
     document.body.style.overflow = 'hidden';
+  }
+});
+
+// Watch z-index changes and update styles
+watch(calculatedZIndex, (newZIndex) => {
+  if (typeof document !== 'undefined') {
+    const styleElement = document.getElementById('btc-wallet-modal-styles') as HTMLStyleElement;
+    if (styleElement) {
+      const currentStyles = styleElement.textContent || '';
+      const updatedStyles = currentStyles.replace(
+        /z-index:\s*\d+\s*!important;/g,
+        `z-index: ${newZIndex} !important;`
+      );
+      styleElement.textContent = updatedStyles;
+    }
   }
 });
 </script>

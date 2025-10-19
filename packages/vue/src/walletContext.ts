@@ -2,6 +2,7 @@ import {
   type AccountInfo,
   BTCWalletManager,
   type ConnectionStatus,
+  type ModalConfig,
   type Network,
   type WalletInfo,
   type WalletState,
@@ -202,24 +203,38 @@ export function useWalletContext(): WalletContext {
   return globalContext;
 }
 
+// Vue 插件选项类型
+export interface BTCWalletPluginOptions {
+  autoConnect?: boolean;
+  connectTimeout?: number;
+  theme?: 'light' | 'dark';
+  // modal配置
+  modalConfig?: ModalConfig;
+  // 钱包管理器配置
+  config?: Omit<import('@btc-connect/core').WalletManagerConfig, 'modalConfig'>;
+}
+
 // Vue 插件
 export const BTCWalletPlugin = {
   install(
     app: App,
-    options: {
-      autoConnect?: boolean;
-      connectTimeout?: number;
-      theme?: 'light' | 'dark';
-    } = {},
+    options: BTCWalletPluginOptions = {},
   ) {
     const context = createWalletContext();
-    const { autoConnect = true, connectTimeout = 5000 } = options;
+    const {
+      autoConnect = true,
+      connectTimeout = 5000,
+      modalConfig,
+      config
+    } = options;
 
     // 在客户端初始化
     if (typeof window !== 'undefined') {
-      // 初始化钱包管理器
-      const walletManager = new BTCWalletManager({
-        onStateChange: (state) => {
+      // 合并配置
+      const finalConfig = {
+        ...config,
+        modalConfig: modalConfig || config?.modalConfig,
+        onStateChange: (state: WalletState) => {
           // 状态变化时强制更新Vue响应式系统
           console.log('🔄 [walletContext] State changed:', state);
           // 增加trigger值强制重新计算
@@ -232,10 +247,13 @@ export const BTCWalletPlugin = {
             context.isConnected;
           }, 0);
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           console.error('❌ [walletContext] Wallet error:', error);
         },
-      }) as BTCWalletManager;
+      };
+
+      // 初始化钱包管理器
+      const walletManager = new BTCWalletManager(finalConfig) as BTCWalletManager;
 
       context.manager.value = walletManager as BTCWalletManager;
 

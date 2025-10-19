@@ -8,6 +8,9 @@ export type {
   WalletInfo,
   WalletManagerConfig,
   WalletState,
+  ModalConfig,
+  ZIndexStrategy,
+  ZIndexValue,
 } from './core';
 
 export { BTCWalletManager } from './core';
