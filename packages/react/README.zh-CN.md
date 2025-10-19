@@ -52,14 +52,14 @@ npm install react react-dom
 
 ```tsx
 import React from 'react';
-import { BTCWalletProvider, BTCConnectButton, WalletModal } from '@btc-connect/react';
+import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
 
 function App() {
   return (
     <BTCWalletProvider autoConnect={true}>
       <div>
         <h1>我的比特币应用</h1>
-        <BTCConnectButton />
+        <ConnectButton />
         <WalletModal />
       </div>
     </BTCWalletProvider>
@@ -81,6 +81,7 @@ function App() {
     <BTCWalletProvider
       autoConnect={true}
       connectTimeout={5000}
+      theme="light"
       config={{
         onStateChange: (state) => console.log('状态:', state),
         onError: (error) => console.error('错误:', error)
@@ -92,7 +93,48 @@ function App() {
 }
 ```
 
-### BTCConnectButton
+#### 主题管理
+
+`BTCWalletProvider` 统一管理所有组件的主题。主题设置会自动传递给所有子组件：
+
+```tsx
+// 设置暗色主题
+<BTCWalletProvider theme="dark">
+  <ConnectButton />  {/* 自动使用 dark 主题 */}
+  <WalletModal />    {/* 自动使用 dark 主题 */}
+</BTCWalletProvider>
+
+// 设置亮色主题（默认）
+<BTCWalletProvider theme="light">
+  <ConnectButton />  {/* 自动使用 light 主题 */}
+  <WalletModal />    {/* 自动使用 light 主题 */}
+</BTCWalletProvider>
+```
+
+**支持的主题：**
+- `"light"`: 亮色主题（默认）
+- `"dark"`: 暗色主题
+
+**动态主题切换：**
+```tsx
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  return (
+    <BTCWalletProvider theme={theme}>
+      <div>
+        <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+          切换主题
+        </button>
+        <ConnectButton />
+        <WalletModal />
+      </div>
+    </BTCWalletProvider>
+  );
+}
+```
+
+### ConnectButton
 
 可自定义样式的钱包连接预构建按钮组件。
 
@@ -100,8 +142,7 @@ function App() {
 function Header() {
   return (
     <header>
-      <BTCConnectButton
-        theme="light"
+      <ConnectButton
         size="md"
         variant="select"
         label="连接钱包"
@@ -121,11 +162,10 @@ function WalletLayout() {
 
   return (
     <div>
-      <BTCConnectButton onClick={openModal} />
+      <ConnectButton onClick={openModal} />
       <WalletModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        theme="light"
       />
     </div>
   );
@@ -471,10 +511,10 @@ export default function RootLayout({
 // components/WalletConnectButton.tsx
 'use client';
 
-import { BTCConnectButton } from '@btc-connect/react';
+import { ConnectButton } from '@btc-connect/react';
 
 export default function WalletConnectButton() {
-  return <BTCConnectButton />;
+  return <ConnectButton />;
 }
 ```
 

@@ -25,12 +25,12 @@
 
 ### 基本使用
 ```tsx
-import { BTCWalletProvider, BTCConnectButton, WalletModal } from '@btc-connect/react';
+import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
 
 function App() {
   return (
     <BTCWalletProvider autoConnect={true}>
-      <BTCConnectButton />
+      <ConnectButton />
       <WalletModal />
     </BTCWalletProvider>
   );
@@ -108,9 +108,9 @@ const {
 
 ### 组件
 
-#### BTCConnectButton - 连接按钮
+#### ConnectButton - 连接按钮
 ```tsx
-interface BTCConnectButtonProps {
+interface ConnectButtonProps {
   theme?: 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg';
   variant?: 'select' | 'button' | 'compact';
@@ -252,7 +252,7 @@ function MyComponent() {
 ### Q: 如何自定义主题和样式？
 A: 使用主题属性和 CSS 变量：
 ```tsx
-<BTCConnectButton
+<ConnectButton
   theme="dark"
   size="lg"
   variant="button"
@@ -295,7 +295,7 @@ function WalletEvents() {
 
 ### 组件
 - `src/components/index.ts` - 组件入口
-- `src/components/BTCConnectButton.tsx` - 连接按钮组件
+- `src/components/ConnectButton.tsx` - 连接按钮组件
 - `src/components/WalletModal.tsx` - 钱包模态框组件
 
 ### 工具和配置

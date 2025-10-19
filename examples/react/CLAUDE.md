@@ -34,7 +34,7 @@ examples/react/
 
 ### 1. 基本钱包连接
 ```tsx
-import { BTCConnectButton, WalletModal, useWallet } from '@btc-connect/react';
+import { ConnectButton, WalletModal, useWallet, BTCWalletProvider } from '@btc-connect/react';
 
 function AccountPreview() {
   const { address } = useWallet();
@@ -49,12 +49,14 @@ function AccountPreview() {
 
 function App() {
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>BTC Connect React Demo</h1>
-      <BTCConnectButton theme="light" label="Connect" />
-      <AccountPreview />
-      <WalletModal theme="light" />
-    </div>
+    <BTCWalletProvider theme="light" autoConnect={true}>
+      <div style={{ padding: 24 }}>
+        <h1 style={{ marginBottom: 16 }}>BTC Connect React Demo</h1>
+        <ConnectButton label="Connect" />
+        <AccountPreview />
+        <WalletModal />
+      </div>
+    </BTCWalletProvider>
   );
 }
 ```
@@ -68,6 +70,7 @@ function App() {
     <BTCWalletProvider
       autoConnect={true}
       connectTimeout={10000}
+      theme="light"
       config={{
         onStateChange: (state) => {
           console.log('Wallet state changed:', state);
@@ -78,6 +81,31 @@ function App() {
       }}
     >
       <WalletComponents />
+    </BTCWalletProvider>
+  );
+}
+```
+
+### 3. 主题切换示例
+```tsx
+import { useState } from 'react';
+import { ConnectButton, WalletModal, BTCWalletProvider } from '@btc-connect/react';
+
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  return (
+    <BTCWalletProvider theme={theme}>
+      <div style={{ padding: 24 }}>
+        <div style={{ marginBottom: 16 }}>
+          <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+            切换到 {theme === 'light' ? '暗色' : '亮色'} 主题
+          </button>
+        </div>
+        <h1 style={{ marginBottom: 16 }}>BTC Connect React Demo</h1>
+        <ConnectButton label="Connect" />
+        <WalletModal />
+      </div>
     </BTCWalletProvider>
   );
 }

@@ -6,7 +6,7 @@ This directory contains example projects demonstrating how to use BTC Connect wi
 
 ### 1. React Example (`/react`)
 A basic React application using Vite that demonstrates:
-- **Basic wallet connection** with `BTCConnectButton` and `WalletModal`
+- **Basic wallet connection** with `ConnectButton` and `WalletModal`
 - **Light and dark themes** support
 - **State management** with React hooks
 - **Event handling** and real-time status updates
@@ -169,8 +169,8 @@ useWalletEvent('disconnect', () => {
 
 ### 3. Theme Support
 ```typescript
-<BTCConnectButton theme="light" />
-<BTCConnectButton theme="dark" />
+<ConnectButton theme="light" />
+<ConnectButton theme="dark" />
 <WalletModal theme="light" />
 ```
 

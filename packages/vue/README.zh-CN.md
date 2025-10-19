@@ -76,7 +76,7 @@ app.mount('#app')
 <template>
   <div>
     <h1>我的比特币应用</h1>
-    <BTCConnectButton theme="light" />
+    <ConnectButton theme="light" />
     <WalletModal />
 
     <!-- 或直接使用组合式函数 -->
@@ -86,7 +86,7 @@ app.mount('#app')
 </template>
 
 <script setup lang="ts">
-import { BTCConnectButton, WalletModal } from '@btc-connect/vue'
+import { ConnectButton, WalletModal } from '@btc-connect/vue'
 import AccountDisplay from './components/AccountDisplay.vue'
 import BalanceDisplay from './components/BalanceDisplay.vue'
 </script>
@@ -94,13 +94,13 @@ import BalanceDisplay from './components/BalanceDisplay.vue'
 
 ## 核心组件
 
-### BTCConnectButton
+### ConnectButton
 
 可自定义样式的钱包连接预构建按钮组件。
 
 ```vue
 <template>
-  <BTCConnectButton
+  <ConnectButton
     theme="light"
     size="md"
     variant="select"
@@ -111,7 +111,7 @@ import BalanceDisplay from './components/BalanceDisplay.vue'
 </template>
 
 <script setup lang="ts">
-import { BTCConnectButton } from '@btc-connect/vue'
+import { ConnectButton } from '@btc-connect/vue'
 
 const handleConnect = (walletId: string) => {
   console.log('已连接到:', walletId)
@@ -130,7 +130,7 @@ const handleDisconnect = () => {
 ```vue
 <template>
   <div>
-    <BTCConnectButton @click="openModal" />
+    <ConnectButton @click="openModal" />
     <VueWalletModal
       :is-open="isModalOpen"
       theme="light"
@@ -140,7 +140,7 @@ const handleDisconnect = () => {
 </template>
 
 <script setup lang="ts">
-import { BTCConnectButton, VueWalletModal } from '@btc-connect/vue'
+import { ConnectButton, VueWalletModal } from '@btc-connect/vue'
 import { useWalletModal } from '@btc-connect/vue'
 
 const { isOpen: isModalOpen, open: openModal, close: closeModal } = useWalletModal()
@@ -601,12 +601,12 @@ export default defineNuxtPlugin((nuxtApp) => {
 <!-- components/WalletConnectButton.vue -->
 <template>
   <ClientOnly>
-    <BTCConnectButton theme="light" />
+    <ConnectButton theme="light" />
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
-import { BTCConnectButton } from '@btc-connect/vue'
+import { ConnectButton } from '@btc-connect/vue'
 </script>
 ```
 
@@ -696,9 +696,9 @@ jest.mock('@btc-connect/core', () => ({
   createWalletManager: jest.fn(() => createMockManager())
 }))
 
-describe('BTCConnectButton', () => {
+describe('ConnectButton', () => {
   it('未连接时渲染连接按钮', () => {
-    const app = createApp(BTCConnectButton)
+    const app = createApp(ConnectButton)
     const wrapper = mount(app)
 
     expect(wrapper.text()).toContain('连接钱包')

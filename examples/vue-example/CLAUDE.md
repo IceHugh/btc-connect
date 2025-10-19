@@ -37,13 +37,13 @@ examples/vue-example/
 ```vue
 <template>
   <div style="display:flex; gap: 16px; align-items: center;">
-    <BTCConnectButton theme="light" label="Connect Wallet" />
+    <ConnectButton label="Connect Wallet" />
     <WalletModal />
   </div>
 </template>
 
 <script setup lang="ts">
-import { BTCConnectButton, WalletModal } from '@btc-connect/vue'
+import { ConnectButton, WalletModal } from '@btc-connect/vue'
 </script>
 ```
 
@@ -58,6 +58,7 @@ const app = createApp(App)
 
 app.use(BTCWalletPlugin, {
   autoConnect: true,
+  theme: 'light',
   config: {
     onStateChange: (state) => {
       console.log('Wallet state changed:', state)
@@ -66,6 +67,36 @@ app.use(BTCWalletPlugin, {
 })
 
 app.mount('#app')
+```
+
+### 3. 主题切换示例
+```vue
+<template>
+  <div style="padding: 24px;">
+    <div style="margin-bottom: 16px;">
+      <button @click="toggleTheme">
+        切换到 {{ theme === 'light' ? '暗色' : '亮色' }} 主题
+      </button>
+    </div>
+    <div style="display:flex; gap: 16px; align-items: center;">
+      <ConnectButton label="Connect Wallet" />
+      <WalletModal />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ConnectButton, WalletModal, useCore } from '@btc-connect/vue'
+
+const { setTheme } = useCore()
+const theme = ref<'light' | 'dark'>('light')
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'light' ? 'dark' : 'light'
+  setTheme(theme.value)
+}
+</script>
 ```
 
 ### 3. 组合式 API 使用
@@ -152,17 +183,16 @@ import WalletConnection from './components/WalletConnection.vue'
 </style>
 ```
 
-### 2. 完整的钱包管理界面
+### 4. 完整的钱包管理界面
 ```vue
 <template>
   <div class="wallet-manager">
     <div class="connection-section">
-      <BTCConnectButton
-        :theme="theme"
+      <ConnectButton
         :size="size"
         :label="buttonLabel"
       />
-      <WalletModal :theme="theme" />
+      <WalletModal />
     </div>
 
     <div v-if="isConnected" class="wallet-info">
@@ -190,9 +220,9 @@ import WalletConnection from './components/WalletConnection.vue'
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useCore, useAccount, useNetwork, useBalance } from '@btc-connect/vue'
-import { BTCConnectButton, WalletModal } from '@btc-connect/vue'
+import { ConnectButton, WalletModal } from '@btc-connect/vue'
 
 const { isConnected, currentWallet } = useCore()
 const { address } = useAccount()
@@ -211,7 +241,6 @@ const formattedBalance = computed(() => {
 })
 
 // 响应式配置
-const theme = ref<'light' | 'dark'>('light')
 const size = ref<'sm' | 'md' | 'lg'>('md')
 const buttonLabel = computed(() => {
   return isConnected ? 'Connected' : 'Connect Wallet'

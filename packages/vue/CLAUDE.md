@@ -27,13 +27,13 @@
 ```vue
 <template>
   <div>
-    <BTCConnectButton />
+    <ConnectButton />
     <WalletModal />
   </div>
 </template>
 
 <script setup>
-import { BTCConnectButton, WalletModal } from '@btc-connect/vue';
+import { ConnectButton, WalletModal } from '@btc-connect/vue';
 </script>
 ```
 
@@ -142,10 +142,10 @@ const {
 
 ### 组件
 
-#### BTCConnectButton - 连接按钮
+#### ConnectButton - 连接按钮
 ```vue
 <template>
-  <BTCConnectButton
+  <ConnectButton
     theme="light"
     size="md"
     variant="select"

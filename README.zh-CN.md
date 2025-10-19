@@ -84,12 +84,12 @@ npm install @btc-connect/vue
 ### React 示例
 
 ```tsx
-import { BTCWalletProvider, BTCConnectButton, WalletModal } from '@btc-connect/react';
+import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
 
 function App() {
   return (
     <BTCWalletProvider autoConnect={true}>
-      <BTCConnectButton />
+      <ConnectButton />
       <WalletModal />
     </BTCWalletProvider>
   );
@@ -101,13 +101,13 @@ function App() {
 ```vue
 <template>
   <div>
-    <BTCConnectButton />
+    <ConnectButton />
     <WalletModal />
   </div>
 </template>
 
 <script setup>
-import { BTCConnectButton, WalletModal } from '@btc-connect/vue';
+import { ConnectButton, WalletModal } from '@btc-connect/vue';
 </script>
 ```
 

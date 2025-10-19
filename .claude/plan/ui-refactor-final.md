@@ -71,7 +71,7 @@ graph TD
 
 ### 阶段2：核心组件重构（4天）
 
-#### 任务2.1：重构BTCConnectButton组件
+#### 任务2.1：重构ConnectButton组件
 **目标**：将connect-button.ts转换为原生Web Components
 
 **当前文件分析**：
@@ -88,7 +88,7 @@ class ConnectButton extends LitElement {
 **新的实现结构**：
 ```typescript
 // 转换为原生Web Components
-export class BTCConnectButton extends BaseComponent {
+export class ConnectButton extends BaseComponent {
   static get observedAttributes() {
     return ['label', 'connected', 'balance', 'address', 'unit', 'theme'];
   }
@@ -100,7 +100,7 @@ export class BTCConnectButton extends BaseComponent {
 ```
 
 **涉及文件**：
-- `packages/ui/src/components/BTCConnectButton.ts` (重写)
+- `packages/ui/src/components/ConnectButton.ts` (重写)
 - `packages/ui/src/styles/components/connect-button.css` (新建)
 
 #### 任务2.2：重构WalletModal组件
@@ -123,7 +123,7 @@ export class BTCConnectButton extends BaseComponent {
 **目标**：创建React友好的包装组件
 
 **涉及文件**：
-- `packages/react/src/components/BTCConnectButton.tsx` (更新)
+- `packages/react/src/components/ConnectButton.tsx` (更新)
 - `packages/react/src/components/WalletModal.tsx` (更新)
 - `packages/react/src/utils/web-components-react.ts` (新建)
 
@@ -131,7 +131,7 @@ export class BTCConnectButton extends BaseComponent {
 **目标**：创建Vue友好的包装组件
 
 **涉及文件**：
-- `packages/vue/src/components/BTCConnectButton.vue` (新建)
+- `packages/vue/src/components/ConnectButton.vue` (新建)
 - `packages/vue/src/components/WalletModal.vue` (新建)
 - `packages/vue/src/utils/web-components-vue.ts` (新建)
 
@@ -218,11 +218,11 @@ export abstract class BaseComponent extends HTMLElement {
 ### React包装实现
 
 ```tsx
-// BTCConnectButton.tsx
+// ConnectButton.tsx
 import React, { useRef, useEffect, forwardRef } from 'react';
-import { BTCConnectButton as WCButton } from '@btc-connect/ui';
+import { ConnectButton as WCButton } from '@btc-connect/ui';
 
-export interface BTCConnectButtonProps {
+export interface ConnectButtonProps {
   label?: string;
   connected?: boolean;
   balance?: number;
@@ -233,7 +233,7 @@ export interface BTCConnectButtonProps {
   onDisconnect?: (event: CustomEvent) => void;
 }
 
-export const BTCConnectButton = forwardRef<any, BTCConnectButtonProps>(
+export const ConnectButton = forwardRef<any, ConnectButtonProps>(
   ({ onConnect, onDisconnect, ...props }, ref) => {
     const wcRef = useRef<any>(null);
 

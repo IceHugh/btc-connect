@@ -21,11 +21,12 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
+      external: ['react', 'react-dom', 'react/jsx-runtime', '@btc-connect/core'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          '@btc-connect/core': 'BTCConnectCore',
         },
       },
     },

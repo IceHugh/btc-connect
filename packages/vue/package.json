@@ -1,6 +1,6 @@
 {
   "name": "@btc-connect/vue",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "description": "Vue adapter for BTC Connect, providing Vue components and Composables for easy integration.",
   "type": "module",
   "main": "dist/index.js",
@@ -31,7 +31,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@btc-connect/core": "workspace:*"
+    "@btc-connect/core": "^0.3.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
@@ -42,8 +42,7 @@
     "vue-tsc": "^3.0.5"
   },
   "peerDependencies": {
-    "vue": ">=3.2.0",
-    "@btc-connect/core": ">=0.1.1"
+    "vue": ">=3.2.0"
   },
   "keywords": [
     "bitcoin",

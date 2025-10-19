@@ -5,6 +5,30 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [0.3.4] - 2025-10-19
+
+### 🎨 新功能
+- **主题切换功能**: Next.js 示例新增动态主题切换测试按钮
+- **Provider级主题管理**: 统一在Provider层面管理主题，组件内部获取
+- **视觉增强**: 添加主题切换动画效果和交互反馈
+
+### 🔧 技术改进
+- **组件命名统一**: 全面替换 `BTCConnectButton` 为 `ConnectButton`
+- **架构优化**: 优化主题管理架构，提升组件一致性
+- **SSR兼容**: 确保主题切换功能在Next.js SSR环境中正常工作
+
+### 📦 包更新
+- **@btc-connect/core**: v0.3.4 - 核心钱包适配层
+- **@btc-connect/react**: v0.3.4 - React Context 和 Hooks
+- **@btc-connect/vue**: v0.3.4 - Vue Composables 和插件
+
+### 📚 文档
+- 更新所有README和文档中的组件命名
+- 完善主题管理相关的使用说明
+- 添加Next.js主题切换示例文档
+
+---
+
 ## [未发布]
 
 ### 🚀 新功能
