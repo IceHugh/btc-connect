@@ -122,10 +122,72 @@ jobs:
         run: |
           PACKAGE_NAME="${{ steps.package-info.outputs.name }}"
           PACKAGE_VERSION="${{ steps.package-info.outputs.version }}"
+
+          echo "🔍 检查包版本状态..."
+          echo "包名: $PACKAGE_NAME"
+          echo "版本: $PACKAGE_VERSION"
+
+          # 检查版本是否存在
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
           echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
 
-      - name: 配置 Bun 认证
+          # 获取当前 NPM 上的最新版本
+          if npm view $PACKAGE_NAME version >/dev/null 2>&1; then
+            LATEST_VERSION=$(npm view $PACKAGE_NAME version)
+            echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+            echo "当前 NPM 最新版本: $LATEST_VERSION"
+
+            # 版本比较检查
+            if [ "$PACKAGE_VERSION" = "$LATEST_VERSION" ]; then
+              echo "⚠️  版本 $PACKAGE_VERSION 已存在，跳过发布"
+            elif [ "$(printf '%s\n' "$PACKAGE_VERSION" "$LATEST_VERSION" | sort -V | head -n1)" != "$PACKAGE_VERSION" ]; then
+              echo "⚠️  版本 $PACKAGE_VERSION 低于 NPM 最新版本 $LATEST_VERSION"
+              echo "建议更新本地版本号"
+            else
+              echo "✅ 版本 $PACKAGE_VERSION 可以发布（高于 NPM 最新版本 $LATEST_VERSION）"
+            fi
+          else
+            echo "latest_version=not_found" >> $GITHUB_OUTPUT
+            echo "ℹ️  包 $PACKAGE_NAME 在 NPM 上不存在，可以首次发布"
+          fi
+
+      - name: 验证 NPM 权限和作用域
+        if: steps.check-npm.outputs.status != 200
+        run: |
+          echo "=== 验证 NPM 认证和作用域权限 ==="
+
+          # 设置认证
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+          # 检查认证状态
+          echo "检查 NPM 用户身份..."
+          npm whoami || {
+            echo "❌ NPM 认证失败"
+            echo "可能的原因："
+            echo "1. NPM_TOKEN 无效或已过期"
+            echo "2. Token 权限不足"
+            echo "3. 网络连接问题"
+            exit 1
+          }
+
+          # 检查作用域是否存在
+          PACKAGE_NAME="${{ steps.package-info.outputs.name }}"
+          echo "检查包 $PACKAGE_NAME 的状态..."
+
+          # 尝试获取包信息
+          npm view $PACKAGE_NAME || {
+            echo "⚠️  包 $PACKAGE_NAME 在 NPM 上不存在"
+            echo "这通常意味着："
+            echo "1. 作用域 @btc-connect 首次发布"
+            echo "2. 需要手动初始化作用域"
+            echo ""
+            echo "📋 解决步骤："
+            echo "1. 在本地执行: npm login"
+            echo "2. cd packages/core && npm publish --access public"
+            echo "3. 重新触发 CI/CD"
+          }
+
+      - name: 配置 NPM 认证
         if: steps.check-npm.outputs.status != 200
         env:
           BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -162,16 +224,48 @@ jobs:
           npm whoami || echo "认证检查失败，继续尝试发布"
 
           echo "=== 尝试发布到 NPM ==="
-          npm publish --access public --verbose || {
-            echo "=== 发布失败，检查认证状态 ==="
-            echo "检查 .npmrc 内容:"
-            cat ~/.npmrc || echo "文件不存在"
-            echo "检查 package.json 内容:"
-            cat package.json | jq '.name, .version'
 
-            # 再次尝试
-            npm publish --access public --verbose
-          }
+          # 首次发布尝试
+          if npm publish --access public --verbose; then
+            echo "🎉 发布成功！"
+          else
+            echo "❌ 发布失败，尝试诊断问题..."
+
+            # 检查常见的发布问题
+            PACKAGE_NAME=$(cat package.json | jq -r .name)
+            PACKAGE_VERSION=$(cat package.json | jq -r .version)
+
+            echo "📋 包信息："
+            echo "  包名: $PACKAGE_NAME"
+            echo "  版本: $PACKAGE_VERSION"
+            echo "  用户: $(npm whoami 2>/dev/null || echo '认证失败')"
+
+            # 检查是否是作用域问题
+            if [[ $PACKAGE_NAME == @*/* ]]; then
+              SCOPE=${PACKAGE_NAME%%/*}
+              echo "🔍 检测到作用域包: $SCOPE"
+
+              # 尝试检查作用域是否存在
+              if ! npm view $PACKAGE_NAME >/dev/null 2>&1; then
+                echo "⚠️  作用域包可能首次发布"
+                echo "建议手动执行以下命令初始化作用域："
+                echo "  npm login"
+                echo "  cd packages/core"
+                echo "  npm publish --access public"
+              fi
+            fi
+
+            # 最后一次尝试，使用更详细的输出
+            echo "🔄 最后尝试发布..."
+            npm publish --access public --verbose --loglevel silly || {
+              echo "💥 所有发布尝试均失败"
+              echo "请检查："
+              echo "1. NPM_TOKEN 是否有效且具有发布权限"
+              echo "2. @btc-connect 作用域是否已初始化"
+              echo "3. 包版本是否冲突"
+              exit 1
+            }
+          fi
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
