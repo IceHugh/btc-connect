@@ -127,28 +127,39 @@ jobs:
           echo "包名: $PACKAGE_NAME"
           echo "版本: $PACKAGE_VERSION"
 
-          # 检查版本是否存在
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
-          echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          # 使用 npm view 检查版本是否存在（更可靠的方法）
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1; then
+            echo "✅ 版本 $PACKAGE_VERSION 已存在"
+            echo "status=200" >> $GITHUB_OUTPUT
 
-          # 获取当前 NPM 上的最新版本
-          if npm view $PACKAGE_NAME version >/dev/null 2>&1; then
-            LATEST_VERSION=$(npm view $PACKAGE_NAME version)
+            # 获取当前 NPM 上的最新版本
+            LATEST_VERSION=$(npm view "$PACKAGE_NAME" version)
             echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
             echo "当前 NPM 最新版本: $LATEST_VERSION"
-
-            # 版本比较检查
-            if [ "$PACKAGE_VERSION" = "$LATEST_VERSION" ]; then
-              echo "⚠️  版本 $PACKAGE_VERSION 已存在，跳过发布"
-            elif [ "$(printf '%s\n' "$PACKAGE_VERSION" "$LATEST_VERSION" | sort -V | head -n1)" != "$PACKAGE_VERSION" ]; then
-              echo "⚠️  版本 $PACKAGE_VERSION 低于 NPM 最新版本 $LATEST_VERSION"
-              echo "建议更新本地版本号"
-            else
-              echo "✅ 版本 $PACKAGE_VERSION 可以发布（高于 NPM 最新版本 $LATEST_VERSION）"
-            fi
+            echo "⚠️  版本 $PACKAGE_VERSION 已存在，跳过发布"
           else
-            echo "latest_version=not_found" >> $GITHUB_OUTPUT
-            echo "ℹ️  包 $PACKAGE_NAME 在 NPM 上不存在，可以首次发布"
+            echo "ℹ️  版本 $PACKAGE_VERSION 不存在，可以发布"
+            echo "status=404" >> $GITHUB_OUTPUT
+
+            # 检查包是否存在并获取最新版本
+            if npm view "$PACKAGE_NAME" version >/dev/null 2>&1; then
+              LATEST_VERSION=$(npm view "$PACKAGE_NAME" version)
+              echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+              echo "当前 NPM 最新版本: $LATEST_VERSION"
+
+              # 版本比较检查
+              if [ "$PACKAGE_VERSION" = "$LATEST_VERSION" ]; then
+                echo "⚠️  版本 $PACKAGE_VERSION 已存在，跳过发布"
+              elif [ "$(printf '%s\n' "$PACKAGE_VERSION" "$LATEST_VERSION" | sort -V | head -n1)" != "$PACKAGE_VERSION" ]; then
+                echo "⚠️  版本 $PACKAGE_VERSION 低于 NPM 最新版本 $LATEST_VERSION"
+                echo "建议更新本地版本号"
+              else
+                echo "✅ 版本 $PACKAGE_VERSION 可以发布（高于 NPM 最新版本 $LATEST_VERSION）"
+              fi
+            else
+              echo "latest_version=not_found" >> $GITHUB_OUTPUT
+              echo "ℹ️  包 $PACKAGE_NAME 在 NPM 上不存在，可以首次发布"
+            fi
           fi
 
       - name: 验证 NPM 权限和作用域
