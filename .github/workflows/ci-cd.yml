@@ -132,30 +132,30 @@ jobs:
           cd packages/${{ matrix.package }}
           npm publish --access public
 
-      - name: 创建 GitHub Release
-        if: steps.check-npm.outputs.status != 200
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
-          name: ${{ steps.package-info.outputs.name }} v${{ steps.package-info.outputs.version }}
-          draft: false
-          prerelease: false
-          body: |
-            🚀 发布 ${{ steps.package-info.outputs.name }} 版本 ${{ steps.package-info.outputs.version }}
-
-            ## 变更内容
-            - 自动构建和发布
-
-            ## 安装
-            ```bash
-            npm install ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
-            ```
-
-            ## 文档
-            - [README](https://github.com/${{ github.repository }}/tree/main/packages/${{ matrix.package }})
-            - [更新日志](https://github.com/${{ github.repository }}/releases)
+      # - name: 创建 GitHub Release
+#   if: steps.check-npm.outputs.status != 200
+#   uses: softprops/action-gh-release@v1
+#   env:
+#     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#   with:
+#     tag_name: ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
+#     name: ${{ steps.package-info.outputs.name }} v${{ steps.package-info.outputs.version }}
+#     draft: false
+#     prerelease: false
+#     body: |
+#       🚀 发布 ${{ steps.package-info.outputs.name }} 版本 ${{ steps.package-info.outputs.version }}
+#
+#       ## 变更内容
+#       - 自动构建和发布
+#
+#       ## 安装
+#       ```bash
+#       npm install ${{ steps.package-info.outputs.name }}@${{ steps.package-info.outputs.version }}
+#       ```
+#
+#       ## 文档
+#       - [README](https://github.com/${{ github.repository }}/tree/main/packages/${{ matrix.package }})
+#       - [更新日志](https://github.com/${{ github.repository }}/releases)
 
   # 通知
   notify:
