@@ -12,7 +12,7 @@ env:
 
 jobs:
   # 代码质量检查和测试
-  test:
+  build:
     name: 代码质量检查和测试
     runs-on: ubuntu-latest
 
@@ -60,7 +60,7 @@ jobs:
   publish:
     name: 发布到 NPM
     runs-on: ubuntu-latest
-    needs: test
+    needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     strategy:
@@ -73,33 +73,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 安装 Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: ${{ env.BUN_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org/'
 
-      - name: 获取依赖缓存
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: 安装依赖
-        run: bun install
-
-      - name: 构建当前代码（不使用缓存的构建产物）
-        run: |
-          echo "重新构建当前代码..."
-          bun run build
-
-      - name: 下载构建产物（备用）
+      - name: 下载构建产物
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: packages/
-        continue-on-error: true
 
       - name: 验证下载的构建产物
         run: |
@@ -126,20 +110,6 @@ jobs:
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/$PACKAGE_NAME/$PACKAGE_VERSION")
           echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
 
-      - name: 配置 NPM 认证
-        if: steps.check-npm.outputs.status != 200
-        env:
-          BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          # Bun 使用环境变量进行认证
-          echo "BUN_NPM_TOKEN length: ${#BUN_NPM_TOKEN}"
-          if [ -n "$BUN_NPM_TOKEN" ]; then
-            echo "✅ Bun NPM token 环境变量已设置"
-          else
-            echo "❌ Bun NPM token 环境变量未设置"
-            exit 1
-          fi
-
       - name: 验证构建产物
         run: |
           echo "检查构建产物..."
@@ -149,9 +119,11 @@ jobs:
 
       - name: 发布到 NPM
         if: steps.check-npm.outputs.status != 200
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          bun publish --access public --verbose
+          npm publish
 
       - name: 创建 GitHub Release
         if: steps.check-npm.outputs.status != 200
