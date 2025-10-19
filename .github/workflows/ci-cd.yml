@@ -122,8 +122,21 @@ jobs:
 
       - name: 配置 NPM 认证
         if: steps.check-npm.outputs.status != 200
+        env:
+          BUN_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          # Bun 使用环境变量进行认证
+          echo "BUN_NPM_TOKEN length: ${#BUN_NPM_TOKEN}"
+          if [ -n "$BUN_NPM_TOKEN" ]; then
+            echo "✅ Bun NPM token 环境变量已设置"
+          else
+            echo "❌ Bun NPM token 环境变量未设置"
+            exit 1
+          fi
+
+          # 同时也设置 npmrc 作为备用
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "✅ NPM 认证配置完成"
 
       - name: 验证构建产物
         run: |
