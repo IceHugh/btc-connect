@@ -1,10 +1,9 @@
-import { getAllAdapters, ZIndexManager } from '@btc-connect/core';
+import { getAllAdapters } from '@btc-connect/core';
 import * as React from 'react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useConnectWallet, useWallet, useWalletModal } from '../context';
-import type { ZIndexStrategy, ZIndexValue } from '../types/core';
 
-// CSS样式
+// CSS样式 - 默认z-index提升至999999
 const styles = `
   .btc-modal-backdrop {
     position: fixed;
@@ -13,7 +12,7 @@ const styles = `
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1050;
+    z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -261,9 +260,6 @@ export interface WalletModalProps {
   title?: string;
   className?: string;
   style?: React.CSSProperties;
-  // z-index配置
-  zIndex?: ZIndexValue;
-  strategy?: ZIndexStrategy;
 }
 
 export interface WalletInfo {
@@ -279,38 +275,11 @@ export const WalletModal: React.FC<WalletModalProps> = ({
   title = 'Select Wallet',
   className = '',
   style,
-  zIndex,
-  strategy,
 }) => {
   const { availableWallets, connect } = useConnectWallet();
   const { isModalOpen, closeModal } = useWalletModal();
-  const { theme, manager } = useWallet();
+  const { theme } = useWallet();
   const backdropRef = useRef<HTMLDivElement>(null);
-
-  // 计算最终的z-index值
-  const calculatedZIndex = React.useMemo(() => {
-    // 优先级：组件级配置 > 全局配置 > 默认值
-    const componentStrategy = strategy || 'fixed';
-    const componentZIndex = zIndex;
-
-    // 如果组件有配置，直接使用组件配置
-    if (zIndex !== undefined || strategy !== undefined) {
-      return ZIndexManager.calculateZIndex(componentStrategy,
-        typeof componentZIndex === 'number' ? componentZIndex : undefined);
-    }
-
-    // 否则使用全局配置
-    const globalConfig = manager?.config.modalConfig;
-    if (globalConfig) {
-      return ZIndexManager.calculateZIndex(
-        globalConfig.strategy || 'fixed',
-        typeof globalConfig.zIndex === 'number' ? globalConfig.zIndex : undefined
-      );
-    }
-
-    // 最后使用默认值
-    return ZIndexManager.calculateZIndex();
-  }, [zIndex, strategy, manager]);
 
   // 获取钱包描述
   const getWalletDescription = useCallback((walletId: string): string => {
@@ -342,27 +311,18 @@ export const WalletModal: React.FC<WalletModalProps> = ({
     );
   }, [availableWallets, getWalletDescription]);
 
-  // 注入样式 - 使用动态z-index
+  // 注入样式
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const styleId = 'btc-wallet-modal-styles';
-      let styleElement = document.getElementById(styleId) as HTMLStyleElement;
-
-      if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = styleId;
-        document.head.appendChild(styleElement);
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = styles;
+        document.head.appendChild(style);
       }
-
-      // 更新样式内容，使用计算得出的z-index
-      const dynamicStyles = styles.replace(
-        /z-index:\s*1050;/g,
-        `z-index: ${calculatedZIndex} !important;`
-      );
-
-      styleElement.textContent = dynamicStyles;
     }
-  }, [calculatedZIndex]);
+  }, []);
 
   // 处理背景点击
   const handleBackdropClick = useCallback(

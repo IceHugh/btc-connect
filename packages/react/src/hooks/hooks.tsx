@@ -7,7 +7,7 @@ import { formatAddressShort, normalizeBalance } from '../utils';
  * 使用钱包状态的Hook - 优化版本
  */
 export function useWallet() {
-  const { state, currentWallet, isConnected, isConnecting, disconnect, theme, manager } =
+  const { state, currentWallet, isConnected, isConnecting, disconnect, theme } =
     useWalletContext();
 
   // 使用选择器避免不必要的重渲染
@@ -38,9 +38,6 @@ export function useWallet() {
     address,
     balance,
     publicKey,
-
-    // 管理器
-    manager,
 
     // 操作
     disconnect,
