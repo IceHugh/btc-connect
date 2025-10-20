@@ -211,7 +211,9 @@ export interface BTCWalletPluginOptions {
   // modal配置
   modalConfig?: ModalConfig;
   // 钱包管理器配置
-  config?: Omit<import('@btc-connect/core').WalletManagerConfig, 'modalConfig'>;
+  config?: Omit<import('@btc-connect/core').WalletManagerConfig, 'modalConfig'> & {
+    modalConfig?: ModalConfig;
+  };
 }
 
 // Vue 插件

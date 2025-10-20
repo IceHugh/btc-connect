@@ -42,6 +42,9 @@ export function useWallet() {
     balance,
     publicKey,
 
+    // 管理器
+    manager: ctx.manager,
+
     // 操作
     disconnect: ctx.disconnect,
   };

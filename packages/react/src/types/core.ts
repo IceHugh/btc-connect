@@ -8,6 +8,9 @@ export type {
   WalletInfo,
   WalletManagerConfig,
   WalletState,
+  ModalConfig,
+  ZIndexStrategy,
+  ZIndexValue,
 } from '@btc-connect/core';
 
 export { BTCWalletManager } from '@btc-connect/core';

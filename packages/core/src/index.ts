@@ -29,7 +29,7 @@ export { EventEmitter, WalletEventManager } from './events';
 // 管理器
 export { BTCWalletManager } from './managers';
 export type * from './types';
-export { createWalletManager, defaultWalletManager } from './utils';
+export { createWalletManager, defaultWalletManager, ZIndexManager } from './utils';
 
 // 错误处理
 export {

@@ -129,7 +129,7 @@ const calculatedZIndex = computed(() => {
   }
 
   // 否则使用全局配置
-  const globalConfig = manager?.config.modalConfig;
+  const globalConfig = manager?.value?.config.modalConfig;
   if (globalConfig) {
     return ZIndexManager.calculateZIndex(
       globalConfig.strategy || 'fixed',
