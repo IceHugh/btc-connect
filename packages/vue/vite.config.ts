@@ -31,8 +31,39 @@ export default defineConfig({
         return id === 'vue' || id.startsWith('@btc-connect/core');
       },
     },
+    // 使用 terser 进行真正的代码压缩和混淆
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log'],
+        // 基本的压缩选项，不使用 unsafe 选项
+        dead_code: true,
+        unused: true,
+        hoist_funs: true,
+        hoist_vars: true,
+        join_vars: true,
+        collapse_vars: true,
+        reduce_vars: true,
+        sequences: true,
+        conditionals: true,
+        comparisons: true,
+        evaluate: true,
+        booleans: true,
+        loops: true,
+        if_return: true,
+        inline: true,
+        switches: true,
+      },
+      mangle: true, // 启用变量名混淆
+      format: {
+        comments: false, // 移除注释
+      },
+    },
     target: 'es2019',
-    sourcemap: true,
+    // 移除 sourcemap 以减少包大小
+    sourcemap: false,
   },
   resolve: {
     alias: {

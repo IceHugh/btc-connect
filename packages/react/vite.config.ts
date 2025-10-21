@@ -30,7 +30,11 @@ export default defineConfig({
         },
       },
     },
-    sourcemap: true,
+    // 完全移除压缩配置，使用 Vite 默认行为
+    // 生产环境优化
+    target: 'es2019',
+    // 可选：移除 sourcemap 以减少包大小
+    sourcemap: false,
   },
   resolve: {
     alias: {
