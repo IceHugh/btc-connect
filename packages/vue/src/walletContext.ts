@@ -1,5 +1,6 @@
 import {
   type AccountInfo,
+  type BalanceDetail,
   BTCWalletManager,
   type ConnectionStatus,
   type ModalConfig,
@@ -241,6 +242,15 @@ export const BTCWalletPlugin = {
           console.log('🔄 [walletContext] State changed:', state);
           // 增加trigger值强制重新计算
           context._stateUpdateTrigger.value++;
+
+          // 当连接成功时，通过事件获取账户详情
+          if (state.status === 'connected' && state.currentAccount) {
+            // 延迟执行，避免与连接事件冲突
+            setTimeout(() => {
+              fetchAccountDetails(walletManager);
+            }, 100);
+          }
+
           // 使用nextTick确保状态更新在下一个事件循环中处理
           setTimeout(() => {
             // 强制重新计算所有依赖的computed
@@ -340,6 +350,18 @@ export const BTCWalletPlugin = {
       // 开始增强的钱包检测
       detectWallets();
 
+      // 监听钱包连接事件，在连接成功后获取账户详情
+      const handleConnect = () => {
+        console.log('[BTC-Connect] Vue: 连接成功，获取账户详情');
+        fetchAccountDetails(walletManager);
+      };
+
+      // 监听账户变化事件，用于UI更新和重新获取详情
+      const handleAccountChange = () => {
+        console.log('[BTC-Connect] Vue: 账户变化，重新获取账户详情');
+        fetchAccountDetails(walletManager);
+      };
+
       // 监听页面可见性变化，当用户回到页面时重新检测
       const handleVisibilityChange = () => {
         if (!document.hidden) {
@@ -348,7 +370,20 @@ export const BTCWalletPlugin = {
         }
       };
 
+      // 注册钱包事件监听器
+      walletManager.on('connect', handleConnect);
+      walletManager.on('accountChange', handleAccountChange);
       document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // 返回清理函数
+      return () => {
+        walletManager.off('connect', handleConnect);
+        walletManager.off('accountChange', handleAccountChange);
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+      };
     }
 
     globalContext = context;
@@ -358,6 +393,66 @@ export const BTCWalletPlugin = {
     app.provide('btc', context);
   },
 };
+
+// 获取账户详细信息的函数 - 与React包保持一致
+async function fetchAccountDetails(manager: BTCWalletManager): Promise<void> {
+  try {
+    const adapter = manager.getCurrentAdapter() as any;
+    if (!adapter) return;
+
+    const updatePayload: {
+      publicKey?: string;
+      balance?: BalanceDetail;
+    } = {};
+
+    // 获取公钥
+    try {
+      const pk = await adapter.getPublicKey?.();
+      if (pk) {
+        updatePayload.publicKey = pk;
+        console.log('[BTC-Connect] Vue: 获取公钥成功:', pk);
+      }
+    } catch (error) {
+      console.warn('[BTC-Connect] Vue: 获取公钥失败:', error);
+    }
+
+    // 获取余额
+    try {
+      const bal = await adapter.getBalance?.();
+      const detail: BalanceDetail | null =
+        bal &&
+        typeof bal === 'object' &&
+        typeof bal.confirmed === 'number' &&
+        typeof bal.unconfirmed === 'number' &&
+        typeof bal.total === 'number'
+          ? {
+              confirmed: bal.confirmed,
+              unconfirmed: bal.unconfirmed,
+              total: bal.total,
+            }
+          : null;
+      if (detail) {
+        updatePayload.balance = detail;
+        console.log('[BTC-Connect] Vue: 获取余额成功:', detail);
+      }
+    } catch (error) {
+      console.warn('[BTC-Connect] Vue: 获取余额失败:', error);
+    }
+
+    // 更新适配器状态中的账户信息
+    if ((adapter as any).state?.currentAccount) {
+      if (updatePayload.publicKey) {
+        (adapter as any).state.currentAccount.publicKey =
+          updatePayload.publicKey;
+      }
+      if (updatePayload.balance) {
+        (adapter as any).state.currentAccount.balance = updatePayload.balance;
+      }
+    }
+  } catch (error) {
+    console.warn('[BTC-Connect] Vue: 获取账户详情失败:', error);
+  }
+}
 
 // 尝试自动连接的辅助函数 - 与React包保持一致的逻辑
 async function attemptAutoConnect(

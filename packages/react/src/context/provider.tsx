@@ -258,35 +258,52 @@ export function BTCWalletProvider({
     }
   }, [manager]);
 
-  // 监听状态变化和账户变化（移除自动获取账户详情以提升性能）
+  // 监听状态变化和账户变化，通过事件驱动获取账户详情
   useEffect(() => {
     if (manager) {
       if (config?.onStateChange) {
         const originalHandler = config.onStateChange;
         config.onStateChange = (newState: WalletState) => {
           updateState();
-          // 移除自动获取账户详情逻辑，让组件按需获取
+          // 当连接成功时，通过事件获取账户详情
+          if (newState.status === 'connected' && newState.currentAccount) {
+            fetchAccountDetails();
+          }
           originalHandler(newState);
         };
       } else {
         manager.config.onStateChange = (_newState: WalletState) => {
           updateState();
-          // 移除自动获取账户详情逻辑，让组件按需获取
+          // 当连接成功时，通过事件获取账户详情
+          if (_newState.status === 'connected' && _newState.currentAccount) {
+            fetchAccountDetails();
+          }
         };
       }
 
-      // 保留账户变化事件监听（用于UI更新）
-      const handleAccountChange = () => {
-        updateState();
+      // 监听连接成功事件，获取账户详情
+      const handleConnect = () => {
+        console.log('[BTC-Connect] React: 连接成功，获取账户详情');
+        fetchAccountDetails();
       };
 
+      // 监听账户变化事件（用于UI更新和重新获取详情）
+      const handleAccountChange = () => {
+        console.log('[BTC-Connect] React: 账户变化，重新获取账户详情');
+        updateState();
+        fetchAccountDetails();
+      };
+
+      // 注册事件监听器
+      manager.on('connect', handleConnect);
       manager.on('accountChange', handleAccountChange);
 
       return () => {
+        manager.off('connect', handleConnect);
         manager.off('accountChange', handleAccountChange);
       };
     }
-  }, [manager, config, updateState]);
+  }, [manager, config, updateState, fetchAccountDetails]);
 
   // 连接钱包
   const connect = useCallback(
