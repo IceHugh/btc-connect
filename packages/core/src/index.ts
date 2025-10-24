@@ -4,10 +4,14 @@
 export {
   BaseWalletAdapter,
   createAdapter,
+  detectAvailableWallets,
   getAllAdapters,
   getAvailableAdapters,
+  getAvailableWalletsWithRetry,
   OKXAdapter,
   UniSatAdapter,
+  type WalletDetectionConfig,
+  type WalletDetectionResult,
   XverseAdapter,
 } from './adapters';
 // 缓存系统
@@ -29,7 +33,10 @@ export { EventEmitter, WalletEventManager } from './events';
 // 管理器
 export { BTCWalletManager } from './managers';
 export type * from './types';
-export { createWalletManager, defaultWalletManager, ZIndexManager } from './utils';
+export {
+  createWalletManager,
+  defaultWalletManager,
+} from './utils';
 
 // 错误处理
 export {

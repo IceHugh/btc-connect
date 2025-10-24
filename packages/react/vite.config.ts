@@ -21,7 +21,12 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@btc-connect/core'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        '@btc-connect/core',
+      ],
       output: {
         globals: {
           react: 'React',

@@ -197,27 +197,9 @@ export class BTCWalletManager implements WalletManager {
         (adapter as any).isConnected = true;
       }
 
-      // 尝试补充只读信息（忽略失败）
+      // 只获取必要的网络信息（更快），移除公钥和余额的自动获取
       try {
         await adapter.getNetwork();
-      } catch {}
-      try {
-        const pk = await (adapter as any).getPublicKey?.();
-        if (pk && (adapter as any).state?.currentAccount) {
-          (adapter as any).state.currentAccount.publicKey = pk;
-        }
-      } catch {}
-      try {
-        const bal = await (adapter as any).getBalance?.();
-        console.log('bal', bal);
-
-        const s = (adapter as any).state;
-        if (s?.currentAccount) {
-          s.currentAccount.balance = bal;
-        }
-        if (Array.isArray(s?.accounts) && s.accounts.length > 0) {
-          s.accounts[0].balance = bal;
-        }
       } catch {}
 
       this.eventManager.emitConnectLegacy((adapter as any).state.accounts);

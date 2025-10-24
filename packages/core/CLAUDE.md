@@ -4,6 +4,13 @@
 
 ## 变更记录 (Changelog)
 
+### 2025-10-24 22:00:00
+- 新增增强钱包检测机制：`detectAvailableWallets`函数支持轮询检测
+- 移除z-index-manager模块，简化核心架构
+- 优化连接性能：移除自动获取public key和balance的逻辑
+- 添加`WalletDetectionConfig`和`WalletDetectionResult`类型定义
+- 完善适配器检测的稳定性和兼容性
+
 ### 2025-10-16 09:31:52
 - 完成核心模块架构分析和文档生成
 - 添加适配器接口和管理器详细说明
@@ -112,6 +119,38 @@ const allAdapters = getAllAdapters();
 
 // 获取可用适配器（已安装的钱包）
 const availableAdapters = getAvailableAdapters();
+
+// 增强的钱包检测（支持轮询检测延迟注入的钱包）
+const result = await detectAvailableWallets({
+  timeout: 20000,        // 20秒超时
+  interval: 300,         // 300ms检测间隔
+  onProgress: (wallets, time) => {
+    console.log(`检测到钱包: ${wallets.join(', ')} (${time}ms)`);
+  }
+});
+
+console.log('检测结果:', {
+  wallets: result.wallets,     // 检测到的钱包ID
+  adapters: result.adapters,   // 可用的适配器实例
+  elapsedTime: result.elapsedTime, // 总耗时
+  isComplete: result.isComplete   // 是否完成检测
+});
+```
+
+### 增强钱包检测接口
+```typescript
+interface WalletDetectionConfig {
+  timeout?: number; // 超时时间（毫秒），默认20000
+  interval?: number; // 轮询间隔（毫秒），默认300
+  onProgress?: (detectedWallets: string[], elapsedTime: number) => void; // 进度回调
+}
+
+interface WalletDetectionResult {
+  wallets: string[]; // 检测到的钱包ID列表
+  adapters: BTCWalletAdapter[]; // 可用的适配器实例
+  elapsedTime: number; // 总耗时
+  isComplete: boolean; // 是否完成检测
+}
 ```
 
 ## 关键依赖与配置

@@ -123,14 +123,71 @@ export function BTCWalletProvider({
 
   const { manager } = state;
 
-  // 在客户端安全地初始化适配器
+  // 在客户端安全地初始化适配器和检测钱包
   useEffect(() => {
     if (typeof window !== 'undefined' && manager) {
       manager.initializeAdapters();
-      // 初始化后更新可用钱包列表
-      dispatch(
-        walletActionCreators.setAvailableWallets(manager.getAvailableWallets()),
-      );
+
+      // 使用增强的钱包检测逻辑
+      const detectWallets = async () => {
+        try {
+          // 导入增强检测方法
+          const { detectAvailableWallets } = await import('@btc-connect/core');
+
+          const result = await detectAvailableWallets({
+            timeout: 20000, // 20秒超时
+            interval: 300, // 300ms间隔
+            onProgress: (detectedWallets, elapsedTime) => {
+              console.log(
+                `[BTC-Connect] 钱包检测进度: ${detectedWallets.join(', ')} (${elapsedTime}ms)`,
+              );
+              // 实时更新可用钱包列表
+              const walletInfos = detectedWallets
+                .map((walletId) => {
+                  const adapter = manager.getAdapter(walletId);
+                  return adapter
+                    ? {
+                        id: adapter.id,
+                        name: adapter.name,
+                        icon: adapter.icon,
+                      }
+                    : null;
+                })
+                .filter((wallet): wallet is WalletInfo => wallet !== null);
+
+              dispatch(walletActionCreators.setAvailableWallets(walletInfos));
+            },
+          });
+
+          console.log(
+            `[BTC-Connect] 钱包检测完成: ${result.wallets.join(', ')} (耗时: ${result.elapsedTime}ms)`,
+          );
+
+          // 最终更新可用钱包列表
+          const walletInfos = result.adapters.map((adapter) => ({
+            id: adapter.id,
+            name: adapter.name,
+            icon: adapter.icon,
+          }));
+
+          dispatch(walletActionCreators.setAvailableWallets(walletInfos));
+        } catch (error) {
+          console.warn(
+            '[BTC-Connect] 增强钱包检测失败，回退到基础检测:',
+            error,
+          );
+
+          // 回退到基础检测
+          dispatch(
+            walletActionCreators.setAvailableWallets(
+              manager.getAvailableWallets(),
+            ),
+          );
+        }
+      };
+
+      // 开始检测
+      detectWallets();
     }
   }, [manager]);
 
@@ -201,32 +258,26 @@ export function BTCWalletProvider({
     }
   }, [manager]);
 
-  // 监听状态变化和账户变化
+  // 监听状态变化和账户变化（移除自动获取账户详情以提升性能）
   useEffect(() => {
     if (manager) {
       if (config?.onStateChange) {
         const originalHandler = config.onStateChange;
         config.onStateChange = (newState: WalletState) => {
           updateState();
-          // 当连接状态变化且已连接时，获取账户详情
-          if (newState.status === 'connected' && newState.currentAccount) {
-            fetchAccountDetails();
-          }
+          // 移除自动获取账户详情逻辑，让组件按需获取
           originalHandler(newState);
         };
       } else {
-        manager.config.onStateChange = (newState: WalletState) => {
+        manager.config.onStateChange = (_newState: WalletState) => {
           updateState();
-          // 当连接状态变化且已连接时，获取账户详情
-          if (newState.status === 'connected' && newState.currentAccount) {
-            fetchAccountDetails();
-          }
+          // 移除自动获取账户详情逻辑，让组件按需获取
         };
       }
 
-      // 监听账户变化事件
+      // 保留账户变化事件监听（用于UI更新）
       const handleAccountChange = () => {
-        fetchAccountDetails();
+        updateState();
       };
 
       manager.on('accountChange', handleAccountChange);
@@ -235,7 +286,7 @@ export function BTCWalletProvider({
         manager.off('accountChange', handleAccountChange);
       };
     }
-  }, [manager, config, updateState, fetchAccountDetails]);
+  }, [manager, config, updateState]);
 
   // 连接钱包
   const connect = useCallback(
@@ -282,10 +333,7 @@ export function BTCWalletProvider({
           }
         }
 
-        // 策略通过后进行一次信息补全（网络/公钥/余额），以与 autoconnect 行为一致
-        await fetchAccountDetails();
-
-        // 同步最新状态到 React
+        // 策略通过后同步最新状态到 React（移除自动获取账户详情）
         updateState();
 
         // 策略通过后再记录 last wallet，并返回账户
@@ -302,7 +350,7 @@ export function BTCWalletProvider({
         dispatch(walletActionCreators.setConnecting(false));
       }
     },
-    [manager, connectionPolicy, updateState, fetchAccountDetails],
+    [manager, connectionPolicy, updateState],
   );
 
   // 自动静默连接：仅针对上次成功连接的钱包
@@ -340,13 +388,8 @@ export function BTCWalletProvider({
         if (!result) {
           // 授权不存在，忽略
         } else {
-          // 保险：主动拉一次状态
+          // 保险：主动拉一次状态（移除自动获取账户详情）
           updateState();
-
-          // 自动连接成功后获取账户详情
-          if (walletSelectors.isConnected(state)) {
-            await fetchAccountDetails();
-          }
 
           // 自动静默连接后任务（仅当允许）。所有任务成功后才保留连接并记录 storage
           if (
@@ -405,7 +448,6 @@ export function BTCWalletProvider({
     state,
     updateState,
     connectionPolicy,
-    fetchAccountDetails,
   ]);
 
   // 断开连接

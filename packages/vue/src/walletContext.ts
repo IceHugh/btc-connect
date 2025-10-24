@@ -211,23 +211,23 @@ export interface BTCWalletPluginOptions {
   // modal配置
   modalConfig?: ModalConfig;
   // 钱包管理器配置
-  config?: Omit<import('@btc-connect/core').WalletManagerConfig, 'modalConfig'> & {
+  config?: Omit<
+    import('@btc-connect/core').WalletManagerConfig,
+    'modalConfig'
+  > & {
     modalConfig?: ModalConfig;
   };
 }
 
 // Vue 插件
 export const BTCWalletPlugin = {
-  install(
-    app: App,
-    options: BTCWalletPluginOptions = {},
-  ) {
+  install(app: App, options: BTCWalletPluginOptions = {}) {
     const context = createWalletContext();
     const {
       autoConnect = true,
       connectTimeout = 5000,
       modalConfig,
-      config
+      config,
     } = options;
 
     // 在客户端初始化
@@ -255,33 +255,100 @@ export const BTCWalletPlugin = {
       };
 
       // 初始化钱包管理器
-      const walletManager = new BTCWalletManager(finalConfig) as BTCWalletManager;
+      const walletManager = new BTCWalletManager(
+        finalConfig,
+      ) as BTCWalletManager;
 
       context.manager.value = walletManager as BTCWalletManager;
 
       // 初始化适配器 - 这是关键步骤！
       walletManager.initializeAdapters();
 
-      // 延迟检测钱包，确保钱包扩展有足够时间初始化
-      const updateAvailableWallets = () => {
-        context.availableWallets.value = walletManager.getAvailableWallets();
+      // 增强的钱包检测逻辑，支持轮询检测延迟注入的钱包
+      const detectWallets = async () => {
+        try {
+          // 动态导入增强检测方法
+          const { detectAvailableWallets } = await import('@btc-connect/core');
+
+          console.log('[BTC-Connect] Vue: 开始增强钱包检测...');
+
+          const result = await detectAvailableWallets({
+            timeout: 20000, // 20秒超时
+            interval: 300, // 300ms间隔
+            onProgress: (detectedWallets, elapsedTime) => {
+              console.log(
+                `[BTC-Connect] Vue: 钱包检测进度: ${detectedWallets.join(', ')} (${elapsedTime}ms)`,
+              );
+
+              // 实时更新可用钱包列表
+              const walletInfos = detectedWallets
+                .map((walletId) => {
+                  const adapter = walletManager.getAdapter(walletId);
+                  return adapter
+                    ? {
+                        id: adapter.id,
+                        name: adapter.name,
+                        icon: adapter.icon,
+                      }
+                    : null;
+                })
+                .filter(Boolean);
+
+              context.availableWallets.value = walletInfos as any[];
+            },
+          });
+
+          console.log(
+            `[BTC-Connect] Vue: 钱包检测完成: ${result.wallets.join(', ')} (耗时: ${result.elapsedTime}ms)`,
+          );
+
+          // 最终更新可用钱包列表
+          const walletInfos = result.adapters.map((adapter) => ({
+            id: adapter.id,
+            name: adapter.name,
+            icon: adapter.icon,
+          }));
+
+          context.availableWallets.value = walletInfos as any[];
+
+          // 钱包检测完成后，如果启用了自动连接，立即执行
+          if (autoConnect) {
+            console.log('[BTC-Connect] Vue: 钱包检测完成，开始自动连接...');
+            await attemptAutoConnect(walletManager, connectTimeout);
+          }
+        } catch (error) {
+          console.warn(
+            '[BTC-Connect] Vue: 增强钱包检测失败，回退到基础检测:',
+            error,
+          );
+
+          // 回退到基础检测
+          context.availableWallets.value = walletManager.getAvailableWallets();
+
+          // 即使检测失败，如果有自动连接需求，也尝试执行
+          if (autoConnect) {
+            setTimeout(async () => {
+              console.log(
+                '[BTC-Connect] Vue: 使用基础检测结果，开始自动连接...',
+              );
+              await attemptAutoConnect(walletManager, connectTimeout);
+            }, 1000); // 1秒后执行
+          }
+        }
       };
 
-      // 立即检测一次
-      setTimeout(updateAvailableWallets, 100);
-
-      // 再次检测，确保钱包扩展完全加载
-      setTimeout(updateAvailableWallets, 1000);
-
-      // 如果启用了自动连接，尝试恢复之前的连接
-      if (autoConnect) {
-        setTimeout(async () => {
-          await attemptAutoConnect(walletManager, connectTimeout);
-        }, 1500); // 延迟1.5秒执行自动连接
-      }
+      // 开始增强的钱包检测
+      detectWallets();
 
       // 监听页面可见性变化，当用户回到页面时重新检测
-      document.addEventListener('visibilitychange', updateAvailableWallets);
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          console.log('[BTC-Connect] Vue: 页面重新可见，重新检测钱包...');
+          detectWallets();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
     }
 
     globalContext = context;

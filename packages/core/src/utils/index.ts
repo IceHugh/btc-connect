@@ -1,6 +1,5 @@
 import { BTCWalletManager } from '../managers';
 import type { WalletManagerConfig } from '../types';
-export { ZIndexManager } from './z-index-manager';
 
 /**
  * 创建钱包管理器的工厂函数

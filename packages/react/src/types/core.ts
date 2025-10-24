@@ -3,12 +3,12 @@ export type {
   AccountInfo,
   BalanceDetail,
   ConnectionStatus,
+  ModalConfig,
   Network,
   WalletEvent,
   WalletInfo,
   WalletManagerConfig,
   WalletState,
-  ModalConfig,
   ZIndexStrategy,
   ZIndexValue,
 } from '@btc-connect/core';
