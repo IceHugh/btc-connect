@@ -111,6 +111,33 @@ console.log(updateVersion(current, type));
 
 print_info "新版本: $NEW_VERSION"
 
+# 更新根目录版本号
+ROOT_PACKAGE_FILE="package.json"
+if [ -f "$ROOT_PACKAGE_FILE" ]; then
+    current_root_version=$(node -p "require('./$ROOT_PACKAGE_FILE').version")
+
+    if [ "$current_root_version" != "$NEW_VERSION" ]; then
+        # 更新根目录版本号
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS
+            sed -i '' "s/\"version\": \"$current_root_version\"/\"version\": \"$NEW_VERSION\"/" "$ROOT_PACKAGE_FILE"
+        else
+            # Linux
+            sed -i "s/\"version\": \"$current_root_version\"/\"version\": \"$NEW_VERSION\"/" "$ROOT_PACKAGE_FILE"
+        fi
+
+        package_name=$(node -p "require('./$ROOT_PACKAGE_FILE').name")
+        print_success "$package_name (根目录): $current_root_version → $NEW_VERSION"
+        UPDATED_PACKAGES+=("$package_name (根目录)")
+    else
+        package_name=$(node -p "require('./$ROOT_PACKAGE_FILE').name")
+        print_warning "$package_name (根目录): 版本号已是最新 ($NEW_VERSION)"
+    fi
+else
+    print_error "根目录包文件不存在: $ROOT_PACKAGE_FILE"
+    exit 1
+fi
+
 # 更新各个包的版本号
 PACKAGES=("packages/core" "packages/react" "packages/vue")
 UPDATED_PACKAGES=()
@@ -150,10 +177,10 @@ if [ ${#UPDATED_PACKAGES[@]} -gt 0 ]; then
     print_info "提交版本更新..."
 
     # 添加修改的文件
-    git add packages/*/package.json
+    git add package.json packages/*/package.json
 
     # 创建提交信息
-    COMMIT_MESSAGE="chore: 更新所有子包版本号到 v$NEW_VERSION
+    COMMIT_MESSAGE="chore: 更新所有包版本号到 v$NEW_VERSION
 
 $(printf '  - %s\n' "${UPDATED_PACKAGES[@]}")准备发布到 NPM"
 
