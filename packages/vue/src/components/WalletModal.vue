@@ -1,14 +1,15 @@
 <template>
-  <div
-    v-if="isModalOpen"
-    ref="backdropRef"
-    class="btc-modal-backdrop"
-    @click="handleBackdropClick"
-    @keydown="handleEscKey"
-    role="dialog"
-    aria-modal="true"
-    tabindex="-1"
-  >
+  <Teleport to="body">
+    <div
+      v-if="isModalOpen"
+      ref="backdropRef"
+      class="btc-modal-backdrop"
+      @click="handleBackdropClick"
+      @keydown="handleEscKey"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+    >
     <div
       :class="['btc-modal-container', `theme-${theme}`, className]"
       :style="buttonStyles"
@@ -82,7 +83,8 @@
         </p>
       </div>
     </div>
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -185,7 +187,7 @@ onMounted(() => {
       document.head.appendChild(styleElement);
     }
 
-    // 基础样式模板 - z-index设置为999999
+    // 基础样式模板 - 使用合理的z-index值
     const baseStyles = `
         .btc-modal-backdrop {
           position: fixed;
@@ -194,7 +196,7 @@ onMounted(() => {
           width: 100vw;
           height: 100vh;
           background-color: rgba(0, 0, 0, 0.5);
-          z-index: 999999 !important;
+          z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;

@@ -1,9 +1,10 @@
 import { getAllAdapters } from '@btc-connect/core';
 import * as React from 'react';
 import { useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useConnectWallet, useWallet, useWalletModal } from '../context';
 
-// CSS样式 - 默认z-index提升至999999
+// CSS样式 - 使用合理的z-index值
 const styles = `
   .btc-modal-backdrop {
     position: fixed;
@@ -12,7 +13,7 @@ const styles = `
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999999;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -389,7 +390,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
     return null;
   }
 
-  return (
+  const modalContent = (
     <div
       ref={backdropRef}
       className="btc-modal-backdrop"
@@ -478,6 +479,13 @@ export const WalletModal: React.FC<WalletModalProps> = ({
       </div>
     </div>
   );
+
+  // 使用 createPortal 将模态框渲染到 body
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 };
 
 export default WalletModal;
