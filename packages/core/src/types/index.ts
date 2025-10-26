@@ -182,6 +182,8 @@ export interface WalletManager {
   connect(walletId: string): Promise<AccountInfo[]>;
   disconnect(): Promise<void>;
   switchWallet(walletId: string): Promise<AccountInfo[]>;
+  // 网络管理
+  switchNetwork(network: string): Promise<void>;
   // 采纳已授权会话为已连接（不触发授权弹窗）
   assumeConnected(walletId: string): Promise<AccountInfo[] | null>;
 

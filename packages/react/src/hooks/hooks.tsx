@@ -127,11 +127,10 @@ export function useNetwork() {
   // 使用 useCallback 优化函数引用
   const switchNetwork = useCallback(
     async (targetNetwork: Network) => {
-      const adapter = manager?.getCurrentAdapter();
-      if (adapter?.switchNetwork) {
-        return await adapter.switchNetwork(targetNetwork);
+      if (manager?.switchNetwork) {
+        return await manager.switchNetwork(targetNetwork);
       }
-      throw new Error('Network switching not supported');
+      throw new Error('Network switching not supported or no wallet connected');
     },
     [manager],
   );

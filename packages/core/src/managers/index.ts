@@ -292,6 +292,49 @@ export class BTCWalletManager implements WalletManager {
   }
 
   /**
+   * 切换网络
+   */
+  async switchNetwork(network: string): Promise<void> {
+    if (this.isDestroyed) {
+      throw new Error('WalletManager has been destroyed');
+    }
+
+    if (!this.currentAdapter) {
+      throw new Error('No wallet connected');
+    }
+
+    if (!this.currentAdapter.switchNetwork) {
+      throw new Error('Network switching not supported by current wallet');
+    }
+
+    try {
+      await this.currentAdapter.switchNetwork(network as any);
+
+      // 发射网络变化事件
+      this.eventManager.emitNetworkChangeLegacy(network as any);
+
+      // 调用状态变化回调
+      if (this.config.onStateChange) {
+        this.config.onStateChange(this.getState());
+      }
+    } catch (error) {
+      // 调用错误处理回调
+      if (this.config.onError) {
+        this.config.onError(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      }
+
+      // 发射错误事件
+      this.eventManager.emitErrorLegacy(
+        error instanceof Error ? error : new Error(String(error)),
+      );
+
+      throw error;
+    }
+  }
+
+  /**
    * 销毁管理器
    */
   destroy(): void {

@@ -10,9 +10,9 @@
  * node scripts/update-version.js 1.2.3 # 设置特定版本
  */
 
+import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
 
 // 项目配置
 const PROJECT_ROOT = process.cwd();
@@ -103,7 +103,7 @@ function getCurrentVersion() {
 function updateAllVersions(newVersion) {
   console.log(`🔄 更新所有包版本号到: ${newVersion}`);
 
-  let updatedPackages = [];
+  const updatedPackages = [];
 
   for (const pkg of PACKAGES) {
     try {
@@ -146,7 +146,7 @@ function commitVersionUpdate(newVersion, updatedPackages) {
     // 创建提交信息
     const commitMessage = `chore: 更新所有子包版本号到 v${newVersion}
 
-${updatedPackages.map(pkg => `- ${pkg}: ${newVersion}`).join('\n')}
+${updatedPackages.map((pkg) => `- ${pkg}: ${newVersion}`).join('\n')}
 
 准备发布到 NPM`;
 
@@ -182,9 +182,15 @@ function main() {
 
   if (args.length === 0) {
     console.log('使用方法:');
-    console.log('  node scripts/update-version.js patch  # 更新补丁版本 (0.2.0 -> 0.2.1)');
-    console.log('  node scripts/update-version.js minor  # 更新次版本 (0.2.1 -> 0.3.0)');
-    console.log('  node scripts/update-version.js major  # 更新主版本 (0.2.1 -> 1.0.0)');
+    console.log(
+      '  node scripts/update-version.js patch  # 更新补丁版本 (0.2.0 -> 0.2.1)',
+    );
+    console.log(
+      '  node scripts/update-version.js minor  # 更新次版本 (0.2.1 -> 0.3.0)',
+    );
+    console.log(
+      '  node scripts/update-version.js major  # 更新主版本 (0.2.1 -> 1.0.0)',
+    );
     console.log('  node scripts/update-version.js 1.2.3 # 设置特定版本');
     process.exit(1);
   }
@@ -203,7 +209,8 @@ function main() {
       commitVersionUpdate(newVersion, updatedPackages);
 
       // 询问是否推送到远程仓库
-      const shouldPush = process.argv.includes('--push') || process.argv.includes('-p');
+      const shouldPush =
+        process.argv.includes('--push') || process.argv.includes('-p');
       if (shouldPush) {
         pushToRemote();
       } else {

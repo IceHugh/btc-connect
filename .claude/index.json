@@ -40,10 +40,7 @@
         "totalFiles": 25,
         "percentage": 80.0
       },
-      "gaps": [
-        "缺少测试文件",
-        "Xverse适配器被注释掉"
-      ],
+      "gaps": ["缺少测试文件", "Xverse适配器被注释掉"],
       "interfaces": [
         "BTCWalletAdapter",
         "WalletManager",
@@ -86,10 +83,7 @@
         "totalFiles": 25,
         "percentage": 88.0
       },
-      "gaps": [
-        "缺少测试文件",
-        "需要补充高级Hook示例"
-      ],
+      "gaps": ["缺少测试文件", "需要补充高级Hook示例"],
       "hooks": [
         "useWallet",
         "useConnectWallet",
@@ -133,10 +127,7 @@
         "totalFiles": 22,
         "percentage": 90.9
       },
-      "gaps": [
-        "缺少测试文件",
-        "需要补充Pinia集成示例"
-      ],
+      "gaps": ["缺少测试文件", "需要补充Pinia集成示例"],
       "composables": [
         "useCore",
         "useAccount",
@@ -162,11 +153,7 @@
       "entryPoint": "src/main.tsx",
       "status": "文档已更新",
       "description": "React 应用集成示例，Web Components集成",
-      "features": [
-        "Web Components集成",
-        "SSR兼容演示",
-        "主题切换"
-      ],
+      "features": ["Web Components集成", "SSR兼容演示", "主题切换"],
       "coverage": {
         "scannedFiles": 8,
         "totalFiles": 8,
@@ -180,10 +167,7 @@
       "entryPoint": "src/main.ts",
       "status": "文档已更新",
       "description": "Vue 应用集成示例，组合式API演示",
-      "features": [
-        "组合式API演示",
-        "插件系统使用"
-      ],
+      "features": ["组合式API演示", "插件系统使用"],
       "coverage": {
         "scannedFiles": 7,
         "totalFiles": 7,
@@ -244,12 +228,7 @@
     "bundler": "Vite",
     "packageManager": "Bun",
     "testRunner": "Bun Test",
-    "configFiles": [
-      "biome.json",
-      "package.json",
-      "bun.lock",
-      "tsconfig.json"
-    ]
+    "configFiles": ["biome.json", "package.json", "bun.lock", "tsconfig.json"]
   },
   "architecture": {
     "type": "Monorepo",
@@ -332,12 +311,7 @@
     ".tmp",
     ".next"
   ],
-  "ignoredFiles": [
-    "*.lock",
-    "*.log",
-    "*.d.ts.map",
-    "Thumbs.db"
-  ],
+  "ignoredFiles": ["*.lock", "*.log", "*.d.ts.map", "Thumbs.db"],
   "truncated": false,
   "scanSummary": {
     "phaseA": {

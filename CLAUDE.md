@@ -2,6 +2,14 @@
 
 ## 变更记录 (Changelog)
 
+### 2025-10-26 22:00:00
+- **重要修复**: 完成switchNetwork功能的全面修复和实现
+- **核心包**: 添加缺失的`BTCWalletManager.switchNetwork()`方法
+- **React包**: 修复`useNetwork` Hook中的网络切换功能
+- **Vue包**: 修复`useNetwork` Composable中的网络切换功能
+- **统一接口**: 三个包现在都支持完整的网络切换功能
+- **版本更新**: 发布v0.3.11版本
+
 ### 2025-10-24 22:00:00
 - 优化连接逻辑，移除自动获取public key和balance以提升性能
 - 实现增强的钱包检测机制，支持20秒内每300ms轮询延迟注入的钱包
@@ -42,7 +50,7 @@
 
 btc-connect 是一个专为比特币 Web3 应用设计的钱包连接工具包，提供统一的连接接口、事件监听和适配层。项目采用 Monorepo 架构，使用 Bun 作为包管理器，支持 UniSat、OKX 等主流比特币钱包。
 
-**最新状态**: 项目已完成架构优化，移除了UI模块，专注于核心适配层和框架集成，新增了Next.js和Nuxt 3的SSR示例，实现了完整的服务器端渲染兼容。
+**最新状态**: 项目已完成架构优化，移除了UI模块，专注于核心适配层和框架集成，新增了Next.js和Nuxt 3的SSR示例，实现了完整的服务器端渲染兼容。**v0.3.11版本已完整实现网络切换功能**，支持在主网、测试网和回归测试网之间无缝切换。
 
 ## 架构总览
 
@@ -109,6 +117,92 @@ graph TD
 | vue-example | examples/vue-example | Vue + Vite | 组合式API、插件系统 | ✅ 完整实现 |
 | nextjs-example | examples/nextjs | React + Next.js | SSR测试、客户端组件 | ✅ 完整实现 |
 | nuxt-example | examples/nuxt-example | Vue + Nuxt 3 | 完整SSR、性能监控 | ✅ 完整实现 |
+
+## 🌐 网络切换功能 (v0.3.11+)
+
+btc-connect 现已完全支持网络切换功能，允许用户在主网、测试网和回归测试网之间无缝切换。
+
+### 支持的网络类型
+- **livenet/mainnet**: 比特币主网
+- **testnet**: 比特币测试网
+- **regtest**: 回归测试网
+
+### 核心包使用
+```typescript
+import { BTCWalletManager } from '@btc-connect/core'
+
+const manager = new BTCWalletManager()
+await manager.switchNetwork('testnet')
+```
+
+### React包使用
+```typescript
+import { useNetwork } from '@btc-connect/react'
+
+function NetworkSwitcher() {
+  const { network, switchNetwork } = useNetwork()
+
+  const handleSwitch = async () => {
+    try {
+      await switchNetwork('mainnet')
+      console.log('切换到主网成功')
+    } catch (error) {
+      console.error('切换失败:', error.message)
+    }
+  }
+
+  return (
+    <div>
+      <p>当前网络: {network}</p>
+      <button onClick={handleSwitch}>切换到主网</button>
+    </div>
+  )
+}
+```
+
+### Vue包使用
+```vue
+<template>
+  <div class="network-switcher">
+    <p>当前网络: {{ network.name }}</p>
+    <button @click="switchToTestnet" :disabled="isSwitching">
+      切换到测试网
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useNetwork } from '@btc-connect/vue'
+
+const { network, switchNetwork } = useNetwork()
+const isSwitching = ref(false)
+
+const switchToTestnet = async () => {
+  isSwitching.value = true
+  try {
+    await switchNetwork('testnet')
+  } catch (error) {
+    console.error('切换失败:', error.message)
+  } finally {
+    isSwitching.value = false
+  }
+}
+</script>
+```
+
+### 钱包支持情况
+- ✅ **UniSat**: 完全支持网络切换
+- ✅ **Xverse**: 完全支持网络切换
+- ⚠️ **OKX**: 不支持程序化切换，需要手动在钱包中切换
+
+### 事件监听
+```typescript
+// 监听网络变化事件
+manager.on('networkChange', ({ walletId, network }) => {
+  console.log(`钱包 ${walletId} 切换到 ${network} 网络`)
+})
+```
 
 ## 常用命令
 

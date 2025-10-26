@@ -179,6 +179,133 @@ watch(isConnected, (connected) => {
 </script>
 ```
 
+### useNetwork
+
+管理网络信息和切换。
+
+```vue
+<template>
+  <div class="network-switcher">
+    <h3>网络信息</h3>
+    <p><strong>当前网络:</strong> {{ network.name || '未连接' }}</p>
+    <p><strong>网络类型:</strong> {{ network.type }}</p>
+
+    <div class="network-buttons">
+      <button
+        @click="switchToMainnet"
+        :disabled="isSwitching"
+        :class="{ active: isMainnet }"
+      >
+        🟢 主网
+      </button>
+      <button
+        @click="switchToTestnet"
+        :disabled="isSwitching"
+        :class="{ active: isTestnet }"
+      >
+        🧪 测试网
+      </button>
+      <button
+        @click="switchToRegtest"
+        :disabled="isSwitching"
+        :class="{ active: isRegtest }"
+      >
+        🔧 回归测试
+      </button>
+    </div>
+
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useNetwork } from '@btc-connect/vue'
+
+const { network, switchNetwork } = useNetwork()
+
+const isSwitching = ref(false)
+const error = ref('')
+
+const isMainnet = computed(() =>
+  network.value.network === 'mainnet' || network.value.network === 'livenet'
+)
+const isTestnet = computed(() => network.value.network === 'testnet')
+const isRegtest = computed(() => network.value.network === 'regtest')
+
+const switchToMainnet = async () => {
+  await performSwitch('mainnet')
+}
+
+const switchToTestnet = async () => {
+  await performSwitch('testnet')
+}
+
+const switchToRegtest = async () => {
+  await performSwitch('regtest')
+}
+
+const performSwitch = async (targetNetwork: string) => {
+  isSwitching.value = true
+  error.value = ''
+
+  try {
+    await switchNetwork(targetNetwork as any)
+    console.log(`已切换到 ${targetNetwork}`)
+  } catch (err: any) {
+    error.value = `网络切换失败: ${err.message}`
+  } finally {
+    isSwitching.value = false
+  }
+}
+</script>
+
+<style scoped>
+.network-switcher {
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.network-buttons {
+  margin: 12px 0;
+}
+
+.network-buttons button {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.network-buttons button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.network-buttons button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.network-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #dc3545;
+  margin-top: 8px;
+}
+</style>
+```
+
 ### useAccount
 
 获取详细账户和余额信息。

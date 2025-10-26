@@ -3,9 +3,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // 模块配置
-  modules: [
-    '@nuxtjs/tailwindcss'
-  ],
+  modules: ['@nuxtjs/tailwindcss'],
 
   // CSS配置
   css: ['~/assets/css/main.css'],
@@ -13,12 +11,12 @@ export default defineNuxtConfig({
   // TypeScript配置
   typescript: {
     strict: true,
-    typeCheck: true
+    typeCheck: true,
   },
 
   // 构建配置
   build: {
-    transpile: ['@btc-connect/vue']
+    transpile: ['@btc-connect/vue'],
   },
 
   // SSR配置
@@ -27,8 +25,8 @@ export default defineNuxtConfig({
   // 兼容性配置
   nitro: {
     experimental: {
-      wasm: true
-    }
+      wasm: true,
+    },
   },
 
   // 应用配置
@@ -38,12 +36,14 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Bitcoin wallet connection example using Nuxt 3 and @btc-connect/vue' }
+        {
+          name: 'description',
+          content:
+            'Bitcoin wallet connection example using Nuxt 3 and @btc-connect/vue',
+        },
       ],
-      link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-      ]
-    }
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    },
   },
 
   // 运行时配置
@@ -54,19 +54,19 @@ export default defineNuxtConfig({
     // Public keys (exposed to client-side)
     public: {
       // btcConnectConfig: process.env.BTC_CONNECT_CONFIG
-    }
+    },
   },
 
   // 组件自动导入
   components: [
     {
       path: '~/components',
-      pathPrefix: false
-    }
+      pathPrefix: false,
+    },
   ],
 
   // 开发服务器配置
   devServer: {
-    port: 3001
-  }
-})
+    port: 3001,
+  },
+});

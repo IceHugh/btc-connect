@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import {
   ConnectButton,
-  WalletModal,
   useWallet,
+  useWalletEvent,
   useWalletModal,
-  useWalletEvent
+  WalletModal,
 } from '@btc-connect/react';
+import { useCallback, useEffect, useState } from 'react';
 
 export function WalletConnectDemo() {
   const [logs, setLogs] = useState<string[]>([]);
@@ -15,10 +15,12 @@ export function WalletConnectDemo() {
   const { openModal, isModalOpen } = useWalletModal();
 
   const addLog = useCallback((message: string) => {
-    setLogs(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+    setLogs((prev) => [
+      ...prev.slice(-4),
+      `${new Date().toLocaleTimeString()}: ${message}`,
+    ]);
   }, []);
 
-  
   // 监听钱包事件
   useWalletEvent('connect', (accounts) => {
     addLog(`Wallet connected with ${accounts.length} account(s)`);
@@ -41,20 +43,23 @@ export function WalletConnectDemo() {
       <div style={{ marginBottom: 32 }}>
         <h1>BTC Connect - Next.js SSR Example</h1>
         <p style={{ color: '#666', marginBottom: 24 }}>
-          This example demonstrates Bitcoin wallet connection with full SSR support.
-          The page is server-side rendered, and wallet functionality is enabled only on the client.
+          This example demonstrates Bitcoin wallet connection with full SSR
+          support. The page is server-side rendered, and wallet functionality is
+          enabled only on the client.
         </p>
       </div>
 
       {/* Light Theme Section */}
       <section style={{ marginBottom: 32 }}>
         <h2>Light Theme</h2>
-        <div style={{
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          padding: 16,
-          backgroundColor: '#fff'
-        }}>
+        <div
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor: '#fff',
+          }}
+        >
           <div style={{ marginBottom: 16 }}>
             <ConnectButton label="Connect Wallet" />
           </div>
@@ -64,13 +69,15 @@ export function WalletConnectDemo() {
       {/* Dark Theme Section */}
       <section style={{ marginBottom: 32 }}>
         <h2>Dark Theme</h2>
-        <div style={{
-          border: '1px solid #444',
-          borderRadius: 8,
-          padding: 16,
-          backgroundColor: '#2a2a2a',
-          color: '#fff'
-        }}>
+        <div
+          style={{
+            border: '1px solid #444',
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor: '#2a2a2a',
+            color: '#fff',
+          }}
+        >
           <div style={{ marginBottom: 16 }}>
             <ConnectButton label="Connect Wallet" />
           </div>
@@ -80,14 +87,21 @@ export function WalletConnectDemo() {
       {/* Status Section */}
       <section style={{ marginBottom: 32 }}>
         <h2>Connection Status</h2>
-        <div style={{
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          padding: 16,
-          backgroundColor: '#f8f9fa'
-        }}>
+        <div
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor: '#f8f9fa',
+          }}
+        >
           <div style={{ marginBottom: 8 }}>
-            <strong>Status:</strong> {isConnecting ? 'Connecting...' : (isConnected ? 'Connected' : 'Disconnected')}
+            <strong>Status:</strong>{' '}
+            {isConnecting
+              ? 'Connecting...'
+              : isConnected
+                ? 'Connected'
+                : 'Disconnected'}
           </div>
           <div style={{ marginBottom: 8 }}>
             <strong>Address:</strong> {address || '-'}
@@ -109,7 +123,7 @@ export function WalletConnectDemo() {
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Test Open Modal
@@ -121,17 +135,21 @@ export function WalletConnectDemo() {
       {/* Event Logs */}
       <section style={{ marginBottom: 32 }}>
         <h2>Event Logs</h2>
-        <div style={{
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          padding: 16,
-          backgroundColor: '#f8f9fa',
-          fontFamily: 'monospace',
-          fontSize: 14,
-          color: '#333'
-        }}>
+        <div
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor: '#f8f9fa',
+            fontFamily: 'monospace',
+            fontSize: 14,
+            color: '#333',
+          }}
+        >
           {logs.length === 0 ? (
-            <div style={{ color: '#666', fontStyle: 'italic' }}>No events yet. Connect a wallet to see events.</div>
+            <div style={{ color: '#666', fontStyle: 'italic' }}>
+              No events yet. Connect a wallet to see events.
+            </div>
           ) : (
             logs.map((log, index) => (
               <div key={index} style={{ marginBottom: 4, color: '#333' }}>
@@ -145,12 +163,14 @@ export function WalletConnectDemo() {
       {/* SSR Info */}
       <section>
         <h2>SSR Information</h2>
-        <div style={{
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          padding: 16,
-          backgroundColor: '#e7f3ff'
-        }}>
+        <div
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: 8,
+            padding: 16,
+            backgroundColor: '#e7f3ff',
+          }}
+        >
           <h4>✅ SSR Compatible Features:</h4>
           <ul style={{ marginLeft: 20, marginBottom: 16 }}>
             <li>Page is server-side rendered for optimal performance</li>

@@ -4,8 +4,8 @@
  * 这个插件确保BTC Connect只在客户端初始化，避免SSR问题
  */
 
-import { defineNuxtPlugin } from '#app';
 import { BTCWalletPlugin, ConnectButton, WalletModal } from '@btc-connect/vue';
+import { defineNuxtPlugin } from '#app';
 
 export default defineNuxtPlugin((nuxtApp) => {
   // 只在客户端初始化BTC Connect
@@ -13,7 +13,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     // 注册插件
     nuxtApp.vueApp.use(BTCWalletPlugin, {
       autoConnect: true,
-      theme: 'light'
+      theme: 'light',
     });
 
     // 全局注册组件

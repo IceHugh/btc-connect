@@ -20,9 +20,7 @@
       "@btc-connect/vue": ["./packages/vue/src"]
     }
   },
-  "include": [
-    "packages/*/src/**/*"
-  ],
+  "include": ["packages/*/src/**/*"],
   "exclude": [
     "node_modules",
     "packages/*/dist",

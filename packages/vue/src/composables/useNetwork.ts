@@ -46,11 +46,10 @@ export function useNetwork() {
   );
 
   const switchNetwork = async (targetNetwork: Network): Promise<void> => {
-    const adapter = ctx.manager.value?.getCurrentAdapter();
-    if (adapter?.switchNetwork) {
-      return await adapter.switchNetwork(targetNetwork);
+    if (ctx.manager.value?.switchNetwork) {
+      return await ctx.manager.value.switchNetwork(targetNetwork);
     }
-    throw new Error('Network switching not supported by current wallet');
+    throw new Error('Network switching not supported or no wallet connected');
   };
 
   const network = computed(() => {

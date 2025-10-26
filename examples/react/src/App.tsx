@@ -1,5 +1,10 @@
 import './App.css';
-import { ConnectButton, WalletModal, useWallet, useWalletModal } from '@btc-connect/react';
+import {
+  ConnectButton,
+  useWallet,
+  useWalletModal,
+  WalletModal,
+} from '@btc-connect/react';
 
 function AccountPreview() {
   const { address, balance, isConnected } = useWallet();
@@ -30,8 +35,9 @@ function App() {
     <div style={{ padding: 24 }}>
       <h1 style={{ marginBottom: 16 }}>BTC Connect React Demo</h1>
       <p style={{ marginBottom: 16 }}>
-        This demo showcases the new native Web Components integration with React.
-        The components below are built with native Web Components and wrapped for React.
+        This demo showcases the new native Web Components integration with
+        React. The components below are built with native Web Components and
+        wrapped for React.
       </p>
 
       <div style={{ marginBottom: 24 }}>
@@ -49,9 +55,19 @@ function App() {
         </div>
       </div>
 
-      <div style={{ marginTop: 32, padding: 16, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
+      <div
+        style={{
+          marginTop: 32,
+          padding: 16,
+          backgroundColor: '#f5f5f5',
+          borderRadius: 8,
+        }}
+      >
         <h4>SSR Compatibility</h4>
-        <p>This example is fully SSR compatible. The Web Components are dynamically loaded only on the client side.</p>
+        <p>
+          This example is fully SSR compatible. The Web Components are
+          dynamically loaded only on the client side.
+        </p>
       </div>
     </div>
   );

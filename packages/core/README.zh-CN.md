@@ -89,6 +89,10 @@ interface WalletManager {
   connect(walletId: string): Promise<AccountInfo[]>;
   disconnect(): Promise<void>;
   switchWallet(walletId: string): Promise<AccountInfo[]>;
+
+  // 网络管理
+  switchNetwork(network: string): Promise<void>;
+
   assumeConnected(walletId: string): Promise<AccountInfo[] | null>;
 
   // 状态管理
@@ -248,6 +252,29 @@ const newAccounts = await manager.switchWallet('okx');
 
 // 断开连接
 await manager.disconnect();
+```
+
+### 网络切换
+
+```typescript
+// 切换网络 (v0.3.11+)
+try {
+  await manager.switchNetwork('testnet');
+  console.log('已切换到测试网');
+} catch (error) {
+  console.error('网络切换失败:', error.message);
+}
+
+// 切换到主网
+await manager.switchNetwork('mainnet');
+
+// 切换到回归测试网
+await manager.switchNetwork('regtest');
+
+// 监听网络变化事件
+manager.on('networkChange', ({ walletId, network }) => {
+  console.log(`钱包 ${walletId} 切换到 ${network} 网络`);
+});
 ```
 
 ### 事件处理

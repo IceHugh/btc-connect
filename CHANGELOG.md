@@ -5,6 +5,75 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [0.3.11] - 2025-10-26
+
+### 🐛 Bug 修复
+- **核心包 (@btc-connect/core)**: 添加缺失的 `BTCWalletManager.switchNetwork()` 方法
+- **React包 (@btc-connect/react)**: 修复 `useNetwork` Hook 中的网络切换功能
+- **Vue包 (@btc-connect/vue)**: 修复 `useNetwork` Composable 中的网络切换功能
+
+### ✨ 新功能
+- **统一网络切换接口**: 现在所有三个包都支持完整的网络切换功能
+- **改进错误处理**: 提供更清晰的错误提示和用户反馈
+- **事件系统完善**: 网络切换时自动发射 `networkChange` 事件
+
+### 🔧 技术改进
+- **类型安全**: 完善所有 `switchNetwork` 方法的 TypeScript 类型定义
+- **统一API**: 核心管理器、React Hook 和 Vue Composable 现在提供一致的接口
+- **钱包兼容性**: 验证并确保 UniSat、Xverse 和 OKX 钱包的网络切换支持
+
+### 📦 包更新
+- **@btc-connect/core**: v0.3.11 - 核心钱包适配层和管理器
+- **@btc-connect/react**: v0.3.11 - React Context 和 Hooks
+- **@btc-connect/vue**: v0.3.11 - Vue Composables 和插件
+
+### 📚 使用示例
+
+#### 核心包使用
+```typescript
+import { BTCWalletManager } from '@btc-connect/core'
+
+const manager = new BTCWalletManager()
+await manager.switchNetwork('testnet')
+```
+
+#### React包使用
+```typescript
+import { useNetwork } from '@btc-connect/react'
+
+const { network, switchNetwork } = useNetwork()
+await switchNetwork('testnet')
+```
+
+#### Vue包使用
+```typescript
+import { useNetwork } from '@btc-connect/vue'
+
+const { network, switchNetwork } = useNetwork()
+await switchNetwork('testnet')
+```
+
+---
+
+## [0.3.10] - 2025-10-24
+
+### 🚀 性能优化
+- **连接性能提升**: 移除自动获取public key和balance的逻辑以提升连接速度
+- **增强钱包检测**: 实现20秒内每300ms轮询机制，支持延迟注入的钱包检测
+- **实时更新**: 检测到新钱包时立即更新UI界面
+
+### 🔧 技术改进
+- **架构简化**: 移除z-index-manager模块及其相关逻辑，简化整体架构
+- **错误修复**: 修复所有TypeScript类型和代码规范错误
+- **完善机制**: 优化React和Vue的钱包检测实时更新机制
+
+### 📦 包更新
+- **@btc-connect/core**: v0.3.10 - 优化的核心适配层
+- **@btc-connect/react**: v0.3.10 - 优化的React集成
+- **@btc-connect/vue**: v0.3.10 - 优化的Vue集成
+
+---
+
 ## [0.3.4] - 2025-10-19
 
 ### 🎨 新功能

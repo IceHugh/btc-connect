@@ -3,7 +3,22 @@
   "extends": [],
   "root": true,
   "files": {
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.md", "!**/*.test.ts", "!**/*.test.js", "!**/*.d.ts", "!dist", "!node_modules", "!packages/core/tests", "!packages/**/dist", "!packages/ui/dist"]
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "**/*.md",
+      "!**/*.test.ts",
+      "!**/*.test.js",
+      "!**/*.d.ts",
+      "!dist",
+      "!node_modules",
+      "!packages/core/tests",
+      "!packages/**/dist",
+      "!packages/ui/dist"
+    ]
   },
   "formatter": {
     "enabled": true,
