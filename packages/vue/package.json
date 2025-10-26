@@ -1,6 +1,6 @@
 {
   "name": "@btc-connect/vue",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "Vue adapter for BTC Connect, providing Vue components and Composables for easy integration.",
   "type": "module",
   "main": "dist/index.js",

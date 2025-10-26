@@ -1,6 +1,6 @@
 {
   "name": "@btc-connect/react",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "React adapter for BTC Connect, providing React Hooks and Context for easy integration.",
   "type": "module",
   "main": "dist/index.js",
