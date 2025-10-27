@@ -315,14 +315,24 @@ export class UniSatAdapter
       address,
       publicKey: undefined,
       balance: undefined,
-      network: this.normalizeNetwork('livenet'),
+      network: this.state.network || this.normalizeNetwork('livenet'),
     }));
+
+    // 更新内部状态
     this.updateAccounts(accountInfos);
+
+    // 发射核心事件系统的事件（包含钱包ID）
+    this.eventManager.emitAccountChange(this.id, accountInfos);
   };
 
   private handleNetworkChanged = (network: string) => {
     const normalizedNetwork = this.normalizeNetwork(network);
+
+    // 更新内部状态
     this.updateNetwork(normalizedNetwork);
+
+    // 发射核心事件系统的事件（包含钱包ID）
+    this.eventManager.emitNetworkChange(this.id, normalizedNetwork);
   };
 
   /**

@@ -362,6 +362,12 @@ export const BTCWalletPlugin = {
         fetchAccountDetails(walletManager);
       };
 
+      // 监听网络变化事件，用于UI更新和重新获取详情
+      const handleNetworkChange = () => {
+        console.log('[BTC-Connect] Vue: 网络变化，重新获取账户详情');
+        fetchAccountDetails(walletManager);
+      };
+
       // 监听页面可见性变化，当用户回到页面时重新检测
       const handleVisibilityChange = () => {
         if (!document.hidden) {
@@ -373,12 +379,14 @@ export const BTCWalletPlugin = {
       // 注册钱包事件监听器
       walletManager.on('connect', handleConnect);
       walletManager.on('accountChange', handleAccountChange);
+      walletManager.on('networkChange', handleNetworkChange);
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       // 返回清理函数
       return () => {
         walletManager.off('connect', handleConnect);
         walletManager.off('accountChange', handleAccountChange);
+        walletManager.off('networkChange', handleNetworkChange);
         document.removeEventListener(
           'visibilitychange',
           handleVisibilityChange,

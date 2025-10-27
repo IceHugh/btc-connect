@@ -529,6 +529,9 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
 
     // 更新状态中的网络信息
     this.state.network = network;
+
+    // 发射网络变化事件
+    this.eventManager.emitNetworkChangeLegacy(network);
   }
 
   /**

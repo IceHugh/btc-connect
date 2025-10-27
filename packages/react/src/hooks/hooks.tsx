@@ -124,13 +124,47 @@ export function useNetwork() {
     };
   }, [manager]);
 
+  // 同步初始网络状态
+  useEffect(() => {
+    if (manager) {
+      const currentNetwork = state.network;
+      if (currentNetwork) {
+        setNetwork(currentNetwork);
+      }
+    }
+  }, [manager, state.network]);
+
   // 使用 useCallback 优化函数引用
   const switchNetwork = useCallback(
     async (targetNetwork: Network) => {
-      if (manager?.switchNetwork) {
-        return await manager.switchNetwork(targetNetwork);
+      if (!manager) {
+        throw new Error('钱包管理器未初始化');
       }
-      throw new Error('Network switching not supported or no wallet connected');
+
+      // 检查是否有连接的钱包
+      const currentWallet = manager.getCurrentWallet();
+      if (!currentWallet) {
+        throw new Error('没有连接的钱包，请先连接钱包');
+      }
+
+      try {
+        return await manager.switchNetwork(targetNetwork);
+      } catch (error) {
+        // 根据不同的错误类型提供更友好的错误消息
+        if (error instanceof Error) {
+          if (error.message.includes('No wallet connected')) {
+            throw new Error('没有连接的钱包，请先连接钱包');
+          }
+          if (error.message.includes('Network switching not supported')) {
+            throw new Error(
+              `当前钱包 ${currentWallet.name} 不支持网络切换，请手动在钱包中切换网络`,
+            );
+          }
+          // 重新抛出原始错误
+          throw error;
+        }
+        throw new Error('网络切换失败');
+      }
     },
     [manager],
   );

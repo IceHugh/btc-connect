@@ -294,13 +294,22 @@ export function BTCWalletProvider({
         fetchAccountDetails();
       };
 
+      // 监听网络变化事件（用于UI更新和重新获取详情）
+      const handleNetworkChange = () => {
+        console.log('[BTC-Connect] React: 网络变化，重新获取账户详情');
+        updateState();
+        fetchAccountDetails();
+      };
+
       // 注册事件监听器
       manager.on('connect', handleConnect);
       manager.on('accountChange', handleAccountChange);
+      manager.on('networkChange', handleNetworkChange);
 
       return () => {
         manager.off('connect', handleConnect);
         manager.off('accountChange', handleAccountChange);
+        manager.off('networkChange', handleNetworkChange);
       };
     }
   }, [manager, config, updateState, fetchAccountDetails]);
