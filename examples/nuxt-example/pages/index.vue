@@ -8,10 +8,7 @@
       <WalletTestSuite />
     </main>
 
-    <!-- 全局模态框 -->
-    <ClientOnly>
-      <WalletModal />
-    </ClientOnly>
+    <!-- WalletModal 已集成到 ConnectButton 中，无需单独引用 -->
   </div>
 </template>
 

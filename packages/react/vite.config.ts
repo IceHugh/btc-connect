@@ -44,7 +44,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@btc-connect/core': resolve(__dirname, '../core/src'),
     },
   },
 });

@@ -5,7 +5,7 @@ await Bun.build({
   minify: {
     whitespace: true,
     syntax: true,
-    identifiers: true,
+    identifiers: false, // 禁用标识符混淆，避免 h 函数冲突
   },
   // 添加更多压缩选项
   define: {

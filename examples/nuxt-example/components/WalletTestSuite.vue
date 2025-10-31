@@ -81,7 +81,7 @@
             🗑️ 清除日志
           </button>
           <button
-            @click="openModal"
+            @click="openModal()"
             class="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
           >
             🔗 打开钱包选择器
@@ -274,7 +274,7 @@ const isRunning = ref(false)
 // 钱包状态
 const { status, accounts, currentAccount, network, error, isConnected, isConnecting, address, balance, publicKey } = useWallet()
 const { connect, disconnect, switchWallet, availableWallets } = useConnectWallet()
-const { openModal, isModalOpen } = useWalletModal()
+const { open: openModal, isOpen: isModalOpen } = useWalletModal()
 const { network: currentNetwork, switchNetwork } = useNetwork()
 const { accounts: accountList } = useAccount()
 const { balance: balanceInfo } = useBalance()

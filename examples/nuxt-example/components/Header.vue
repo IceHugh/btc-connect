@@ -26,9 +26,15 @@
         <div class="flex items-center space-x-4">
           <ClientOnly>
             <ConnectButton
-              size="md"
+              size="sm"
               variant="select"
-              label="连接钱包"
+              :theme="theme"
+              show-balance
+              show-address
+              balance-precision="8"
+              @connect="handleConnect"
+              @disconnect="handleDisconnect"
+              @error="handleError"
             />
           </ClientOnly>
         </div>
@@ -42,6 +48,50 @@
 defineProps<{
   theme?: 'light' | 'dark'
 }>();
+
+// 事件处理
+const handleConnect = (walletId: string) => {
+  console.log('🔗 Header: Wallet connected:', walletId);
+
+  // 显示连接成功的浏览器通知
+  if (process.client && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification('BTC Connect', {
+      body: `成功连接到 ${walletId} 钱包`,
+      icon: '/bitcoin-logo.png'
+    });
+  }
+};
+
+const handleDisconnect = () => {
+  console.log('🔌 Header: Wallet disconnected');
+
+  // 显示断开连接的浏览器通知
+  if (process.client && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification('BTC Connect', {
+      body: '钱包已断开连接',
+      icon: '/bitcoin-logo.png'
+    });
+  }
+};
+
+const handleError = (error: Error) => {
+  console.error('❌ Header: Wallet error:', error);
+
+  // 显示错误通知
+  if (process.client && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification('BTC Connect - 错误', {
+      body: `连接错误: ${error.message}`,
+      icon: '/bitcoin-logo.png'
+    });
+  }
+};
+
+// 请求通知权限
+onMounted(() => {
+  if (process.client && 'Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+});
 
 // 页面元数据
 useHead({

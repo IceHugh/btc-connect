@@ -1,7 +1,11 @@
 /**
  * BTC Connect Vue 工具函数
- * 从 shared 包迁移而来，避免外部依赖
+ *
+ * 提供钱包连接、格式化、存储等通用工具函数
+ * 增强了错误处理、性能优化和类型安全
  */
+
+import type { CacheItem } from '../types';
 
 // 样式工具函数
 export const cn = (
@@ -345,3 +349,488 @@ export const getBrowserInfo = (): { name: string; version: string } => {
 
   return { name: browserName, version: browserVersion };
 };
+
+// === 新增增强工具函数 ===
+
+// 错误处理工具
+export class ErrorHandler {
+  static withErrorHandling<T extends (...args: any[]) => any>(
+    fn: T,
+    onError?: (error: Error) => void,
+  ): (...args: Parameters<T>) => ReturnType<T> | null {
+    return (...args: Parameters<T>) => {
+      try {
+        const result = fn(...args);
+
+        // 处理异步函数
+        if (result && typeof result.catch === 'function') {
+          return result.catch((error: Error) => {
+            console.error('Error in async function:', error);
+            onError?.(error);
+            throw error;
+          });
+        }
+
+        return result;
+      } catch (error) {
+        console.error('Error in function:', error);
+        onError?.(error instanceof Error ? error : new Error('Unknown error'));
+        return null;
+      }
+    };
+  }
+
+  static createSafeAsyncFunction<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    defaultValue: ReturnType<T> extends Promise<infer P> ? P : never,
+    onError?: (error: Error) => void,
+  ): (
+    ...args: Parameters<T>
+  ) => Promise<ReturnType<T> extends Promise<infer P> ? P : never> {
+    return async (...args: Parameters<T>) => {
+      try {
+        return await fn(...args);
+      } catch (error) {
+        console.error('Error in async function:', error);
+        onError?.(error instanceof Error ? error : new Error('Unknown error'));
+        return defaultValue;
+      }
+    };
+  }
+}
+
+// 缓存管理器
+export class CacheManager {
+  private cache = new Map<string, CacheItem>();
+  private defaultExpireTime = 5 * 60 * 1000; // 5分钟
+
+  set<T>(key: string, value: T, expireTime?: number): void {
+    this.cache.set(key, {
+      value,
+      expireTime: Date.now() + (expireTime || this.defaultExpireTime),
+      createdAt: Date.now(),
+    });
+  }
+
+  get<T>(key: string): T | null {
+    const item = this.cache.get(key);
+    if (!item) return null;
+
+    if (Date.now() > item.expireTime) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return item.value as T;
+  }
+
+  has(key: string): boolean {
+    return this.get(key) !== null;
+  }
+
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  // 清理过期缓存
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expireTime) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  // 获取缓存统计
+  getStats() {
+    const items = Array.from(this.cache.values());
+    const now = Date.now();
+    const expired = items.filter((item) => now > item.expireTime).length;
+
+    return {
+      total: this.cache.size,
+      expired,
+      valid: this.cache.size - expired,
+      items: items.map((item) => ({
+        age: now - item.createdAt,
+        ttl: item.expireTime - now,
+        expired: now > item.expireTime,
+      })),
+    };
+  }
+}
+
+// 性能监控器
+export class PerformanceMonitor {
+  private timers = new Map<string, number>();
+  private metrics = new Map<string, number[]>();
+
+  start(name: string): void {
+    this.timers.set(name, performance.now());
+  }
+
+  end(name: string): number {
+    const startTime = this.timers.get(name);
+    if (!startTime) return 0;
+
+    const duration = performance.now() - startTime;
+    this.timers.delete(name);
+
+    // 记录指标
+    if (!this.metrics.has(name)) {
+      this.metrics.set(name, []);
+    }
+    this.metrics.get(name)!.push(duration);
+
+    return duration;
+  }
+
+  getMetrics(name: string) {
+    const values = this.metrics.get(name) || [];
+    if (values.length === 0) return null;
+
+    return {
+      count: values.length,
+      min: Math.min(...values),
+      max: Math.max(...values),
+      avg: values.reduce((sum, val) => sum + val, 0) / values.length,
+      recent: values[values.length - 1],
+    };
+  }
+
+  getAllMetrics() {
+    const result: Record<string, ReturnType<typeof this.getMetrics>> = {};
+    for (const name of this.metrics.keys()) {
+      result[name] = this.getMetrics(name);
+    }
+    return result;
+  }
+
+  clear(name?: string): void {
+    if (name) {
+      this.metrics.delete(name);
+      this.timers.delete(name);
+    } else {
+      this.metrics.clear();
+      this.timers.clear();
+    }
+  }
+}
+
+// 增强的存储工具
+export const enhancedStorage = {
+  ...storage,
+
+  // 带TTL的存储
+  setWithTTL: <T>(key: string, value: T, ttlMs: number): void => {
+    const item = {
+      value,
+      expireTime: Date.now() + ttlMs,
+    };
+    storage.set(key, item);
+  },
+
+  getWithTTL: <T>(key: string): T | null => {
+    const item = storage.get<{ value: T; expireTime: number }>(key);
+    if (!item) return null;
+
+    if (Date.now() > item.expireTime) {
+      storage.remove(key);
+      return null;
+    }
+
+    return item.value;
+  },
+
+  // 批量操作
+  getMultiple: <T extends Record<string, any>>(keys: string[]): T => {
+    const result = {} as T;
+    for (const key of keys) {
+      const value = storage.get(key);
+      if (value !== null) {
+        (result as any)[key] = value;
+      }
+    }
+    return result;
+  },
+
+  setMultiple: <T extends Record<string, any>>(items: T): void => {
+    for (const [key, value] of Object.entries(items)) {
+      storage.set(key, value);
+    }
+  },
+
+  // 命名空间支持
+  createNamespace: (namespace: string) => ({
+    get: <T>(key: string, defaultValue?: T): T | null => {
+      return storage.get(`${namespace}:${key}`, defaultValue);
+    },
+
+    set: <T>(key: string, value: T): void => {
+      storage.set(`${namespace}:${key}`, value);
+    },
+
+    remove: (key: string): void => {
+      storage.remove(`${namespace}:${key}`);
+    },
+
+    clear: (): void => {
+      const prefix = `${namespace}:`;
+      // 只能清理当前命名空间的键
+      const keysToKeep: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && !key.startsWith(prefix)) {
+          const value = localStorage.getItem(key);
+          if (value !== null) {
+            keysToKeep.push(key + ':' + value);
+          }
+        }
+      }
+
+      localStorage.clear();
+
+      for (const item of keysToKeep) {
+        const [key, value] = item.split(':');
+        if (key && value) {
+          localStorage.setItem(key, value);
+        }
+      }
+    },
+  }),
+};
+
+// 事件发射器
+export class EventEmitter {
+  private events = new Map<string, Function[]>();
+
+  on(event: string, listener: Function): void {
+    if (!this.events.has(event)) {
+      this.events.set(event, []);
+    }
+    this.events.get(event)!.push(listener);
+  }
+
+  off(event: string, listener: Function): void {
+    const listeners = this.events.get(event);
+    if (!listeners) return;
+
+    const index = listeners.indexOf(listener);
+    if (index > -1) {
+      listeners.splice(index, 1);
+    }
+
+    if (listeners.length === 0) {
+      this.events.delete(event);
+    }
+  }
+
+  emit(event: string, ...args: any[]): void {
+    const listeners = this.events.get(event);
+    if (!listeners) return;
+
+    for (const listener of listeners) {
+      try {
+        listener(...args);
+      } catch (error) {
+        console.error(`Error in event listener for ${event}:`, error);
+      }
+    }
+  }
+
+  once(event: string, listener: Function): void {
+    const onceListener = (...args: any[]) => {
+      this.off(event, onceListener);
+      listener(...args);
+    };
+    this.on(event, onceListener);
+  }
+
+  removeAllListeners(event?: string): void {
+    if (event) {
+      this.events.delete(event);
+    } else {
+      this.events.clear();
+    }
+  }
+
+  listenerCount(event: string): number {
+    return this.events.get(event)?.length || 0;
+  }
+}
+
+// 增强的防抖函数
+export const enhancedDebounce = <T extends (...args: any[]) => any>(
+  func: T,
+  wait: number,
+  options: { leading?: boolean; trailing?: boolean; maxWait?: number } = {},
+): ((...args: Parameters<T>) => void) & {
+  cancel: () => void;
+  flush: () => void;
+} => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  const maxTimeout: ReturnType<typeof setTimeout> | null = null;
+  let lastCallTime = 0;
+  let lastInvokeTime = 0;
+  let result: ReturnType<T>;
+
+  const invokeFunc = (time: number) => {
+    const args = lastArgs;
+    lastArgs = undefined;
+    lastInvokeTime = time;
+    result = func(...args!);
+    return result;
+  };
+
+  const leadingEdge = (time: number) => {
+    lastInvokeTime = time;
+    timeout = setTimeout(timerExpired, wait);
+    return options.leading ? invokeFunc(time) : result;
+  };
+
+  const remainingWait = (time: number) => {
+    const timeSinceLastCall = time - lastCallTime;
+    const timeSinceLastInvoke = time - lastInvokeTime;
+    const timeWaiting = wait - timeSinceLastCall;
+    return options.maxWait !== undefined
+      ? Math.min(timeWaiting, options.maxWait - timeSinceLastInvoke)
+      : timeWaiting;
+  };
+
+  const shouldInvoke = (time: number) => {
+    const timeSinceLastCall = time - lastCallTime;
+    const timeSinceLastInvoke = time - lastInvokeTime;
+    return (
+      lastCallTime === 0 ||
+      timeSinceLastCall >= wait ||
+      timeSinceLastCall < 0 ||
+      (options.maxWait !== undefined && timeSinceLastInvoke >= options.maxWait)
+    );
+  };
+
+  const timerExpired = () => {
+    const time = Date.now();
+    if (shouldInvoke(time)) {
+      return trailingEdge(time);
+    }
+    timeout = setTimeout(timerExpired, remainingWait(time));
+  };
+
+  const trailingEdge = (time: number) => {
+    timeout = null;
+    if (options.trailing && lastArgs) {
+      return invokeFunc(time);
+    }
+    lastArgs = undefined;
+    return result;
+  };
+
+  let lastArgs: Parameters<T> | undefined;
+
+  const debounced = function (this: any, ...args: Parameters<T>) {
+    const time = Date.now();
+    const isInvoking = shouldInvoke(time);
+
+    lastArgs = args;
+    lastCallTime = time;
+
+    if (isInvoking) {
+      if (timeout === null) {
+        return leadingEdge(lastCallTime);
+      }
+      if (options.maxWait !== undefined) {
+        timeout = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
+    }
+    if (timeout === null) {
+      timeout = setTimeout(timerExpired, wait);
+    }
+    return result;
+  } as typeof debounced & { cancel: () => void; flush: () => void };
+
+  debounced.cancel = () => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    lastInvokeTime = 0;
+    lastArgs = undefined;
+    timeout = null;
+  };
+
+  debounced.flush = () => {
+    return timeout === null ? result : trailingEdge(Date.now());
+  };
+
+  return debounced;
+};
+
+// 数字格式化工具
+export const formatNumber = (
+  value: number,
+  options: {
+    decimals?: number;
+    separator?: string;
+    prefix?: string;
+    suffix?: string;
+  } = {},
+): string => {
+  const { decimals = 2, separator = ',', prefix = '', suffix = '' } = options;
+
+  const formatted = value.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+
+  return `${prefix}${formatted}${suffix}`;
+};
+
+// 金额验证工具
+export const validateAmount = (
+  amount: string | number,
+): {
+  isValid: boolean;
+  value: number;
+  error?: string;
+} => {
+  const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+  if (isNaN(numValue)) {
+    return {
+      isValid: false,
+      value: 0,
+      error: 'Invalid number format',
+    };
+  }
+
+  if (numValue < 0) {
+    return {
+      isValid: false,
+      value: numValue,
+      error: 'Amount cannot be negative',
+    };
+  }
+
+  if (numValue === 0) {
+    return {
+      isValid: false,
+      value: 0,
+      error: 'Amount cannot be zero',
+    };
+  }
+
+  return {
+    isValid: true,
+    value: numValue,
+  };
+};
+
+// 全局实例
+export const cacheManager = new CacheManager();
+export const performanceMonitor = new PerformanceMonitor();
+export const eventEmitter = new EventEmitter();

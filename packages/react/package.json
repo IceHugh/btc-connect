@@ -30,10 +30,9 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
-  "dependencies": {
-    "@btc-connect/core": "^0.3.4"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@btc-connect/core": "^0.3.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.9",
@@ -47,7 +46,8 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "@btc-connect/core": "^0.3.4"
   },
   "keywords": [
     "bitcoin",

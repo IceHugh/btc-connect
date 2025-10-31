@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTC Connect 钱包检测调试</title>
+  <script type="module" src="https://unpkg.com/vue@3/dist/vue.esm-browser.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .debug-panel {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .wallet-list {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .wallet-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+    }
+    .wallet-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+    .no-wallets {
+      color: #6c757d;
+      text-align: center;
+      padding: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>🔍 BTC Connect 钱包检测调试</h1>
+
+    <div class="debug-panel">
+      <h3>📋 调试信息</h3>
+      <p><strong>检测状态:</strong> {{ detectionStatus }}</p>
+      <p><strong>Core日志:</strong> {{ coreLogs.length > 0 ? coreLogs.length + ' 条' : '无' }}</p>
+      <div v-if="coreLogs.length > 0" class="log">{{ coreLogs.join('\n') }}</div>
+    </div>
+
+    <div class="wallet-list">
+      <h3>🔑 检测到的钱包 ({{ availableWallets.length }})</h3>
+      <div v-if="availableWallets.length > 0">
+        <div v-for="wallet in availableWallets" :key="wallet.id" class="wallet-item">
+          <img :src="wallet.icon" :alt="wallet.name" class="wallet-icon">
+          <div>
+            <strong>{{ wallet.name }}</strong>
+            <div style="font-size: 12px; color: #6c757d;">ID: {{ wallet.id }}</div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="no-wallets">
+        <p>📭 未检测到可用钱包</p>
+        <p style="font-size: 14px; margin-top: 10px;">请确保钱包扩展已安装并启用</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const detectionStatus = ref('等待开始...');
+        const availableWallets = ref([]);
+        const coreLogs = ref([]);
+
+        // 捕获 Core 包的日志
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        onMounted(() => {
+          console.log('🚀 页面加载完成，开始钱包检测...');
+
+          // 劫持 console.log 来捕获 Core 日志
+          console.log = (...args) => {
+            const message = args.join(' ');
+            coreLogs.value.push(`[LOG] ${new Date().toLocaleTimeString()}: ${message}`);
+
+            // 检查是否是 Core 包的日志
+            if (message.includes('getAvailableWallets') || message.includes('Adapter')) {
+              detectionStatus.value = 'Core包正在检测...';
+            }
+
+            originalLog.apply(console, args);
+          };
+
+          console.error = (...args) => {
+            coreLogs.value.push(`[ERROR] ${new Date().toLocaleTimeString()}: ${args.join(' ')}`);
+            originalError.apply(console, args);
+          };
+
+          console.warn = (...args) => {
+            coreLogs.value.push(`[WARN] ${new Date().toLocaleTimeString()}: ${args.join(' ')}`);
+            originalWarn.apply(console, args);
+          };
+
+          // 动态导入并初始化 Core 包
+          import('/Users/icehugh/workspace/btc-connect/packages/core/dist/index.js').then(({ BTCWalletManager, getAllAdapters }) => {
+            console.log('📦 Core包导入成功');
+
+            try {
+              const manager = new BTCWalletManager({
+                onStateChange: (state) => {
+                  console.log('🔄 Core状态变化:', state);
+                }
+              });
+
+              console.log('💼 钱包管理器创建成功');
+
+              // 初始化适配器
+              manager.initializeAdapters();
+              console.log('🔧 适配器初始化完成');
+
+              // 检测可用钱包
+              const wallets = manager.getAvailableWallets();
+              console.log('=== getAvailableWallets Debug ===');
+
+              wallets.forEach(wallet => {
+                const adapter = manager.getAdapter(wallet.id);
+                console.log(`Adapter ${wallet.id}: isReady = ${adapter?.isReady()}`);
+              });
+
+              console.log('Available wallet infos:', wallets);
+
+              // 更新状态
+              detectionStatus.value = '检测完成';
+              availableWallets.value = wallets;
+
+              // 限制日志数量
+              if (coreLogs.value.length > 50) {
+                coreLogs.value = coreLogs.value.slice(-50);
+              }
+
+            } catch (error) {
+              console.error('❌ 初始化失败:', error);
+              detectionStatus.value = '初始化失败: ' + error.message;
+            }
+          }).catch(error => {
+            console.error('❌ Core包导入失败:', error);
+            detectionStatus.value = 'Core包导入失败: ' + error.message;
+          });
+        });
+
+        return {
+          detectionStatus,
+          availableWallets,
+          coreLogs
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

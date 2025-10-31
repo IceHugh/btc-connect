@@ -9,7 +9,7 @@ import {
   type WalletState,
 } from '@btc-connect/core';
 import type { App } from 'vue';
-import { type ComputedRef, computed, type Ref, ref } from 'vue';
+import { type ComputedRef, computed, type Ref, ref, inject } from 'vue';
 import { storage } from './utils';
 
 // 定义 Context 类型
@@ -35,7 +35,10 @@ export interface WalletContext {
   _stateUpdateTrigger: Ref<number>;
 }
 
-// 全局状态
+// 注入键 - 使用 Symbol 确保唯一性
+const BTC_WALLET_CONTEXT_KEY = Symbol('btc-wallet-context');
+
+// 为了向后兼容，保留全局状态（但不再推荐使用）
 let globalContext: WalletContext | null = null;
 
 // 创建钱包上下文
@@ -182,17 +185,32 @@ export function createWalletContext(): WalletContext {
   return context;
 }
 
-// 获取钱包上下文
+// 获取钱包上下文 - 推荐使用 Vue provide/inject 系统
 export function useWalletContext(): WalletContext {
+  // 尝试从 Vue 的注入系统中获取上下文
+  const injectedContext = inject<WalletContext | null>(BTC_WALLET_CONTEXT_KEY, null);
+
+  if (injectedContext) {
+    return injectedContext;
+  }
+
+  // 回退到全局状态（向后兼容）
+  // SSR 环境检查：如果在服务器端，返回一个空的上下文
+  if (typeof window === 'undefined') {
+    return createEmptyContext();
+  }
+
   if (!globalContext) {
     globalContext = createWalletContext();
   }
+
+  // 确保上下文是响应式的
+  const context = globalContext;
 
   // 添加全局状态监听器，定期检查状态变化
   if (typeof window !== 'undefined') {
     setInterval(() => {
       // 使用全局状态监听器，但要先确保它存在
-      const context = globalContext;
       if (context?.manager?.value) {
         const currentState = context.manager.value.getState();
         if (currentState.status === 'connected') {
@@ -201,7 +219,59 @@ export function useWalletContext(): WalletContext {
     }, 3000); // 每3秒检查一次
   }
 
-  return globalContext;
+  return context;
+}
+
+// 新增：直接从注入系统获取上下文（推荐使用）
+export function useProvidedWalletContext(): WalletContext {
+  const context = inject<WalletContext>(BTC_WALLET_CONTEXT_KEY);
+
+  if (!context) {
+    throw new Error(
+      'useProvidedWalletContext must be used within a BTCWalletPlugin. ' +
+      'Make sure you have installed BTCWalletPlugin in your app.'
+    );
+  }
+
+  return context;
+}
+
+// 创建空上下文（用于 SSR）
+function createEmptyContext(): WalletContext {
+  const emptyRef = ref([]);
+  const emptyComputed = computed(() => ({
+    status: 'disconnected' as ConnectionStatus,
+    accounts: [],
+    currentAccount: undefined,
+    network: 'livenet' as Network,
+    error: undefined,
+  }));
+
+  return {
+    manager: ref(null),
+    state: emptyComputed,
+    currentWallet: computed(() => null),
+    availableWallets: emptyRef,
+    isConnected: computed(() => false),
+    isConnecting: computed(() => false),
+    isModalOpen: ref(false),
+    theme: computed(() => 'light' as 'light' | 'dark'),
+
+    // 空操作方法
+    connect: async () => {
+      throw new Error('Wallet context not initialized in SSR');
+    },
+    disconnect: async () => {},
+    switchWallet: async () => {
+      throw new Error('Wallet context not initialized in SSR');
+    },
+    openModal: () => {},
+    closeModal: () => {},
+    toggleModal: () => {},
+
+    // 内部状态更新trigger
+    _stateUpdateTrigger: ref(0),
+  };
 }
 
 // Vue 插件选项类型
@@ -231,8 +301,16 @@ export const BTCWalletPlugin = {
       config,
     } = options;
 
-    // 在客户端初始化
+    // 立即 provide，不等待 window 对象
+    app.provide(BTC_WALLET_CONTEXT_KEY, context);
+
+    // 提供全局属性（向后兼容）
+    app.config.globalProperties.$btc = context;
+    app.provide('btc', context);
+
+    // 在客户端初始化钱包管理器
     if (typeof window !== 'undefined') {
+
       // 合并配置
       const finalConfig = {
         ...config,
@@ -280,16 +358,10 @@ export const BTCWalletPlugin = {
           // 动态导入增强检测方法
           const { detectAvailableWallets } = await import('@btc-connect/core');
 
-          console.log('[BTC-Connect] Vue: 开始增强钱包检测...');
-
           const result = await detectAvailableWallets({
             timeout: 20000, // 20秒超时
             interval: 300, // 300ms间隔
             onProgress: (detectedWallets, elapsedTime) => {
-              console.log(
-                `[BTC-Connect] Vue: 钱包检测进度: ${detectedWallets.join(', ')} (${elapsedTime}ms)`,
-              );
-
               // 实时更新可用钱包列表
               const walletInfos = detectedWallets
                 .map((walletId) => {
@@ -308,10 +380,6 @@ export const BTCWalletPlugin = {
             },
           });
 
-          console.log(
-            `[BTC-Connect] Vue: 钱包检测完成: ${result.wallets.join(', ')} (耗时: ${result.elapsedTime}ms)`,
-          );
-
           // 最终更新可用钱包列表
           const walletInfos = result.adapters.map((adapter) => ({
             id: adapter.id,
@@ -321,9 +389,16 @@ export const BTCWalletPlugin = {
 
           context.availableWallets.value = walletInfos as any[];
 
+          // 强制触发响应式更新 - 确保所有依赖的组件都能收到更新
+          context._stateUpdateTrigger.value++; // 触发所有依赖此 trigger 的 computed 重新计算
+
+          // 确保可用钱包列表被正确更新
+          setTimeout(() => {
+            // 延迟更新确认
+          }, 100);
+
           // 钱包检测完成后，如果启用了自动连接，立即执行
           if (autoConnect) {
-            console.log('[BTC-Connect] Vue: 钱包检测完成，开始自动连接...');
             await attemptAutoConnect(walletManager, connectTimeout);
           }
         } catch (error) {
@@ -352,26 +427,22 @@ export const BTCWalletPlugin = {
 
       // 监听钱包连接事件，在连接成功后获取账户详情
       const handleConnect = () => {
-        console.log('[BTC-Connect] Vue: 连接成功，获取账户详情');
         fetchAccountDetails(walletManager);
       };
 
       // 监听账户变化事件，用于UI更新和重新获取详情
       const handleAccountChange = () => {
-        console.log('[BTC-Connect] Vue: 账户变化，重新获取账户详情');
         fetchAccountDetails(walletManager);
       };
 
       // 监听网络变化事件，用于UI更新和重新获取详情
       const handleNetworkChange = () => {
-        console.log('[BTC-Connect] Vue: 网络变化，重新获取账户详情');
         fetchAccountDetails(walletManager);
       };
 
       // 监听页面可见性变化，当用户回到页面时重新检测
       const handleVisibilityChange = () => {
         if (!document.hidden) {
-          console.log('[BTC-Connect] Vue: 页面重新可见，重新检测钱包...');
           detectWallets();
         }
       };
@@ -394,11 +465,8 @@ export const BTCWalletPlugin = {
       };
     }
 
+    // 重置全局上下文，确保使用最新的客户端实例（向后兼容）
     globalContext = context;
-
-    // 提供全局属性
-    app.config.globalProperties.$btc = context;
-    app.provide('btc', context);
   },
 };
 
@@ -413,18 +481,15 @@ async function fetchAccountDetails(manager: BTCWalletManager): Promise<void> {
       balance?: BalanceDetail;
     } = {};
 
-    // 获取公钥
     try {
       const pk = await adapter.getPublicKey?.();
       if (pk) {
         updatePayload.publicKey = pk;
-        console.log('[BTC-Connect] Vue: 获取公钥成功:', pk);
       }
     } catch (error) {
-      console.warn('[BTC-Connect] Vue: 获取公钥失败:', error);
+      // 静默处理
     }
 
-    // 获取余额
     try {
       const bal = await adapter.getBalance?.();
       const detail: BalanceDetail | null =
@@ -441,17 +506,14 @@ async function fetchAccountDetails(manager: BTCWalletManager): Promise<void> {
           : null;
       if (detail) {
         updatePayload.balance = detail;
-        console.log('[BTC-Connect] Vue: 获取余额成功:', detail);
       }
     } catch (error) {
-      console.warn('[BTC-Connect] Vue: 获取余额失败:', error);
+      // 静默处理
     }
 
-    // 更新适配器状态中的账户信息
     if ((adapter as any).state?.currentAccount) {
       if (updatePayload.publicKey) {
-        (adapter as any).state.currentAccount.publicKey =
-          updatePayload.publicKey;
+        (adapter as any).state.currentAccount.publicKey = updatePayload.publicKey;
       }
       if (updatePayload.balance) {
         (adapter as any).state.currentAccount.balance = updatePayload.balance;

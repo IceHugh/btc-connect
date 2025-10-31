@@ -2,6 +2,17 @@
 
 ## 变更记录 (Changelog)
 
+### 2025-10-31 22:00:00 - 🎉 Vue 模块重大架构优化
+- **模态框集成优化**: Vue 包的 WalletModal 已集成到 ConnectButton，大幅简化外部使用
+- **全局状态管理**: 实现全局唯一的模态框状态管理系统，支持跨组件控制
+- **Hook 增强**: useWalletModal 支持来源追踪、程序化控制和调试功能
+- **组件模块化**: 将 ConnectButton 拆分为 AddressDisplay、BalanceDisplay、WalletStatus 等单一职责组件
+- **配置系统**: 创建完整的配置管理系统，支持主题、性能、功能开关等多维度配置
+- **TypeScript 增强**: 新增 400+ 行完整类型定义，提供完整的类型安全和智能提示
+- **工具函数增强**: 新增缓存管理、性能监控、错误处理、事件发射器等高级工具类
+- **样式系统优化**: 实现模块化 CSS，支持完整的主题系统和响应式设计
+- **快速开始指南**: 创建全新的快速开始文档，提供 5 分钟集成指南
+
 ### 2025-10-26 22:00:00
 - **重要修复**: 完成switchNetwork功能的全面修复和实现
 - **核心包**: 添加缺失的`BTCWalletManager.switchNetwork()`方法
@@ -94,7 +105,7 @@ graph TD
 
     click D "./packages/core/CLAUDE.md" "查看 core 模块文档"
     click E "./packages/react/CLAUDE.md" "查看 react 模块文档"
-    click F "./packages/vue/CLAUDE.md" "查看 vue 模块文档"
+    click F "./packages/vue/CLAUDE.md" "查看 vue 模块文档 🎉"
     click G "./examples/react/CLAUDE.md" "查看 react 示例文档"
     click H "./examples/vue-example/CLAUDE.md" "查看 vue 示例文档"
     click I "./examples/nextjs/CLAUDE.md" "查看 Next.js 示例文档"
@@ -107,7 +118,7 @@ graph TD
 |------|------|------|------|------|
 | @btc-connect/core | packages/core | TypeScript | 核心钱包适配层和管理器 | ✅ 核心模块 |
 | @btc-connect/react | packages/react | TypeScript/React | React Context 和 Hooks | ✅ 完整实现 |
-| @btc-connect/vue | packages/vue | TypeScript/Vue | Vue Composables 和插件 | ✅ 完整实现 |
+| @btc-connect/vue | packages/vue | TypeScript/Vue | Vue Composables 和插件 | ✅ v0.4.0+ 架构优化 |
 
 ### 示例项目
 

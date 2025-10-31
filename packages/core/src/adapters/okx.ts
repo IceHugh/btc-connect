@@ -270,7 +270,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 请求账户连接
    */
-  protected async handleRequestAccounts(): Promise<AccountInfo[]> {
+  protected override async handleRequestAccounts(): Promise<AccountInfo[]> {
     return this.executeWalletOperation(
       async (wallet) => {
         const addresses = await wallet.requestAccounts();
@@ -292,7 +292,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 获取公钥
    */
-  protected async handleGetPublicKey(): Promise<string> {
+  protected override async handleGetPublicKey(): Promise<string> {
     return this.executeWalletOperation(
       async (wallet) => await wallet.getPublicKey(),
       'Failed to get public key from OKX wallet',
@@ -306,7 +306,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 获取余额
    */
-  protected async handleGetBalance(): Promise<{
+  protected override async handleGetBalance(): Promise<{
     confirmed: number;
     unconfirmed: number;
     total: number;
@@ -324,7 +324,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 高级签名消息（支持多种签名类型）
    */
-  protected async handleSignMessageAdvanced(
+  protected override async handleSignMessageAdvanced(
     message: string,
     type?: 'ecdsa' | 'bip322-simple',
   ): Promise<string> {
@@ -341,7 +341,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 发送比特币（支持选项）
    */
-  protected async handleSendBitcoinAdvanced(
+  protected override async handleSendBitcoinAdvanced(
     toAddress: string,
     amount: number,
     options?: {
@@ -362,7 +362,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 发送铭文
    */
-  protected async handleSendInscription(
+  protected override async handleSendInscription(
     address: string,
     inscriptionId: string,
     options?: {
@@ -384,7 +384,7 @@ export class OKXAdapter extends BaseWalletAdapter {
   /**
    * 推送交易
    */
-  protected async handlePushTx(rawTx: string): Promise<string> {
+  protected override async handlePushTx(rawTx: string): Promise<string> {
     return this.executeWalletOperation(
       async (wallet) => await wallet.pushTx(rawTx),
       'Failed to push transaction with OKX wallet',

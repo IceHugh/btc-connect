@@ -359,7 +359,7 @@ export class UniSatAdapter
   /**
    * 获取公钥
    */
-  async getPublicKey(): Promise<string> {
+  override async getPublicKey(): Promise<string> {
     return this.executeWalletOperation(
       async (wallet) => await wallet.getPublicKey(),
       'Failed to get public key from UniSat wallet',
@@ -373,7 +373,7 @@ export class UniSatAdapter
   /**
    * 获取余额
    */
-  async getBalance(): Promise<UniSatBalance> {
+  override async getBalance(): Promise<UniSatBalance> {
     return this.executeWalletOperation(
       async (wallet) => await wallet.getBalance(),
       'Failed to get balance from UniSat wallet',
@@ -453,7 +453,7 @@ export class UniSatAdapter
   /**
    * 发送 Inscription
    */
-  async sendInscription(
+  override async sendInscription(
     address: string,
     inscriptionId: string,
     options?: UniSatSendInscriptionOptions,
@@ -541,7 +541,7 @@ export class UniSatAdapter
   /**
    * 推送原始交易
    */
-  async pushTx(rawtx: string): Promise<string> {
+  override async pushTx(rawtx: string): Promise<string> {
     return this.executeWalletOperation(
       async (wallet) => await wallet.pushTx({ rawtx }),
       'Failed to push transaction with UniSat wallet',
@@ -555,7 +555,7 @@ export class UniSatAdapter
   /**
    * 签名消息（支持多种签名类型）
    */
-  async signMessageAdvanced(
+  override async signMessageAdvanced(
     message: string,
     type?: 'ecdsa' | 'bip322-simple',
   ): Promise<string> {
@@ -572,7 +572,7 @@ export class UniSatAdapter
   /**
    * 发送比特币（支持选项）
    */
-  async sendBitcoinAdvanced(
+  override async sendBitcoinAdvanced(
     toAddress: string,
     satoshis: number,
     options?: UniSatSendBitcoinOptions,

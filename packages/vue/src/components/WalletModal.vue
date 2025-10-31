@@ -97,17 +97,29 @@ interface Props {
   title?: string;
   class?: string;
   style?: Record<string, any>;
+  isOpen?: boolean;
+  theme?: 'light' | 'dark' | 'auto';
+  wallets?: any[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'Select Wallet',
   class: '',
   style: () => ({}),
+  isOpen: false,
+  theme: 'light',
+  wallets: () => [],
 });
+
+// Emits
+const emit = defineEmits<{
+  connect: [walletId: string];
+  close: [];
+}>();
 
 // Composables
 const { availableWallets, connect } = useConnectWallet();
-const { isModalOpen, closeModal } = useWalletModal();
+const { isOpen: isModalOpen, close: closeModal } = useWalletModal();
 const { theme } = useWallet();
 
 // State
@@ -118,7 +130,7 @@ const walletInfos = computed(() => {
   const installedSet = new Set(availableWallets.value.map((w: any) => w.id));
   const allAdapters = getAllAdapters();
 
-  return allAdapters.map((adapter) => ({
+  const result = allAdapters.map((adapter) => ({
     id: adapter.id,
     name: adapter.name,
     icon: adapter.icon,
@@ -126,10 +138,17 @@ const walletInfos = computed(() => {
     installed: installedSet.has(adapter.id),
     recommended: ['unisat', 'okx'].includes(adapter.id),
   }));
+
+  return result;
 });
 
-const buttonStyles = computed(() => props.style);
+watch(availableWallets, (newWallets, oldWallets) => {
+  if (newWallets?.length !== oldWallets?.length) {
+    // Vue 响应式系统处理
+  }
+}, { immediate: true, deep: true });
 
+const buttonStyles = computed(() => props.style);
 const className = computed(() => props.class);
 
 // Methods
@@ -144,6 +163,7 @@ const getWalletDescription = (walletId: string): string => {
 
 const handleBackdropClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget) {
+    emit('close');
     closeModal();
   }
 };
@@ -152,6 +172,7 @@ const handleWalletSelect = async (wallet: any) => {
   if (wallet.installed) {
     try {
       await connect(wallet.id);
+      emit('connect', wallet.id);
       closeModal();
     } catch (error) {
       console.error('Failed to connect wallet:', error);
@@ -170,6 +191,7 @@ const handleWalletSelect = async (wallet: any) => {
 
 const handleEscKey = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && isModalOpen.value) {
+    emit('close');
     closeModal();
   }
 };

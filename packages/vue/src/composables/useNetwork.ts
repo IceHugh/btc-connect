@@ -61,10 +61,18 @@ export function useNetwork() {
     };
   });
 
+  const getNetworkInfo = (net: Network) => {
+    return {
+      name: getNetworkName(net),
+      type: getNetworkType(net),
+    };
+  };
+
   return {
     network,
     currentNetwork,
     switchNetwork,
     name: computed(() => getNetworkName(currentNetwork.value)),
+    getNetworkInfo,
   };
 }

@@ -6,7 +6,11 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss'],
 
   // CSS配置
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/assets/css/main.css',
+    // 引入 BTC Connect 样式（推荐方式）
+    '@btc-connect/vue/style.css'
+  ],
 
   // TypeScript配置
   typescript: {
@@ -16,7 +20,6 @@ export default defineNuxtConfig({
 
   // 构建配置
   build: {
-    transpile: ['@btc-connect/vue'],
   },
 
   // SSR配置

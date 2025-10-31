@@ -14,27 +14,35 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./style.css": {
+      "import": "./dist/style.css",
+      "types": "./dist/style.css.d.ts"
+    },
+    "./styles/*": {
+      "import": "./dist/styles/*.css"
     }
   },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vue-tsc -b && vite build && bun run minify",
+    "build": "vue-tsc -b && vite build && cp src/styles/connect-button.css dist/style.css && bun run minify",
     "preview": "vite preview",
     "lint": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "vue-tsc -b",
-    "minify": "terser dist/index.js -c drop_console=true,drop_debugger=true -m -o dist/index.js",
+    "minify": "terser dist/index.js -c drop_debugger=true -m -o dist/index.js",
     "test": "bun test"
   },
-  "dependencies": {
-    "@btc-connect/core": "^0.3.4"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@btc-connect/core": "^0.3.4",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.7.0",
     "terser": "^5.44.0",
@@ -44,7 +52,8 @@
     "vue-tsc": "^3.0.5"
   },
   "peerDependencies": {
-    "vue": ">=3.2.0"
+    "vue": ">=3.2.0",
+    "@btc-connect/core": "^0.3.4"
   },
   "keywords": [
     "bitcoin",

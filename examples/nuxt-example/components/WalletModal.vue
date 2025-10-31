@@ -90,7 +90,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useWalletModal, useConnectWallet, useWalletInfo } from '@btc-connect/vue'
 
-const { isModalOpen, closeModal } = useWalletModal()
+const { isOpen: isModalOpen, close: closeModal } = useWalletModal()
 const { connect } = useConnectWallet()
 const { availableWallets } = useWalletInfo()
 

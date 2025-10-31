@@ -1,0 +1,438 @@
+/**
+ * ConnectButton 组件样式
+ *
+ * 提供主题化、响应式的连接按钮样式
+ */
+
+/* 基础连接按钮样式 */
+.btc-connect-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #333333;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  user-select: none;
+  min-height: 40px;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btc-connect-button:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btc-connect-button:focus-visible {
+  box-shadow: 0 0 0 2px #f7931a, 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btc-connect-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btc-connect-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 尺寸变体 */
+.btc-connect-button--sm {
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.btc-connect-button--lg {
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 16px;
+  gap: 10px;
+}
+
+/* 变体样式 */
+.btc-connect-button--compact {
+  gap: 4px;
+  padding: 6px 12px;
+}
+
+.btc-connect-button--select {
+  min-width: 160px;
+}
+
+/* 主题样式 */
+.btc-connect-button--dark {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btc-connect-button--dark:hover:not(:disabled) {
+  background-color: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btc-connect-button--auto {
+  background-color: color-mix(in srgb, canvas 85%, white);
+  color: color-mix(in srgb, canvastext 85%, black);
+  border-color: color-mix(in srgb, canvas 50%, white);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btc-connect-button--auto {
+    background-color: color-mix(in srgb, canvas 15%, black);
+    color: color-mix(in srgb, canvastext 15%, white);
+    border-color: color-mix(in srgb, canvas 30%, black);
+  }
+}
+
+/* Bitcoin 图标 */
+.btc-bitcoin-icon {
+  width: 18px;
+  height: 18px;
+  fill: #f7931a;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.btc-connect-button:hover .btc-bitcoin-icon {
+  transform: rotate(5deg) scale(1.1);
+}
+
+/* 连接状态容器 */
+.btc-connected-status {
+  display: flex;
+  align-items: center;
+  position: relative;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px;
+  min-width: 160px;
+  height: 40px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  font-size: 12px;
+  background-color: #ffffff;
+  color: #333333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+
+.btc-connected-status:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btc-connected-status:focus-visible {
+  box-shadow: 0 0 0 2px #f7931a;
+}
+
+.btc-connected-status--dark {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btc-connected-status--sm {
+  min-width: 140px;
+  height: 32px;
+  font-size: 11px;
+}
+
+.btc-connected-status--lg {
+  min-width: 200px;
+  height: 48px;
+  font-size: 14px;
+  gap: 12px;
+}
+
+/* 余额显示区域 */
+.btc-balance-section {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.btc-balance-amount {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
+}
+
+.btc-balance-unit {
+  font-weight: 600;
+  color: #f7931a;
+  margin-left: 2px;
+}
+
+.btc-connected-status:hover .btc-balance-amount {
+  color: #f7931a;
+}
+
+/* 地址显示区域 */
+.btc-address-section {
+  width: 48px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  transition: all 0.15s ease;
+  overflow: hidden;
+  padding: 0 6px;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: #333333;
+  box-sizing: border-box;
+  user-select: none;
+  outline: none;
+}
+
+.btc-address-section:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+  transform: scale(1.05);
+}
+
+.btc-address-section:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #f7931a;
+}
+
+.btc-address-section--dark {
+  background-color: #3a3a3a;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btc-address-section--dark:hover {
+  background-color: #4a4a4a;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btc-address-text {
+  font-size: 10px;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btc-copied-icon {
+  color: #22c55e;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease;
+}
+
+/* 下拉菜单 */
+.btc-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1000;
+  width: auto;
+  min-width: 120px;
+  max-width: 200px;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e9ecef;
+  background-color: #ffffff;
+  user-select: none;
+  animation: slideDown 0.2s ease;
+}
+
+.btc-dropdown--dark {
+  background-color: #2a2a2a;
+  border-color: #404040;
+  color: #ffffff;
+}
+
+.btc-dropdown-item {
+  width: 100%;
+  appearance: none;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  background-color: transparent;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  user-select: none;
+  outline: none;
+}
+
+.btc-dropdown-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.btc-dropdown-item:focus-visible {
+  background-color: #f8f9fa;
+  box-shadow: inset 0 0 0 2px #f7931a;
+}
+
+.btc-dropdown--dark .btc-dropdown-item:hover {
+  background-color: #3a3a3a;
+}
+
+.btc-dropdown--dark .btc-dropdown-item:focus-visible {
+  background-color: #3a3a3a;
+  box-shadow: inset 0 0 0 2px #f7931a;
+}
+
+/* 加载状态 */
+.btc-connect-button--loading {
+  cursor: wait;
+}
+
+.btc-connect-button--loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top: 2px solid #f7931a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .btc-connect-button,
+  .btc-connected-status {
+    width: 100%;
+    min-width: auto;
+    max-width: 98vw;
+  }
+
+  .btc-dropdown {
+    max-width: 100%;
+    width: auto;
+  }
+
+  .btc-balance-amount {
+    font-size: 11px;
+  }
+
+  .btc-address-section {
+    width: 44px;
+    height: 22px;
+    font-size: 9px;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .btc-connect-button {
+    border-width: 2px;
+  }
+
+  .btc-connect-button:focus-visible {
+    box-shadow: 0 0 0 3px #f7931a;
+  }
+
+  .btc-address-section:focus-visible {
+    box-shadow: 0 0 0 3px #f7931a;
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .btc-connect-button,
+  .btc-connected-status,
+  .btc-address-section,
+  .btc-dropdown,
+  .btc-bitcoin-icon {
+    transition: none;
+  }
+
+  .btc-connect-button:hover,
+  .btc-connected-status:hover,
+  .btc-address-section:hover {
+    transform: none;
+  }
+
+  .btc-copied-icon {
+    animation: none;
+  }
+
+  .btc-dropdown {
+    animation: none;
+  }
+
+  .btc-connect-button--loading::before {
+    animation: none;
+    border-top-color: #f7931a;
+    border-right-color: #f7931a;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .btc-connect-button,
+  .btc-connected-status,
+  .btc-dropdown {
+    display: none;
+  }
+}
