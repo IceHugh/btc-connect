@@ -1,14 +1,75 @@
+import type { EventHandler } from '@btc-connect/core';
 import { useCallback, useEffect, useState } from 'react';
 import { useWalletContext } from '../context/provider';
 import type { Network, WalletEvent } from '../types';
 import { formatAddressShort, normalizeBalance } from '../utils';
 
 /**
- * 使用钱包状态的Hook - 优化版本
+ * 使用钱包状态的Hook - 增强版本，统一访问点
+ *
+ * 提供所有钱包相关功能的统一访问入口，包括：
+ * - 基础钱包状态和账户信息
+ * - 连接和断开操作
+ * - 网络管理功能
+ * - 事件监听功能
+ * - 模态框控制功能
+ * - 签名和交易功能
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const wallet = useWallet();
+ *
+ *   // 基础状态
+ *   console.log('连接状态:', wallet.status);
+ *   console.log('当前地址:', wallet.address);
+ *
+ *   // 连接操作
+ *   const handleConnect = () => wallet.connect?.('unisat');
+ *
+ *   // 网络切换
+ *   const handleSwitchNetwork = async () => {
+ *     try {
+ *       await wallet.switchNetwork?.('mainnet');
+ *     } catch (error) {
+ *       console.error('网络切换失败:', error.message);
+ *     }
+ *   };
+ *
+ *   // 事件监听
+ *   wallet.useWalletEvent?.('accountChange', (accounts) => {
+ *     console.log('账户变化:', accounts);
+ *   });
+ *
+ *   return (
+ *     <div>
+ *       <p>状态: {wallet.status}</p>
+ *       <p>地址: {wallet.address}</p>
+ *       <button onClick={handleConnect}>连接钱包</button>
+ *       <button onClick={handleSwitchNetwork}>切换网络</button>
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 export function useWallet() {
-  const { state, currentWallet, isConnected, isConnecting, disconnect, theme } =
-    useWalletContext();
+  const context = useWalletContext();
+  const {
+    state,
+    currentWallet,
+    isConnected,
+    isConnecting,
+    disconnect,
+    theme,
+    connect,
+    switchWallet,
+    availableWallets,
+    manager,
+    isModalOpen,
+    openModal,
+    closeModal,
+    toggleModal,
+  } = context;
 
   // 使用选择器避免不必要的重渲染
   const status = state.status;
@@ -22,8 +83,105 @@ export function useWallet() {
   const balance = normalizeBalance(currentAccount?.balance);
   const publicKey = currentAccount?.publicKey || null;
 
+  // 网络切换功能
+  const switchNetwork = useCallback(
+    async (targetNetwork: Network) => {
+      if (!manager) {
+        throw new Error('钱包管理器未初始化');
+      }
+
+      const currentWallet = manager.getCurrentWallet();
+      if (!currentWallet) {
+        throw new Error('没有连接的钱包，请先连接钱包');
+      }
+
+      try {
+        return await manager.switchNetwork(targetNetwork);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('No wallet connected')) {
+            throw new Error('没有连接的钱包，请先连接钱包');
+          }
+          if (error.message.includes('Network switching not supported')) {
+            throw new Error(
+              `当前钱包 ${currentWallet.name} 不支持网络切换，请手动在钱包中切换网络`,
+            );
+          }
+          throw error;
+        }
+        throw new Error('网络切换失败');
+      }
+    },
+    [manager],
+  );
+
+  // 事件监听功能
+  const useWalletEvent = <T extends WalletEvent>(
+    event: T,
+    handler: EventHandler<T>,
+  ) => {
+    useEffect(() => {
+      if (!manager) return;
+
+      manager.on(event, handler);
+      return () => {
+        manager.off(event, handler);
+      };
+    }, [event, handler]);
+  };
+
+  // 签名功能
+  const signMessage = useCallback(
+    async (message: string): Promise<string> => {
+      if (!manager) {
+        throw new Error('Wallet manager not initialized');
+      }
+      const adapter = manager.getCurrentAdapter();
+      if (!adapter || !adapter.signMessage) {
+        throw new Error('Sign message is not supported by current wallet');
+      }
+      return await adapter.signMessage(message);
+    },
+    [manager],
+  );
+
+  const signPsbt = useCallback(
+    async (psbt: string): Promise<string> => {
+      if (!manager) {
+        throw new Error('Wallet manager not initialized');
+      }
+      const adapter = manager.getCurrentAdapter();
+      if (!adapter || !adapter.signPsbt) {
+        throw new Error('Sign PSBT is not supported by current wallet');
+      }
+      return await adapter.signPsbt(psbt);
+    },
+    [manager],
+  );
+
+  // 交易功能
+  const sendBitcoin = useCallback(
+    async (to: string, amount: number): Promise<string> => {
+      if (!manager) {
+        throw new Error('Wallet manager not initialized');
+      }
+      const adapter = manager.getCurrentAdapter();
+      if (!adapter || !adapter.sendBitcoin) {
+        throw new Error('Send Bitcoin is not supported by current wallet');
+      }
+      return await adapter.sendBitcoin(to, amount);
+    },
+    [manager],
+  );
+
+  // 获取当前适配器
+  const currentAdapter = manager?.getCurrentAdapter() || null;
+
+  // 获取所有适配器
+  const allAdapters = manager?.getAllAdapters() || [];
+
   return {
-    // 状态
+    // === 基础状态 ===
     status,
     accounts,
     currentAccount,
@@ -33,14 +191,56 @@ export function useWallet() {
     isConnected,
     isConnecting,
     theme,
-
-    // 账户信息
     address,
     balance,
     publicKey,
 
-    // 操作
+    // === 连接操作 ===
+    connect,
     disconnect,
+    switchWallet,
+    availableWallets,
+
+    // === 网络管理 ===
+    switchNetwork,
+
+    // === 事件监听功能 ===
+    useWalletEvent,
+
+    // === 模态框控制 ===
+    walletModal: {
+      isModalOpen,
+      openModal,
+      closeModal,
+      toggleModal,
+    },
+
+    // === 钱包管理器功能 ===
+    currentAdapter,
+    allAdapters,
+    manager,
+
+    // === 签名功能 ===
+    signMessage,
+    signPsbt,
+
+    // === 交易功能 ===
+    sendBitcoin,
+
+    // === 工具函数快捷访问 ===
+    utils: {
+      formatAddress: (address: string, options?: any) => {
+        // 动态导入以避免循环依赖
+        return import('../utils').then((m) =>
+          m.formatAddress(address, options),
+        );
+      },
+      formatBalance: (satoshis: number, options?: any) => {
+        return import('../utils').then((m) =>
+          m.formatBalance(satoshis, options),
+        );
+      },
+    },
   };
 }
 
@@ -56,30 +256,6 @@ export function useConnectWallet() {
     disconnect,
     switchWallet,
     availableWallets,
-  };
-}
-
-/**
- * 使用特定钱包连接的Hook - 优化版本
- */
-export function useWalletConnect(walletId: string) {
-  const { connect, availableWallets } = useWalletContext();
-
-  // 使用 useMemo 避免重复计算
-  const wallet = availableWallets.find((w) => w.id === walletId);
-  const isAvailable = !!wallet;
-
-  const connectWallet = useCallback(async () => {
-    if (!isAvailable) {
-      throw new Error(`Wallet ${walletId} is not available`);
-    }
-    return await connect(walletId);
-  }, [connect, isAvailable, walletId]);
-
-  return {
-    wallet,
-    isAvailable,
-    connect: connectWallet,
   };
 }
 
@@ -114,8 +290,8 @@ export function useNetwork() {
   useEffect(() => {
     if (!manager) return;
 
-    const handleNetworkChange = (newNetwork: Network) => {
-      setNetwork(newNetwork);
+    const handleNetworkChange = (params: { network: Network }) => {
+      setNetwork(params.network);
     };
 
     manager.on('networkChange', handleNetworkChange);
