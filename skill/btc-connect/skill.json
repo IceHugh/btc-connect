@@ -1,0 +1,42 @@
+{
+  "name": "btc-connect",
+  "description": "专业的比特币钱包连接技能，支持btc-connect core、react、vue包在React、Vue、Next.js、Nuxt 3项目中的完整集成，包含UniSat和OKX钱包适配、网络切换功能、SSR环境配置和最新架构优化",
+  "version": "2.0.0",
+  "author": "icehugh",
+  "tags": [
+    "bitcoin",
+    "wallet",
+    "btc-connect",
+    "react",
+    "vue",
+    "nuxt3",
+    "nextjs",
+    "unisat",
+    "okx",
+    "network-switching",
+    "ssr"
+  ],
+  "category": "blockchain",
+  "location": "user",
+  "enabled": true,
+  "main": "SKILL.md",
+  "dependencies": [],
+  "keywords": [
+    "bitcoin",
+    "wallet",
+    "btc-connect",
+    "unisat",
+    "okx",
+    "react",
+    "vue",
+    "nextjs",
+    "nuxt3",
+    "ssr",
+    "web3",
+    "network-switching",
+    "typescript",
+    "architecture-optimization"
+  ],
+  "entry": "btc-connect",
+  "license": "MIT"
+}
