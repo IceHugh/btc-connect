@@ -55,7 +55,7 @@
     },
     "packages/core": {
       "name": "@btc-connect/core",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "devDependencies": {
         "@types/node": "^20.0.0",
         "bun-plugin-dts": "^0.3.0",
@@ -64,7 +64,7 @@
     },
     "packages/react": {
       "name": "@btc-connect/react",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "devDependencies": {
         "@btc-connect/core": "^0.3.4",
         "@testing-library/jest-dom": "^6.9.1",
@@ -86,7 +86,7 @@
     },
     "packages/vue": {
       "name": "@btc-connect/vue",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "devDependencies": {
         "@btc-connect/core": "^0.3.4",
         "@vitejs/plugin-vue": "^6.0.1",

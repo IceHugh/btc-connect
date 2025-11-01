@@ -467,27 +467,13 @@ onMounted(() => {
 
   // Add ESC key listener
   document.addEventListener('keydown', handleEscKey);
-
-  // Prevent background scroll
-  document.body.style.overflow = 'hidden';
 });
 
 onUnmounted(() => {
   // Remove ESC key listener
   document.removeEventListener('keydown', handleEscKey);
-
-  // Restore background scroll
-  document.body.style.overflow = '';
 });
 
-// Watch modal state changes
-watch(isModalOpen, (newValue) => {
-  if (!newValue) {
-    document.body.style.overflow = '';
-  } else {
-    document.body.style.overflow = 'hidden';
-  }
-});
 
 </script>
 
