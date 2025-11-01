@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/bun": "^1.2.19",
     "@types/node": "^20.0.0",
+    "jsdom": "^27.1.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {

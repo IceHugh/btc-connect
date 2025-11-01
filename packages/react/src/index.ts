@@ -52,6 +52,7 @@ export {
   useTheme,
   useTransactions,
   useWallet,
+  useWalletDetection,
   useWalletEvent,
   useWalletManager,
   useWalletModal,
