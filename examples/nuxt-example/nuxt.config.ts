@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/main.css',
     // 引入 BTC Connect 样式（推荐方式）
-    '@btc-connect/vue/style.css'
+    '@btc-connect/vue/style.css',
   ],
 
   // TypeScript配置
@@ -19,8 +19,7 @@ export default defineNuxtConfig({
   },
 
   // 构建配置
-  build: {
-  },
+  build: {},
 
   // SSR配置
   ssr: true,

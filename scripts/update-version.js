@@ -10,9 +10,9 @@
  * node scripts/update-version.js 1.2.3 # 设置特定版本
  */
 
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { execSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 // 项目配置
 const PROJECT_ROOT = process.cwd();
@@ -85,7 +85,7 @@ function readPackageJson(packagePath) {
  */
 function writePackageJson(packagePath, packageJson) {
   const fullPath = join(PROJECT_ROOT, packagePath, 'package.json');
-  const content = JSON.stringify(packageJson, null, 2) + '\n';
+  const content = `${JSON.stringify(packageJson, null, 2)}\n`;
   writeFileSync(fullPath, 'utf8', content);
 }
 

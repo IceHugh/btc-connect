@@ -1,5 +1,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { AccountInfo } from '../types';
+import { storage } from '../utils';
 import { useWalletContext } from '../walletContext';
 
 /**
@@ -13,6 +14,8 @@ export function useAutoConnect() {
   const isAutoConnecting = ref(false);
   const lastWalletId = ref<string | null>(null);
   const autoConnectEnabled = ref(true);
+  const hasAttemptedConnect = ref(false); // 防止重复尝试
+  const eventListenersRegistered = ref(false); // 防止重复注册事件监听器
 
   // 持久化存储键名 - 与React包保持一致
   const STORAGE_KEY = 'btc-connect-auto-connect';
@@ -30,11 +33,9 @@ export function useAutoConnect() {
 
   // 从本地存储加载配置
   const loadStorageData = () => {
-    if (typeof window === 'undefined') return;
-
     try {
-      const storedWalletId = localStorage.getItem(WALLET_ID_KEY);
-      const autoConnectSetting = localStorage.getItem(STORAGE_KEY);
+      const storedWalletId = storage.get<string>(WALLET_ID_KEY);
+      const autoConnectSetting = storage.get<string>(STORAGE_KEY);
 
       if (storedWalletId) {
         lastWalletId.value = storedWalletId;
@@ -50,15 +51,13 @@ export function useAutoConnect() {
 
   // 保存到本地存储
   const saveToStorage = (walletId?: string) => {
-    if (typeof window === 'undefined') return;
-
     try {
       if (walletId) {
-        localStorage.setItem(WALLET_ID_KEY, walletId);
+        storage.set(WALLET_ID_KEY, walletId);
         lastWalletId.value = walletId;
       }
 
-      localStorage.setItem(STORAGE_KEY, String(autoConnectEnabled.value));
+      storage.set(STORAGE_KEY, String(autoConnectEnabled.value));
     } catch (error) {
       console.warn('Failed to save auto-connect settings:', error);
     }
@@ -66,32 +65,37 @@ export function useAutoConnect() {
 
   // 清除存储数据
   const clearStorageData = () => {
-    if (typeof window === 'undefined') return;
-
     try {
-      localStorage.removeItem(WALLET_ID_KEY);
-      localStorage.removeItem(STORAGE_KEY);
+      storage.remove(WALLET_ID_KEY);
+      storage.remove(STORAGE_KEY);
       lastWalletId.value = null;
     } catch (error) {
       console.warn('Failed to clear auto-connect settings:', error);
     }
   };
 
-  // 执行自动连接
+  // 执行自动连接 - 简化版本，主要由事件驱动调用
   const performAutoConnect = async (): Promise<AccountInfo[] | null> => {
     if (!canAutoConnect.value || !lastWalletId.value || !ctx.manager.value) {
       return null;
     }
 
+    // 防止重复尝试
+    if (hasAttemptedConnect.value) {
+      return null;
+    }
+
+    hasAttemptedConnect.value = true;
+
     console.log(
-      `🔄 [useAutoConnect] Attempting auto-connect to: ${lastWalletId.value}`,
+      `🎯 [useAutoConnect] Event-driven auto-connect to: ${lastWalletId.value}`,
     );
 
     try {
       isAutoConnecting.value = true;
 
-      // 首先检查钱包是否可用
-      const availableWallets = ctx.manager.value.getAvailableWallets();
+      // 检查钱包是否在可用列表中
+      const availableWallets = ctx.availableWallets.value;
       const isWalletAvailable = availableWallets.some(
         (w) => w.id === lastWalletId.value,
       );
@@ -100,7 +104,6 @@ export function useAutoConnect() {
         console.warn(
           `⚠️ [useAutoConnect] Wallet ${lastWalletId.value} is not available`,
         );
-        clearStorageData();
         return null;
       }
 
@@ -126,8 +129,6 @@ export function useAutoConnect() {
         `❌ [useAutoConnect] Auto-connect failed for ${lastWalletId.value}:`,
         error,
       );
-      // 清除无效的钱包ID
-      clearStorageData();
       return null;
     } finally {
       isAutoConnecting.value = false;
@@ -145,15 +146,21 @@ export function useAutoConnect() {
     saveToStorage();
   };
 
-  // 监听连接状态变化，保存钱包ID
+  // 监听连接状态变化，保存钱包ID并重置尝试状态
   watch(
     () => ctx.isConnected.value,
     (connected) => {
       if (connected && ctx.currentWallet.value) {
+        // 连接成功时，重置尝试状态并保存钱包ID
+        hasAttemptedConnect.value = false;
         saveToStorage(ctx.currentWallet.value.id);
+        console.log(
+          `💾 [useAutoConnect] 已保存连接的钱包: ${ctx.currentWallet.value.id}`,
+        );
       } else if (!connected) {
-        // 断开连接时可以选择是否清除自动连接设置
-        // 这里我们保留设置，以便下次可以自动重连
+        // 断开连接时重置尝试状态，但保留设置以便下次自动重连
+        hasAttemptedConnect.value = false;
+        console.log(`🔄 [useAutoConnect] 已断开连接，重置自动连接状态`);
       }
     },
   );
@@ -163,33 +170,120 @@ export function useAutoConnect() {
     () => ctx.currentWallet.value?.id,
     (walletId) => {
       if (walletId && ctx.isConnected.value) {
+        // 钱包变化时更新存储的钱包ID
         saveToStorage(walletId);
+        lastWalletId.value = walletId;
+        console.log(`💾 [useAutoConnect] 已更新钱包ID: ${walletId}`);
       }
     },
   );
 
-  // 组件挂载时执行自动连接
+  // 注册钱包检测事件监听器
+  const registerWalletDetectionListeners = () => {
+    if (eventListenersRegistered.value || !ctx.detectionManager.value) {
+      return;
+    }
+
+    const detectionManager = ctx.detectionManager.value;
+
+    // 监听钱包检测事件
+    detectionManager.on('walletDetected', (params) => {
+      console.log(`📡 [useAutoConnect] 检测到钱包事件: ${params.walletId}`);
+
+      // 如果是上次连接的钱包且还未尝试连接，立即尝试自动连接
+      if (
+        params.walletId === lastWalletId.value &&
+        !hasAttemptedConnect.value &&
+        !ctx.isConnected.value &&
+        autoConnectEnabled.value
+      ) {
+        console.log(
+          `🚀 [useAutoConnect] 检测到目标钱包 ${params.walletId}，立即触发自动连接`,
+        );
+        // 延迟一小段时间确保钱包完全就绪
+        setTimeout(() => {
+          performAutoConnect();
+        }, 100);
+      }
+    });
+
+    // 监听检测完成事件，如果还没有连接但钱包已检测到，尝试连接
+    detectionManager.on('walletDetectionComplete', (params) => {
+      console.log(`📡 [useAutoConnect] 钱包检测完成事件`);
+
+      // 如果检测完成后仍未连接且目标钱包在列表中，尝试连接
+      if (
+        !ctx.isConnected.value &&
+        !hasAttemptedConnect.value &&
+        lastWalletId.value &&
+        params.wallets.includes(lastWalletId.value) &&
+        autoConnectEnabled.value
+      ) {
+        console.log(
+          `🔄 [useAutoConnect] 检测完成，尝试连接目标钱包 ${lastWalletId.value}`,
+        );
+        performAutoConnect();
+      }
+    });
+
+    eventListenersRegistered.value = true;
+    console.log('✅ [useAutoConnect] 已注册钱包检测事件监听器');
+  };
+
+  // 组件挂载时的初始化
   onMounted(() => {
     // 加载存储的数据
     loadStorageData();
 
-    // 延迟执行自动连接，确保钱包适配器完全初始化
-    setTimeout(async () => {
-      if (canAutoConnect.value) {
-        await performAutoConnect();
+    // 立即注册事件监听器（如果检测管理器已就绪）
+    if (ctx.detectionManager.value) {
+      registerWalletDetectionListeners();
+    } else {
+      // 如果检测管理器还未就绪，监听其变化
+      const unwatch = watch(
+        () => ctx.detectionManager.value,
+        (detectionManager) => {
+          if (detectionManager) {
+            registerWalletDetectionListeners();
+            unwatch(); // 停止监听，避免重复注册
+          }
+        },
+        { immediate: true },
+      );
+    }
+
+    // 备用方案：如果短时间内没有检测到事件，且目标钱包已经在可用列表中，直接尝试连接
+    setTimeout(() => {
+      if (
+        !hasAttemptedConnect.value &&
+        !ctx.isConnected.value &&
+        lastWalletId.value &&
+        ctx.availableWallets.value.some((w) => w.id === lastWalletId.value) &&
+        autoConnectEnabled.value
+      ) {
+        console.log(
+          `🔄 [useAutoConnect] 备用方案：直接尝试连接 ${lastWalletId.value}`,
+        );
+        performAutoConnect();
       }
-    }, 1000); // 延迟1秒执行
+    }, 2000); // 2秒备用超时
   });
 
-  // 监听页面可见性变化，当用户回到页面时尝试自动连接
+  // 监听页面可见性变化，当用户回到页面时重置状态并尝试自动连接
   const handleVisibilityChange = async () => {
-    if (
-      document.visibilityState === 'visible' &&
-      canAutoConnect.value &&
-      !ctx.isConnected.value
-    ) {
-      // 用户回到页面且未连接时，尝试自动连接
-      await performAutoConnect();
+    if (document.visibilityState === 'visible') {
+      // 用户回到页面时重置尝试状态
+      hasAttemptedConnect.value = false;
+
+      // 如果条件满足，尝试自动连接
+      if (
+        canAutoConnect.value &&
+        !ctx.isConnected.value &&
+        ctx.availableWallets.value.some((w) => w.id === lastWalletId.value)
+      ) {
+        console.log(`🔄 [useAutoConnect] 页面可见，尝试自动连接`);
+        await performAutoConnect();
+      }
     }
   };
 

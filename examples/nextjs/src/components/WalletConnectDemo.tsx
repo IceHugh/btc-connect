@@ -7,7 +7,7 @@ import {
   useWalletModal,
   WalletModal,
 } from '@btc-connect/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export function WalletConnectDemo() {
   const [logs, setLogs] = useState<string[]>([]);

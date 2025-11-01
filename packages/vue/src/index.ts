@@ -18,15 +18,35 @@
  * import '@btc-connect/vue/styles/connect-button.css'
  */
 
-// 组件导出 - WalletModal 已集成到 ConnectButton
+// Components
 export {
   AddressDisplay,
   BalanceDisplay,
-  default as ConnectButton,
+  ConnectButton,
   WalletStatus,
 } from './components';
-// Composables 导出
-export * from './composables';
+// 核心 Composables
+// 现有的 Composables（保留，但会移除性能优化相关）
+export {
+  useAccount,
+  useBalance,
+  useConnectWallet,
+  useCore,
+  useNetwork,
+  useSignature,
+  useTransactions,
+  useWallet,
+  useWalletDetection, // 钱包检测
+  useWalletInfo, // 钱包信息
+  useWalletModal, // 保持：增强模态框控制
+} from './composables';
+export { useTheme, useThemeAdvanced } from './composables/useTheme'; // 新增：主题管理
+// 统一 Composables
+export { useWalletEvent } from './composables/useWalletEvent'; // 新增：事件监听
+export {
+  useWalletManager,
+  useWalletManagerAdvanced,
+} from './composables/useWalletManager'; // 新增：访问当前 adapter
 // 配置导出 (排除重复类型)
 export type {
   DevConfig,
@@ -38,15 +58,18 @@ export type {
   WalletConfig,
 } from './config';
 export { createConfigManager } from './config';
+
 // 类型导出
 export * from './types';
-// 工具函数导出
-export * from './utils';
-// 核心上下文与插件
+// Utils
+export {
+  formatAddress,
+  formatBalance,
+} from './utils';
+// Plugin & Context
 export {
   BTCWalletPlugin,
-  createWalletContext,
-  useWalletContext,
+  useWalletContext, // 移除 createWalletContext，只保留一个 context
 } from './walletContext';
 
 // 版本信息

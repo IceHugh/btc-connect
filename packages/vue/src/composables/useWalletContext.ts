@@ -6,9 +6,12 @@
  * 2. useProvidedWalletContext() - 推荐方式，严格使用 Vue provide/inject
  */
 
-import { ref, computed } from 'vue';
-import { useWalletContext as useWalletContextLegacy, useProvidedWalletContext } from '../walletContext';
+import { computed, ref } from 'vue';
 import type { WalletContext } from '../walletContext';
+import {
+  useProvidedWalletContext,
+  useWalletContext as useWalletContextLegacy,
+} from '../walletContext';
 
 /**
  * 推荐的钱包上下文 Hook - 严格使用 Vue provide/inject 系统
@@ -73,7 +76,10 @@ export function useWalletSafe(): WalletContext {
   try {
     return useProvidedWalletContext();
   } catch (error) {
-    console.warn('BTCWalletPlugin not found, using safe fallback context:', error);
+    console.warn(
+      'BTCWalletPlugin not found, using safe fallback context:',
+      error,
+    );
 
     // 返回一个安全的空上下文
     return createSafeFallbackContext();
@@ -108,6 +114,12 @@ function createSafeFallbackContext(): WalletContext {
     openModal: () => {},
     closeModal: () => {},
     toggleModal: () => {},
+
+    // 检测相关
+    detectionManager: ref(null),
+    isDetecting: computed(() => false),
+    startWalletDetection: async () => {},
+    stopWalletDetection: () => {},
 
     _stateUpdateTrigger: ref(0),
   };

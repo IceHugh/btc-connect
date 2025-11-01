@@ -204,7 +204,7 @@ export function WalletTestSuite() {
         return;
       }
 
-      const testMessage = 'BTC Connect 测试消息 - ' + new Date().toISOString();
+      const testMessage = `BTC Connect 测试消息 - ${new Date().toISOString()}`;
       const signature = await signMessage(testMessage);
       addTestResult('消息签名', `✅ 签名成功，长度: ${signature.length}`);
       addTestResult('签名内容', `✅ 签名: ${signature.substring(0, 20)}...`);
@@ -267,7 +267,7 @@ export function WalletTestSuite() {
         `❌ 交易测试失败: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-  }, [sendBitcoin, isConnected, addTestResult]);
+  }, [isConnected, addTestResult]);
 
   // 模态框测试
   const testModal = useCallback(() => {

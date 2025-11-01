@@ -11,7 +11,7 @@
       tabindex="-1"
     >
     <div
-      :class="['btc-modal-container', `theme-${theme}`, className]"
+      :class="`btc-modal-container theme-${theme} ${className}`"
       :style="buttonStyles"
       @click.stop
       @keydown="(e) => {
@@ -23,10 +23,10 @@
       }"
     >
       <!-- Modal header -->
-      <div :class="['btc-modal-header', `theme-${theme}`]">
+      <div :class="`btc-modal-header theme-${theme}`">
         <h2 class="btc-modal-title">{{ title }}</h2>
         <button
-          :class="['btc-modal-close', `theme-${theme}`]"
+          :class="`btc-modal-close theme-${theme}`"
           @click="closeModal"
           aria-label="Close modal"
         >
@@ -40,14 +40,14 @@
           <li
             v-for="wallet in walletInfos"
             :key="wallet.id"
-            :class="['btc-wallet-item', `theme-${theme}`]"
+            :class="`btc-wallet-item theme-${theme}`"
           >
             <button
               class="btc-wallet-button"
               @click="handleWalletSelect(wallet)"
             >
               <!-- Wallet icon -->
-              <div :class="['btc-wallet-icon', `theme-${theme}`]">
+              <div :class="`btc-wallet-icon theme-${theme}`">
                 <img
                   v-if="wallet.icon.startsWith('http')"
                   :src="wallet.icon"
@@ -62,13 +62,13 @@
                   {{ wallet.name }}
                   <span v-if="wallet.recommended"> ⭐</span>
                 </h3>
-                <p :class="['btc-wallet-description', `theme-${theme}`]">
+                <p :class="`btc-wallet-description theme-${theme}`">
                   {{ wallet.description }}
                 </p>
               </div>
 
               <!-- Installation status -->
-              <div :class="['btc-wallet-status', wallet.installed ? 'installed' : 'not-installed']">
+              <div :class="`btc-wallet-status ${wallet.installed ? 'installed' : 'not-installed'}`">
                 {{ wallet.installed ? 'Installed' : 'Not Installed' }}
               </div>
             </button>
@@ -77,8 +77,8 @@
       </div>
 
       <!-- Modal footer -->
-      <div :class="['btc-modal-footer', `theme-${theme}`]">
-        <p :class="['btc-disclaimer', `theme-${theme}`]">
+      <div :class="`btc-modal-footer theme-${theme}`">
+        <p :class="`btc-disclaimer theme-${theme}`">
           By connecting a wallet, you agree to the Terms of Service and Privacy Policy
         </p>
       </div>

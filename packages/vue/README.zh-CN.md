@@ -1,6 +1,6 @@
 # @btc-connect/vue
 
-English | [中文文档](./README.zh-CN.md)
+[中文文档](./README.zh-CN.md) | English
 
 <p align="center">
   <strong>Vue 3 适配器 - 提供组合式API和组件的BTC Connect绑定</strong>
@@ -8,16 +8,16 @@ English | [中文文档](./README.zh-CN.md)
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@btc-connect/vue">
-    <img src="https://img.shields.io/npm/v/@btc-connect/vue.svg" alt="NPM 版本">
+    <img src="https://img.shields.io/npm/v/@btc-connect/vue.svg" alt="NPM Version">
   </a>
   <a href="https://github.com/IceHugh/btc-connect/actions">
     <img src="https://github.com/IceHugh/btc-connect/workflows/CI/badge.svg" alt="CI">
   </a>
   <a href="https://codecov.io/gh/IceHugh/btc-connect">
-    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="覆盖率">
+    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="Coverage">
   </a>
   <a href="https://bundlephobia.com/result?p=@btc-connect/vue">
-    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/vue.svg" alt="包大小">
+    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/vue.svg" alt="Bundle Size">
   </a>
 </p>
 
@@ -27,7 +27,7 @@ English | [中文文档](./README.zh-CN.md)
 
 ## 特性
 
-- 🎯 **Vue 3 组合式函数**: 使用Composition API进行响应式钱包状态管理
+- 🎯 **Vue 3 组合式函数**: 为每个功能提供独立的composables，统一访问点
 - 📦 **插件系统**: 便于应用集成的Vue插件
 - 🎨 **预构建组件**: 即可用的钱包连接UI组件
 - ⚡ **响应性**: 为Vue 3的响应式系统构建
@@ -35,6 +35,7 @@ English | [中文文档](./README.zh-CN.md)
 - 🛡️ **类型安全**: 完整的TypeScript支持和类型定义
 - 📱 **SSR兼容**: 支持Nuxt 3的服务器端渲染
 - 🎯 **框架优化**: 专为Vue模式设计
+- 🛠️ **工具函数**: 内置格式化和验证工具
 
 ## 安装
 
@@ -76,19 +77,12 @@ app.mount('#app')
 <template>
   <div>
     <h1>我的比特币应用</h1>
-    <ConnectButton theme="light" />
-    <WalletModal />
-
-    <!-- 或直接使用组合式函数 -->
-    <AccountDisplay />
-    <BalanceDisplay />
+    <ConnectButton />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ConnectButton, WalletModal } from '@btc-connect/vue'
-import AccountDisplay from './components/AccountDisplay.vue'
-import BalanceDisplay from './components/BalanceDisplay.vue'
+import { ConnectButton } from '@btc-connect/vue'
 </script>
 ```
 
@@ -98,760 +92,281 @@ import BalanceDisplay from './components/BalanceDisplay.vue'
 
 可自定义样式的钱包连接预构建按钮组件。
 
-```vue
-<template>
-  <ConnectButton
-    theme="light"
-    size="md"
-    variant="select"
-    label="连接钱包"
-    @connect="handleConnect"
-    @disconnect="handleDisconnect"
-  />
-</template>
+**Props:**
+- `size?: 'sm' | 'md' | 'lg'` - 按钮大小（默认: 'md'）
+- `variant?: 'select' | 'button' | 'compact'` - 显示样式（默认: 'select'）
+- `label?: string` - 自定义按钮标签
+- `disabled?: boolean` - 禁用按钮（默认: false）
+- `theme?: 'light' | 'dark' | 'auto'` - 按钮主题（默认: 'auto'）
 
-<script setup lang="ts">
-import { ConnectButton } from '@btc-connect/vue'
-
-const handleConnect = (walletId: string) => {
-  console.log('已连接到:', walletId)
-}
-
-const handleDisconnect = () => {
-  console.log('已断开连接')
-}
-</script>
-```
-
-### VueWalletModal
+### WalletModal
 
 钱包选择和连接管理的模态框组件。
 
-```vue
-<template>
-  <div>
-    <ConnectButton @click="openModal" />
-    <VueWalletModal
-      :is-open="isModalOpen"
-      theme="light"
-      @close="closeModal"
-    />
-  </div>
-</template>
+**Props:**
+- `theme?: 'light' | 'dark' | 'auto'` - 模态框主题（默认: 'auto'）
+- `isOpen?: boolean` - 模态框打开状态（受控模式）
+- `onClose?: () => void` - 关闭回调
+- `onConnect?: (walletId: string) => void` - 连接回调
 
-<script setup lang="ts">
-import { ConnectButton, VueWalletModal } from '@btc-connect/vue'
-import { useWalletModal } from '@btc-connect/vue'
+## Vue Composables
 
-const { isOpen: isModalOpen, open: openModal, close: closeModal } = useWalletModal()
-</script>
+### useWallet - 统一Composable
+
+主要composable，提供所有钱包功能的访问。
+
+**返回值:**
+```typescript
+interface UseWalletReturn {
+  // 状态（响应式）
+  status: Ref<ConnectionStatus>;
+  isConnected: Ref<boolean>;
+  isConnecting: Ref<boolean>;
+  address: Ref<string | undefined>;
+  balance: Ref<number | undefined>;
+  network: Ref<Network>;
+  error: Ref<Error | undefined>;
+
+  // 操作
+  connect: (walletId: string) => Promise<AccountInfo[]>;
+  disconnect: () => Promise<void>;
+  switchWallet: (walletId: string) => Promise<AccountInfo[]>;
+  availableWallets: Ref<WalletInfo[]>;
+
+  // 高级
+  useWalletEvent: <T extends WalletEvent>(event: T, handler: EventHandler<T>) => UseWalletEventReturn<T>;
+  walletModal: UseWalletModalReturn;
+  manager: Ref<BTCWalletManager>;
+}
 ```
 
-## 组合式函数 API
+### useWalletEvent
 
-### useCore
+监听钱包事件的composable，支持自动清理。
 
-访问核心钱包管理功能。
+**参数:**
+- `event: WalletEvent` - 事件类型（'connect', 'disconnect', 'accountChange', 'networkChange', 'error'）
+- `handler: EventHandler` - 事件处理函数
 
+**返回值:**
 ```typescript
-<script setup lang="ts">
-import { useCore } from '@btc-connect/vue'
-
-const {
-  manager,
-  state,
-  isConnected,
-  isConnecting,
-  currentWallet,
-  availableWallets,
-  theme,
-  connect,
-  disconnect,
-  switchWallet
-} = useCore()
-
-// 监听连接状态
-watch(isConnected, (connected) => {
-  if (connected) {
-    console.log('钱包已连接')
-  }
-})
-</script>
+interface UseWalletEventReturn<T> {
+  on: (handler: EventHandler<T>) => void;
+  off: (handler: EventHandler<T>) => void;
+  once: (handler: EventHandler<T>) => void;
+  clear: () => void;
+  eventHistory: Ref<EventHistoryItem[]>;
+}
 ```
 
 ### useNetwork
 
-管理网络信息和切换。
+网络管理和切换的composable。
 
-```vue
-<template>
-  <div class="network-switcher">
-    <h3>网络信息</h3>
-    <p><strong>当前网络:</strong> {{ network.name || '未连接' }}</p>
-    <p><strong>网络类型:</strong> {{ network.type }}</p>
-
-    <div class="network-buttons">
-      <button
-        @click="switchToMainnet"
-        :disabled="isSwitching"
-        :class="{ active: isMainnet }"
-      >
-        🟢 主网
-      </button>
-      <button
-        @click="switchToTestnet"
-        :disabled="isSwitching"
-        :class="{ active: isTestnet }"
-      >
-        🧪 测试网
-      </button>
-      <button
-        @click="switchToRegtest"
-        :disabled="isSwitching"
-        :class="{ active: isRegtest }"
-      >
-        🔧 回归测试
-      </button>
-    </div>
-
-    <div v-if="error" class="error">
-      {{ error }}
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useNetwork } from '@btc-connect/vue'
-
-const { network, switchNetwork } = useNetwork()
-
-const isSwitching = ref(false)
-const error = ref('')
-
-const isMainnet = computed(() =>
-  network.value.network === 'mainnet' || network.value.network === 'livenet'
-)
-const isTestnet = computed(() => network.value.network === 'testnet')
-const isRegtest = computed(() => network.value.network === 'regtest')
-
-const switchToMainnet = async () => {
-  await performSwitch('mainnet')
+**返回值:**
+```typescript
+interface UseNetworkReturn {
+  network: Ref<Network>;
+  switchNetwork: (network: Network) => Promise<void>;
+  isSwitching: Ref<boolean>;
 }
-
-const switchToTestnet = async () => {
-  await performSwitch('testnet')
-}
-
-const switchToRegtest = async () => {
-  await performSwitch('regtest')
-}
-
-const performSwitch = async (targetNetwork: string) => {
-  isSwitching.value = true
-  error.value = ''
-
-  try {
-    await switchNetwork(targetNetwork as any)
-    console.log(`已切换到 ${targetNetwork}`)
-  } catch (err: any) {
-    error.value = `网络切换失败: ${err.message}`
-  } finally {
-    isSwitching.value = false
-  }
-}
-</script>
-
-<style scoped>
-.network-switcher {
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  margin: 16px 0;
-}
-
-.network-buttons {
-  margin: 12px 0;
-}
-
-.network-buttons button {
-  margin-right: 8px;
-  margin-bottom: 8px;
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-}
-
-.network-buttons button:hover:not(:disabled) {
-  background: #f0f0f0;
-}
-
-.network-buttons button.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.network-buttons button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error {
-  color: #dc3545;
-  margin-top: 8px;
-}
-</style>
 ```
 
-### useAccount
+### useTheme
 
-获取详细账户和余额信息。
+主题管理和切换的composable。
 
-```vue
-<template>
-  <div v-if="hasAccounts">
-    <h3>账户信息</h3>
-    <p><strong>地址:</strong> {{ address }}</p>
-    <p><strong>公钥:</strong> {{ publicKey }}</p>
-    <p><strong>余额:</strong> {{ formattedBalance }}</p>
-  </div>
-  <div v-else>
-    <p>没有可用账户</p>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useAccount } from '@btc-connect/vue'
-
-const {
-  accounts,
-  currentAccount,
-  hasAccounts,
-  address,
-  publicKey,
-  balance,
-  refreshAccountInfo
-} = useAccount()
-
-const formattedBalance = computed(() => {
-  if (!balance.value) return '0 BTC'
-  return `${(balance.value / 100000000).toFixed(8)} BTC`
-})
-
-// 每30秒自动刷新
-onMounted(() => {
-  const interval = setInterval(refreshAccountInfo, 30000)
-  onUnmounted(() => clearInterval(interval))
-})
-</script>
-```
-
-### useBalance
-
-专注的余额管理和格式化。
-
-```vue
-<template>
-  <div>
-    <h3>余额信息</h3>
-    <div v-if="isLoading">
-      加载余额中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
-    <div v-else>
-      <p><strong>总计:</strong> {{ formattedTotal }}</p>
-      <p><strong>已确认:</strong> {{ formattedConfirmed }}</p>
-      <p><strong>未确认:</strong> {{ formattedUnconfirmed }}</p>
-      <button @click="refreshBalance">刷新</button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useBalance } from '@btc-connect/vue'
-
-const {
-  balance,
-  confirmedBalance,
-  unconfirmed,
-  totalBalance,
-  isLoading,
-  error,
-  refreshBalance
-} = useBalance()
-
-const formatSats = (amount: number | null) => {
-  if (!amount) return '0 sats'
-  return amount.toLocaleString()
+**返回值:**
+```typescript
+interface UseThemeReturn {
+  theme: Ref<ThemeMode>;
+  systemTheme: Ref<ThemeMode>;
+  effectiveTheme: ComputedRef<ThemeMode>;
+  setTheme: (theme: ThemeMode) => void;
+  resetTheme: () => void;
 }
-
-const formattedTotal = computed(() => formatSats(totalBalance.value))
-const formattedConfirmed = computed(() => formatSats(confirmedBalance.value))
-const formattedUnconfirmed = computed(() => formatSats(unconfirmedBalance.value))
-</script>
-```
-
-### useConnectWallet
-
-处理钱包连接操作。
-
-```vue
-<template>
-  <div>
-    <h3>钱包控制</h3>
-    <div v-if="availableWallets.length === 0">
-      <p>没有可用钱包</p>
-    </div>
-    <div v-else>
-      <button
-        v-for="wallet in availableWallets"
-        :key="wallet.id"
-        @click="handleConnect(wallet.id)"
-        :disabled="isConnecting"
-      >
-        {{ wallet.name }}
-      </button>
-    </div>
-    <button
-      v-if="isConnected"
-      @click="handleDisconnect"
-      :disabled="isConnecting"
-    >
-      断开连接
-    </button>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useConnectWallet } from '@btc-connect/vue'
-
-const {
-  connect,
-  disconnect,
-  switchWallet,
-  availableWallets,
-  isConnected,
-  isConnecting
-} = useConnectWallet()
-
-const handleConnect = async (walletId: string) => {
-  try {
-    await connect(walletId)
-    console.log('已连接到:', walletId)
-  } catch (error) {
-    console.error('连接失败:', error)
-  }
-}
-
-const handleDisconnect = async () => {
-  try {
-    await disconnect()
-    console.log('已断开连接')
-  } catch (error) {
-    console.error('断开连接失败:', error)
-  }
-}
-</script>
-```
-
-### useSignature
-
-处理消息和交易签名。
-
-```vue
-<template>
-  <div>
-    <h3>签名操作</h3>
-    <div>
-      <input
-        v-model="message"
-        placeholder="输入要签名的消息"
-        type="text"
-      />
-      <button @click="handleSignMessage" :disabled="isSigning || !message">
-        {{ isSigning ? '签名中...' : '签名消息' }}
-      </button>
-    </div>
-    <div v-if="signature">
-      <p><strong>签名:</strong></p>
-      <code>{{ signature }}</code>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useSignature } from '@btc-connect/vue'
-
-const {
-  signMessage,
-  signPsbt,
-  isSigning
-} = useSignature()
-
-const message = ref('')
-const signature = ref('')
-
-const handleSignMessage = async () => {
-  try {
-    signature.value = await signMessage(message.value)
-    console.log('消息已签名:', signature.value)
-  } catch (error) {
-    console.error('消息签名失败:', error)
-  }
-}
-</script>
-```
-
-### useTransactions
-
-处理比特币交易操作。
-
-```vue
-<template>
-  <div>
-    <h3>交易操作</h3>
-    <div>
-      <input
-        v-model="recipientAddress"
-        placeholder="接收地址"
-        type="text"
-      />
-      <input
-        v-model="amount"
-        placeholder="金额（聪）"
-        type="number"
-      />
-      <button
-        @click="handleSendBitcoin"
-        :disabled="isSending || !recipientAddress || !amount"
-      >
-        {{ isSending ? '发送中...' : '发送比特币' }}
-      </button>
-    </div>
-    <div v-if="transactionId">
-      <p><strong>交易ID:</strong></p>
-      <code>{{ transactionId }}</code>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useTransactions } from '@btc-connect/vue'
-
-const {
-  sendBitcoin,
-  sendTransaction,
-  isSending
-} = useTransactions()
-
-const recipientAddress = ref('')
-const amount = ref(0)
-const transactionId = ref('')
-
-const handleSendBitcoin = async () => {
-  try {
-    transactionId.value = await sendBitcoin(recipientAddress.value, amount.value)
-    console.log('交易已发送:', transactionId.value)
-  } catch (error) {
-    console.error('交易失败:', error)
-  }
-}
-</script>
 ```
 
 ### useWalletModal
 
-控制钱包选择模态框。
+全局模态框控制的composable，支持来源追踪。
+
+**返回值:**
+```typescript
+interface UseWalletModalReturn {
+  isOpen: Ref<boolean>;
+  theme: ComputedRef<ThemeMode>;
+  open: (walletId?: string) => void;
+  close: () => void;
+  toggle: () => void;
+  forceClose: () => void;
+  currentWalletId: Ref<string | null>;
+  modalSource: Ref<string | null>;
+}
+```
+
+## API 参考
+
+### 连接管理
 
 ```vue
-<template>
-  <div>
-    <button @click="openModal">打开钱包模态框</button>
-    <button @click="closeModal">关闭钱包模态框</button>
-    <button @click="toggleModal">切换模态框</button>
-    <p>模态框 {{ isOpen ? '已打开' : '已关闭' }}</p>
-  </div>
-</template>
+<script setup>
+import { useWallet } from '@btc-connect/vue'
 
-<script setup lang="ts">
-import { useWalletModal } from '@btc-connect/vue'
+const { connect, isConnected, address } = useWallet()
 
-const { isOpen, open, close, toggle } = useWalletModal()
+const handleConnect = async () => {
+  try {
+    await connect('unisat')
+    console.log('连接到:', address.value)
+  } catch (error) {
+    console.error('连接失败:', error)
+  }
+}
+</script>
+```
+
+### 事件处理
+
+```vue
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+
+const { useWalletEvent } = useWallet()
+
+// 监听连接事件
+const { on } = useWalletEvent('connect', (accounts) => {
+  console.log('钱包已连接:', accounts)
+})
+
+// 监听断开连接
+const { on: onDisconnect } = useWalletEvent('disconnect', () => {
+  console.log('钱包已断开')
+})
+</script>
+```
+
+### 比特币操作
+
+```vue
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+
+const { signMessage, signPsbt, sendBitcoin } = useWallet()
+
+const handleSignMessage = async () => {
+  try {
+    const signature = await signMessage('Hello, Bitcoin!')
+    console.log('签名:', signature)
+  } catch (error) {
+    console.error('签名失败:', error)
+  }
+}
 </script>
 ```
 
 ## 高级用法
 
-### 自定义插件配置
-
-```typescript
-// main.ts
-import { createApp } from 'vue'
-import { BTCWalletPlugin } from '@btc-connect/vue'
-import App from './App.vue'
-
-const app = createApp(App)
-
-app.use(BTCWalletPlugin, {
-  autoConnect: true,
-  connectTimeout: 10000,
-  theme: 'light',
-  config: {
-    walletOrder: ['unisat', 'okx', 'xverse'],
-    featuredWallets: ['unisat', 'okx'],
-    showTestnet: false,
-    showRegtest: false
-  }
-})
-
-app.mount('#app')
-```
-
-### 响应式状态管理
-
-```vue
-<template>
-  <div>
-    <ConnectionStatus />
-    <WalletInfo />
-    <NetworkInfo />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useCore, useAccount, useNetwork } from '@btc-connect/vue'
-
-const { state, isConnected } = useCore()
-const { currentAccount } = useAccount()
-const { network, switchNetwork } = useNetwork()
-
-const connectionStatus = computed(() => {
-  return {
-    status: state.value.status,
-    isConnected: isConnected.value,
-    isConnecting: state.value.status === 'connecting',
-    hasError: !!state.value.error
-  }
-})
-
-const walletInfo = computed(() => {
-  return {
-    wallet: currentWallet.value,
-    account: currentAccount.value,
-    balance: currentAccount.value?.balance || 0
-  }
-})
-</script>
-```
-
-### 错误处理
-
-```vue
-<template>
-  <div>
-    <WalletActions />
-    <div v-if="error" class="error-message">
-      <h3>错误</h3>
-      <p>{{ error.message }}</p>
-      <button @click="clearError">清除错误</button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useCore } from '@btc-connect/vue'
-
-const { state } = useCore()
-
-const error = computed(() => state.value.error)
-
-const clearError = () => {
-  if (error.value) {
-    console.error('钱包错误:', error.value)
-    // 实现错误报告
-  }
-}
-
-// 监听错误
-watch(error, (newError) => {
-  if (newError) {
-    // 向错误跟踪服务报告
-    trackError(newError, {
-      component: 'WalletActions',
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-</script>
-```
-
-## 服务器端渲染 (SSR)
-
-Vue适配器完全兼容Nuxt 3等SSR框架。
-
-### Nuxt 3 插件配置
+### Nuxt 3 集成
 
 ```typescript
 // plugins/btc-connect.client.ts
 import { BTCWalletPlugin } from '@btc-connect/vue'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (process.client) {
-    nuxtApp.vueApp.use(BTCWalletPlugin, {
-      autoConnect: true,
-      connectTimeout: 10000,
-      theme: 'light',
-      config: {
-        walletOrder: ['unisat', 'okx', 'xverse'],
-        featuredWallets: ['unisat', 'okx']
-      }
-    })
-  }
+  nuxtApp.vueApp.use(BTCWalletPlugin, {
+    autoConnect: true,
+    theme: 'auto'
+  })
 })
 ```
 
-### 仅客户端组件
-
 ```vue
-<!-- components/WalletConnectButton.vue -->
+<!-- pages/index.vue -->
 <template>
-  <ClientOnly>
-    <ConnectButton theme="light" />
-  </ClientOnly>
+  <div>
+    <h1>比特币钱包应用</h1>
+    <ClientOnly>
+      <ConnectButton />
+    </ClientOnly>
+  </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ConnectButton } from '@btc-connect/vue'
 </script>
 ```
 
-## 性能优化
-
-### 懒加载组件
+### 自定义主题
 
 ```vue
 <template>
   <div>
-    <h2>钱包功能</h2>
-    <Suspense>
-      <LazyWalletModal />
-    </Suspense>
+    <ConnectButton theme="dark" />
+    <button @click="toggleTheme">切换主题</button>
   </div>
 </template>
 
-<script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+<script setup>
+import { useTheme } from '@btc-connect/vue'
 
-const LazyWalletModal = defineAsyncComponent(() =>
-  import('@btc-connect/vue').then(mod => ({
-    default: mod.VueWalletModal
-  }))
-)
+const { theme, setTheme } = useTheme()
+
+const toggleTheme = () => {
+  setTheme(theme.value === 'light' ? 'dark' : 'light')
+}
 </script>
 ```
 
-### 组合式函数记忆化
+### 模态框控制
 
-```typescript
-// composables/useFormattedBalance.ts
-import { computed } from 'vue'
-import { useBalance } from '@btc-connect/vue'
+```vue
+<template>
+  <div>
+    <button @click="openModal">打开钱包模态框</button>
+    <button @click="closeModal">关闭模态框</button>
+  </div>
+</template>
 
-export function useFormattedBalance() {
-  const { balance, confirmedBalance, unconfirmedBalance } = useBalance()
+<script setup>
+import { useWalletModal } from '@btc-connect/vue'
 
-  const formattedBalance = computed(() => {
-    if (!balance.value) return '0 BTC'
-    return `${(balance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  const formattedConfirmed = computed(() => {
-    if (!confirmedBalance.value) return '0 BTC'
-    return `${(confirmedBalance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  const formattedUnconfirmed = computed(() => {
-    if (!unconfirmedBalance.value) return '0 BTC'
-    return `${(unconfirmedBalance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  return {
-    balance,
-    confirmedBalance,
-    unconfirmedBalance,
-    formattedBalance,
-    formattedConfirmed,
-    formattedUnconfirmed
-  }
-}
+const { open: openModal, close: closeModal, isOpen } = useWalletModal()
+</script>
 ```
 
 ## 最佳实践
 
-1. **插件位置**: 在Vue应用的根目录安装插件
-2. **响应式模式**: 利用Vue的响应式系统进行状态管理
-3. **错误处理**: 始终将钱包操作包装在try-catch块中
-4. **加载状态**: 操作期间显示适当的加载状态
-5. **SSR考虑**: 对钱包依赖的UI使用ClientOnly包装器
-6. **性能**: 使用懒加载和计算属性获得最佳性能
-
-## 测试
-
-库提供了测试钱包集成的工具。
-
-```typescript
-// tests/components/WalletButton.spec.ts
-import { mount } from '@vue/test-utils'
-import { createApp } from 'vue'
-import { BTCWalletPlugin, createMockManager } from '@btc-connect/vue'
-
-// 模拟钱包管理器
-jest.mock('@btc-connect/core', () => ({
-  ...jest.requireActual('@btc-connect/core'),
-  createWalletManager: jest.fn(() => createMockManager())
-}))
-
-describe('ConnectButton', () => {
-  it('未连接时渲染连接按钮', () => {
-    const app = createApp(ConnectButton)
-    const wrapper = mount(app)
-
-    expect(wrapper.text()).toContain('连接钱包')
-  })
-})
-```
+1. **插件安装**: 始终在应用初始化时安装BTCWalletPlugin
+2. **错误处理**: 将钱包操作包装在try-catch块中
+3. **响应性**: 使用响应式refs和computed属性进行UI更新
+4. **类型安全**: 利用TypeScript类型获得更好的开发体验
+5. **SSR**: 对钱包特定UI使用ClientOnly组件
 
 ## 迁移指南
 
-### 从版本 0.1.x 迁移到 0.2.x
+### 从v0.3.x迁移到v0.4.0+
 
-```typescript
-// 旧方式（已弃用）
-import { installBTCWallet } from '@btc-connect/vue'
+```vue
+<!-- 旧方式 -->
+<script setup>
+import { useCore, useWallet, useWalletEvent } from '@btc-connect/vue'
+const { connect } = useCore()
+const { address } = useWallet()
+useWalletEvent('connect', handler)
+</script>
 
-installBTCWallet(app, { autoConnect: true })
-
-// 新方式
-import { BTCWalletPlugin } from '@btc-connect/vue'
-
-app.use(BTCWalletPlugin, { autoConnect: true })
+<!-- 新方式 -->
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+const { connect, address, useWalletEvent } = useWallet()
+useWalletEvent('connect', handler)
+</script>
 ```
 
 ## 贡献
 
-请阅读我们的[贡献指南](../../CONTRIBUTING.zh-CN.md)了解我们的行为准则和提交拉取请求的流程。
+请阅读我们的[贡献指南](../../CONTRIBUTING.md)了解我们的行为准则和提交拉取请求的流程。
 
 ## 许可证
 

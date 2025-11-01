@@ -1,5 +1,3 @@
-[根目录](../../CLAUDE.md) > [packages](../) > **vue**
-
 # @btc-connect/vue
 
 > **Vue 3 比特币钱包连接库** - 提供完整的钱包连接、状态管理和UI组件
@@ -37,6 +35,17 @@ const handleConnect = (walletId) => {
 </script>
 ```
 
+### 🆕 v0.4.0+ 统一 API 使用
+
+```vue
+<script setup>
+import { useWallet } from '@btc-connect/vue';
+
+const wallet = useWallet();
+// wallet 包含所有钱包状态、操作和工具函数
+</script>
+```
+
 ### 插件安装
 
 ```typescript
@@ -46,43 +55,12 @@ import { BTCWalletPlugin } from '@btc-connect/vue';
 import App from './App.vue';
 
 const app = createApp(App);
-
 app.use(BTCWalletPlugin, {
   autoConnect: true,
-  theme: 'auto',
-  config: {
-    onStateChange: (state) => {
-      console.log('Wallet state changed:', state);
-    }
-  }
+  theme: 'auto'
 });
-
 app.mount('#app');
 ```
-
-## 📋 变更记录 (Changelog)
-
-### 2025-10-31 22:00:00 - 🎉 重大架构优化
-- **模态框集成优化**: WalletModal 已集成到 ConnectButton 中，简化外部使用
-- **全局状态管理**: 实现全局唯一的模态框状态管理
-- **Hook 增强**: useWalletModal 支持来源追踪和程序化控制
-- **组件模块化**: 将 ConnectButton 拆分为多个单一职责组件
-- **配置系统**: 创建完整的配置管理系统，支持主题、性能等功能开关
-- **TypeScript 增强**: 大幅扩展类型定义，提供完整的类型安全
-- **工具函数增强**: 新增缓存管理、性能监控、错误处理等工具类
-- **样式系统优化**: 实现模块化CSS，支持主题系统和响应式设计
-
-### 2025-10-24 22:00:00
-- 实现增强钱包检测：集成20秒内每300ms轮询机制
-- 完善钱包检测实时更新：响应式更新可用钱包列表
-- 优化自动连接逻辑：钱包检测完成后自动执行连接
-- 增强页面可见性处理：页面重新可见时重新检测钱包
-- 优化错误处理：增强检测失败时的回退机制
-
-### 2025-10-16 09:31:52
-- 完成 Vue 模块架构分析和文档生成
-- 添加 Composables 和组件详细说明
-- 补充插件系统和类型文档
 
 ## 🏗️ 模块架构
 
@@ -97,94 +75,7 @@ app.mount('#app');
 - 🛡️ **TypeScript 支持** - 完整的类型定义和类型安全
 - 🌐 **SSR 兼容** - 完整的服务器端渲染支持
 
-### 架构设计
-
-```mermaid
-graph TD
-    A["@btc-connect/vue"] --> B["Components 组件层"]
-    A --> C["Composables 组合式API"]
-    A --> D["Types 类型系统"]
-    A --> E["Utils 工具函数"]
-    A --> F["Config 配置管理"]
-    A --> G["Styles 样式系统"]
-
-    B --> H["ConnectButton (集成模态框)"]
-    B --> I["WalletStatus"]
-    B --> J["AddressDisplay"]
-    B --> K["BalanceDisplay"]
-
-    C --> L["useCore - 核心管理"]
-    C --> M["useWallet - 钱包状态"]
-    C --> N["useWalletModal - 模态框控制"]
-    C --> O["useBalance - 余额管理"]
-    C --> P["useNetwork - 网络管理"]
-
-    D --> Q["组件 Props 类型"]
-    D --> R["Composables 返回类型"]
-    D --> S["事件类型"]
-    D --> T["错误类型"]
-
-    E --> U["格式化工具"]
-    E --> V["缓存管理"]
-    E --> W["性能监控"]
-    E --> X["错误处理"]
-
-    F --> Y["主题配置"]
-    F --> Z["性能配置"]
-    F --> AA["功能开关"]
-
-    G --> BB["主题样式"]
-    G --> CC["组件样式"]
-    G --> DD["响应式样式"]
-```
-
-## 🚀 主要功能
-
-### 1. 一键连接 (v0.4.0+)
-```vue
-<template>
-  <ConnectButton
-    theme="auto"
-    size="lg"
-    show-balance
-    @connect="handleConnect"
-  />
-</template>
-```
-
-### 2. 响应式状态管理
-```vue
-<script setup>
-import { useCore, useWallet, useBalance } from '@btc-connect/vue';
-
-const { isConnected, currentWallet } = useCore();
-const { address, publicKey } = useWallet();
-const { balance, refreshBalance } = useBalance();
-
-// 自动响应状态变化
-watch(isConnected, (connected) => {
-  if (connected) {
-    refreshBalance();
-  }
-});
-</script>
-```
-
-### 3. 程序化控制
-```vue
-<script setup>
-import { useWalletModal } from '@btc-connect/vue';
-
-const { open, close, isOpen } = useWalletModal('CustomComponent');
-
-// 程序化打开模态框
-const openWalletModal = () => {
-  open('unisat'); // 可指定默认钱包
-};
-</script>
-```
-
-## 📦 API 参考
+## 📦 对外接口
 
 ### 组件
 
@@ -211,9 +102,119 @@ interface ConnectButtonProps {
 
 ### Composables
 
-#### useCore
-核心钱包管理
+#### 🆕 useWallet - 统一钱包访问点 (v0.4.0+)
+提供所有钱包功能的统一访问点，返回响应式状态和方法。
 
+```typescript
+interface UseWalletReturn {
+  // === 基础状态 (响应式) ===
+  status: Ref<ConnectionStatus>;
+  accounts: Ref<AccountInfo[]>;
+  currentAccount: Ref<AccountInfo | undefined>;
+  network: Ref<Network>;
+  error: Ref<Error | undefined>;
+  currentWallet: Ref<WalletInfo | null>;
+  isConnected: Ref<boolean>;
+  isConnecting: Ref<boolean>;
+  theme: Ref<ThemeMode>;
+  address: Ref<string | undefined>;
+  balance: Ref<number | undefined>;
+  publicKey: Ref<string | undefined>;
+
+  // === 连接操作 ===
+  connect: (walletId: string) => Promise<AccountInfo[]>;
+  disconnect: () => Promise<void>;
+  switchWallet: (walletId: string) => Promise<AccountInfo[]>;
+  availableWallets: Ref<WalletInfo[]>;
+
+  // === 网络管理 ===
+  switchNetwork: (network: Network) => Promise<void>;
+
+  // === 事件监听功能 ===
+  useWalletEvent: UseWalletEventFunction;
+
+  // === 模态框控制 ===
+  walletModal: UseWalletModalReturn;
+
+  // === 钱包管理器功能 ===
+  currentAdapter: Ref<BTCWalletAdapter | null>;
+  allAdapters: Ref<BTCWalletAdapter[]>;
+  manager: Ref<BTCWalletManager>;
+
+  // === 签名功能 ===
+  signMessage: (message: string) => Promise<string>;
+  signPsbt: (psbt: string) => Promise<string>;
+
+  // === 交易功能 ===
+  sendBitcoin: (toAddress: string, amount: number) => Promise<string>;
+
+  // === 工具函数快捷访问 ===
+  utils: UtilsObject;
+}
+```
+
+#### 🆕 useWalletEvent - 事件监听 (v0.4.0+)
+提供跨框架的事件监听功能，支持自动清理。
+
+```typescript
+interface UseWalletEventReturn<T extends WalletEvent> {
+  on: (handler: EventHandler<T>) => void;
+  off: (handler: EventHandler<T>) => void;
+  once: (handler: EventHandler<T>) => void;
+  clear: () => void;
+  clearHistory: () => void;
+  eventHistory: Ref<EventHistoryItem[]>;
+}
+```
+
+#### 🆕 useWalletManager - 高级钱包管理器 (v0.4.0+)
+提供高级钱包管理功能，包括适配器操作和统计信息。
+
+```typescript
+interface UseWalletManagerReturn {
+  currentAdapter: Ref<BTCWalletAdapter | null>;
+  availableAdapters: Ref<BTCWalletAdapter[]>;
+  adapterStates: Ref<AdapterState[]>;
+  getAdapter: (walletId: string) => BTCWalletAdapter | null;
+  addAdapter: (adapter: BTCWalletAdapter) => void;
+  removeAdapter: (walletId: string) => void;
+  manager: Ref<BTCWalletManager>;
+  stats: ComputedRef<ManagerStats>;
+}
+```
+
+#### 🆕 useTheme - 主题管理 (v0.4.0+)
+提供完整的主题系统，支持亮色/暗色/自动主题切换。
+
+```typescript
+interface UseThemeReturn {
+  theme: Ref<ThemeMode>;
+  systemTheme: Ref<ThemeMode>;
+  effectiveTheme: ComputedRef<ThemeMode>;
+  setTheme: (theme: ThemeMode) => void;
+  setThemeMode: (mode: ThemeMode) => void;
+  setCustomTheme: (theme: CustomTheme) => void;
+  resetTheme: () => void;
+}
+```
+
+#### 🆕 useWalletModal - 全局模态框控制 (v0.4.0+)
+全局模态框状态管理，支持来源追踪和程序化控制。
+
+```typescript
+interface UseWalletModalReturn {
+  isOpen: Ref<boolean>;
+  theme: ComputedRef<ThemeMode>;
+  open: (walletId?: string) => void;
+  close: () => void;
+  toggle: () => void;
+  forceClose: () => void;
+  currentWalletId: Ref<string | null>;
+  modalSource: Ref<string | null>;
+}
+```
+
+#### useCore - 核心钱包管理 (保持兼容)
 ```typescript
 interface UseCoreReturn {
   manager: Ref<BTCWalletManager | null>;
@@ -229,28 +230,11 @@ interface UseCoreReturn {
 }
 ```
 
-#### useWalletModal (v0.4.0+)
-全局模态框控制
-
-```typescript
-interface UseWalletModalReturn {
-  isOpen: Ref<boolean>;
-  theme: ComputedRef<ThemeMode>;
-  open: (walletId?: string) => void;
-  close: () => void;
-  toggle: () => void;
-  forceClose: () => void;
-  currentWalletId: Ref<string | null>;
-  modalSource: Ref<string | null>;
-}
-```
-
 #### 其他 Composables
-- `useWallet` - 账户和地址管理
-- `useBalance` - 余额管理
-- `useNetwork` - 网络管理
-- `useSignature` - 签名功能
-- `useTransactions` - 交易功能
+- `useBalance` - 余额管理和格式化
+- `useNetwork` - 网络管理和切换
+- `useAutoConnect` - 自动连接功能
+- `useWalletDetection` - 钱包检测功能
 
 ### 插件配置
 
@@ -273,27 +257,7 @@ interface BTCWalletPluginOptions {
 
 ### 主题配置
 
-```typescript
-// 全局主题配置
-app.use(BTCWalletPlugin, {
-  theme: 'auto',
-  config: {
-    theme: {
-      mode: 'auto',
-      followSystem: true,
-      colors: {
-        primary: '#f7931a',
-        // 自定义主题色...
-      }
-    }
-  }
-});
-```
-
-```vue
-<!-- 组件级主题覆盖 -->
-<ConnectButton theme="dark" />
-```
+支持全局主题配置和组件级主题覆盖，可通过 BTCWalletPlugin 的 theme 属性进行配置。
 
 ## ⚡ 性能优化
 
@@ -304,162 +268,39 @@ app.use(BTCWalletPlugin, {
 - ✅ **SSR 优化** - 完整的服务器端渲染支持
 
 ### 性能监控
-```typescript
-import { usePerformanceMonitor } from '@btc-connect/vue';
 
-const { metrics, reset } = usePerformanceMonitor();
-
-// 监控连接时间
-const connectTime = metrics.value.connectionTime;
-console.log('Connection time:', connectTime, 'ms');
-```
+提供 `usePerformanceMonitor` Composable 用于监控连接时间等性能指标。
 
 ## 🛠️ 工具函数
 
 ### 常用工具
-```typescript
-import {
-  formatBTCBalance,     // BTC余额格式化
-  formatAddressShort,   // 地址格式化
-  copyToClipboard,      // 复制到剪贴板
-  cacheManager,         // 缓存管理
-  performanceMonitor,   // 性能监控
-  validateAmount         // 金额验证
-} from '@btc-connect/vue';
-```
+提供 `formatBTCBalance`、`formatAddressShort`、`copyToClipboard`、`cacheManager`、`performanceMonitor`、`validateAmount` 等工具函数。
 
 ### 缓存使用
-```typescript
-import { cacheManager } from '@btc-connect/vue';
-
-// 设置缓存（5分钟过期）
-cacheManager.set('wallet-info', walletInfo, 5 * 60 * 1000);
-
-// 获取缓存
-const cached = cacheManager.get('wallet-info');
-
-// 清理过期缓存
-cacheManager.cleanup();
-```
+提供 `cacheManager` 用于设置、获取和清理缓存数据。
 
 ## 🔧 开发和调试
 
 ### 开发模式
-```typescript
-// 启用详细日志
-app.use(BTCWalletPlugin, {
-  config: {
-    dev: {
-      debug: true,
-      showPerformanceMetrics: true,
-      verboseLogging: true
-    }
-  }
-});
-```
+支持通过 BTCWalletPlugin 的 config.dev 配置启用详细日志和性能监控。
 
 ### 调试工具
-```typescript
-import { useWalletStateMonitor } from '@btc-connect/vue';
-
-// 监控钱包状态变化
-const stopMonitor = useWalletStateMonitor((newState, prevState) => {
-  console.log('State changed:', newState, prevState);
-});
-
-// 停止监控
-stopMonitor();
-```
+提供 `useWalletStateMonitor` Composable 用于监控钱包状态变化。
 
 ## 🌐 SSR 支持
 
-完全支持服务器端渲染，无需额外配置：
-
-```typescript
-// Nuxt 3 插件
-export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(BTCWalletPlugin, {
-    autoConnect: true,
-    theme: 'auto'
-  });
-});
-```
-
-```vue
-<!-- 客户端组件 -->
-<template>
-  <ClientOnly>
-    <ConnectButton />
-  </ClientOnly>
-</template>
-```
+完全支持服务器端渲染，无需额外配置。支持 Nuxt 3 插件集成和 ClientOnly 组件包装。
 
 ## 📖 最佳实践
 
-### 1. 推荐用法
-```vue
-<template>
-  <div>
-    <ConnectButton
-      theme="auto"
-      @connect="handleConnect"
-      @error="handleError"
-    />
-  </div>
-</template>
+### 推荐用法
+推荐使用 ConnectButton 组件并结合 useCore Composable 进行状态管理和错误处理。
 
-<script setup>
-import { ConnectButton, useCore } from '@btc-connect/vue';
+### 错误处理
+使用 try-catch 包装连接操作，处理连接失败的情况。
 
-const { isConnected } = useCore();
-
-const handleConnect = (walletId) => {
-  console.log('Connected to:', walletId);
-};
-
-const handleError = (error) => {
-  console.error('Connection error:', error);
-};
-</script>
-```
-
-### 2. 错误处理
-```vue
-<script setup>
-import { useCore } from '@btc-connect/vue';
-
-const { connect } = useCore();
-
-const safeConnect = async (walletId: string) => {
-  try {
-    const accounts = await connect(walletId);
-    return accounts;
-  } catch (error) {
-    // 处理连接错误
-    console.error('Connection failed:', error);
-    return null;
-  }
-};
-</script>
-```
-
-### 3. 状态管理
-```vue
-<script setup>
-import { computed } from 'vue';
-import { useCore, useWallet } from '@btc-connect/vue';
-
-const { isConnected, currentWallet } = useCore();
-const { address } = useWallet();
-
-// 计算属性自动响应状态变化
-const walletInfo = computed(() => ({
-  connected: isConnected.value,
-  wallet: currentWallet.value?.name,
-  address: address.value
-}));
-</script>
-```
+### 状态管理
+利用 Vue 3 的 computed API 创建响应式的钱包信息计算属性。
 
 ## 🔗 相关链接
 
@@ -485,4 +326,4 @@ A: 目前支持 UniSat、OKX、Xverse 等主流比特币钱包。
 
 ---
 
-*最后更新: 2025-10-31*
+*最后更新: 2025-11-01*

@@ -1,10 +1,13 @@
 // 重新导出 core 类型
 export type {
   AccountInfo,
+  AvailableWalletsEventParams,
   BalanceDetail,
   ConnectionStatus,
   ModalConfig,
   Network,
+  WalletDetectedEventParams,
+  WalletDetectionCompleteEventParams,
   WalletEvent,
   WalletInfo,
   WalletManagerConfig,

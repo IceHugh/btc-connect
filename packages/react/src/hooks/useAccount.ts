@@ -1,7 +1,12 @@
-import { useWallet } from './hooks';
+import { useWalletContext } from '../context/provider';
 
 export function useAccount() {
-  const { address, publicKey, currentAccount, accounts } = useWallet();
+  const { state } = useWalletContext();
+  const { accounts, currentAccount } = state;
+
+  const address = currentAccount?.address || null;
+  const publicKey = currentAccount?.publicKey || null;
+
   return {
     address,
     publicKey,

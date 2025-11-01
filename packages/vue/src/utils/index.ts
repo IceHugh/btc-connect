@@ -588,7 +588,7 @@ export const enhancedStorage = {
         if (key && !key.startsWith(prefix)) {
           const value = localStorage.getItem(key);
           if (value !== null) {
-            keysToKeep.push(key + ':' + value);
+            keysToKeep.push(`${key}:${value}`);
           }
         }
       }
@@ -674,7 +674,7 @@ export const enhancedDebounce = <T extends (...args: any[]) => any>(
   flush: () => void;
 } => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
-  const maxTimeout: ReturnType<typeof setTimeout> | null = null;
+  const _maxTimeout: ReturnType<typeof setTimeout> | null = null;
   let lastCallTime = 0;
   let lastInvokeTime = 0;
   let result: ReturnType<T>;
@@ -800,7 +800,7 @@ export const validateAmount = (
 } => {
   const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
 
-  if (isNaN(numValue)) {
+  if (Number.isNaN(numValue)) {
     return {
       isValid: false,
       value: 0,
@@ -834,3 +834,7 @@ export const validateAmount = (
 export const cacheManager = new CacheManager();
 export const performanceMonitor = new PerformanceMonitor();
 export const eventEmitter = new EventEmitter();
+
+export type { WalletDetectionManagerConfig } from './wallet-detection-manager';
+// 钱包检测管理器
+export { WalletDetectionManager } from './wallet-detection-manager';

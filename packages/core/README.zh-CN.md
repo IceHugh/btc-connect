@@ -332,6 +332,39 @@ const txid = await adapter.sendBitcoin('tb1qrecipient...', 1000); // 1000聪
 console.log('交易ID:', txid);
 ```
 
+### 增强钱包检测
+
+```typescript
+import { detectAvailableWallets } from '@btc-connect/core';
+
+// 增强的钱包检测，支持轮询检测延迟注入的钱包
+const result = await detectAvailableWallets({
+  timeout: 20000,        // 20秒超时
+  interval: 300,         // 300ms检测间隔
+  onProgress: (wallets, time) => {
+    console.log(`检测到钱包: ${wallets.join(', ')} (${time}ms)`);
+  }
+});
+
+console.log('检测结果:', {
+  wallets: result.wallets,     // 检测到的钱包ID
+  adapters: result.adapters,   // 可用的适配器实例
+  elapsedTime: result.elapsedTime, // 总耗时
+  isComplete: result.isComplete   // 是否完成检测
+});
+```
+
+**检测配置参数:**
+- `timeout?: number` - 检测超时时间（毫秒），默认20000
+- `interval?: number` - 轮询间隔（毫秒），默认300
+- `onProgress?: (detectedWallets: string[], elapsedTime: number) => void` - 进度回调
+
+**检测结果:**
+- `wallets: string[]` - 检测到的钱包ID列表
+- `adapters: BTCWalletAdapter[]` - 可用的适配器实例
+- `elapsedTime: number` - 总耗时
+- `isComplete: boolean` - 是否完成检测
+
 ### 自动连接
 
 ```typescript

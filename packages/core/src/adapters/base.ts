@@ -4,6 +4,7 @@ import type {
   AccountInfo,
   BTCWalletAdapter,
   ErrorContext,
+  EventHandler,
   Network,
   WalletEvent,
   WalletState,
@@ -11,6 +12,7 @@ import type {
 import {
   WalletConnectionError,
   WalletDisconnectedError,
+  WalletError,
   WalletNotInstalledError,
 } from '../types';
 import { WalletErrorHandler } from '../utils/error-handler';
@@ -276,13 +278,22 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
       this.state.currentAccount = accounts[0];
       this.isConnected = true;
 
-      this.eventManager.emitConnectLegacy(accounts);
+      this.eventManager.emitConnect(this.id, accounts);
       return accounts;
     } catch (error) {
       this.state.status = 'error';
       this.state.error =
         error instanceof Error ? error : new Error(String(error));
-      this.eventManager.emitErrorLegacy(this.state.error);
+      const walletError =
+        error instanceof WalletError
+          ? error
+          : new WalletError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              {},
+              error instanceof Error ? error : undefined,
+            );
+      this.eventManager.emitError(this.id, walletError);
       throw new WalletConnectionError(
         this.id,
         error instanceof Error ? error.message : String(error),
@@ -307,12 +318,21 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
       this.state.network = undefined;
       this.isConnected = false;
 
-      this.eventManager.emitDisconnectLegacy();
+      this.eventManager.emitDisconnect(this.id);
     } catch (error) {
       this.state.status = 'error';
       this.state.error =
         error instanceof Error ? error : new Error(String(error));
-      this.eventManager.emitErrorLegacy(this.state.error);
+      const walletError =
+        error instanceof WalletError
+          ? error
+          : new WalletError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              {},
+              error instanceof Error ? error : undefined,
+            );
+      this.eventManager.emitError(this.id, walletError);
       throw new WalletDisconnectedError(this.id);
     }
   }
@@ -531,7 +551,7 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     this.state.network = network;
 
     // 发射网络变化事件
-    this.eventManager.emitNetworkChangeLegacy(network);
+    this.eventManager.emitNetworkChange(this.id, network);
   }
 
   /**
@@ -567,14 +587,14 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
   /**
    * 添加事件监听器
    */
-  on(event: WalletEvent, handler: (...args: any[]) => void): void {
+  on<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.eventManager.on(event, handler);
   }
 
   /**
    * 移除事件监听器
    */
-  off(event: WalletEvent, handler: (...args: any[]) => void): void {
+  off<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.eventManager.off(event, handler);
   }
 
@@ -628,7 +648,7 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     // 清除账户缓存
     this.accountsCache.clear();
 
-    this.eventManager.emitAccountChangeLegacy(accounts);
+    this.eventManager.emitAccountChange(this.id, accounts);
   }
 
   /**
@@ -644,7 +664,7 @@ export abstract class BaseWalletAdapter implements BTCWalletAdapter {
     // 清除账户缓存（因为不同网络的账户可能不同）
     this.accountsCache.clear();
 
-    this.eventManager.emitNetworkChangeLegacy(network);
+    this.eventManager.emitNetworkChange(this.id, network);
   }
 
   /**

@@ -34,13 +34,20 @@ function getNetworkType(network?: Network): string {
 
 export function useNetwork() {
   const ctx = useWalletContext();
-  const currentNetwork = ref<Network | undefined>(ctx.state.value.network);
+
+  // 初始化时确保网络状态的一致性
+  const currentNetwork = ref<Network | undefined>(
+    ctx.state.value.network || 'livenet',
+  );
 
   // 监听网络变化
   watch(
     ctx.state,
     (newState) => {
-      currentNetwork.value = newState.network;
+      // 只有当网络真正变化时才更新，避免undefined覆盖
+      if (newState.network !== undefined) {
+        currentNetwork.value = newState.network;
+      }
     },
     { immediate: true },
   );

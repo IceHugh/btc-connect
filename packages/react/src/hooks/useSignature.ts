@@ -1,4 +1,4 @@
-import { useWalletContext } from '../context';
+import { useWalletContext } from '../context/provider';
 
 export function useSignature() {
   const { manager } = useWalletContext();

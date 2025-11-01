@@ -1,4 +1,4 @@
-import { computed, watch, onMounted } from 'vue';
+import { watch } from 'vue';
 import { useWalletContext } from '../walletContext';
 
 /**
@@ -11,12 +11,16 @@ export function useConnectWallet() {
   const availableWallets = ctx.availableWallets;
 
   // 监听钱包列表变化
-  watch(availableWallets, (newWallets, oldWallets) => {
-    // 强制触发响应式更新
-    if (newWallets?.length !== oldWallets?.length) {
-      ctx._stateUpdateTrigger.value++;
-    }
-  }, { immediate: true, deep: true });
+  watch(
+    availableWallets,
+    (newWallets, oldWallets) => {
+      // 强制触发响应式更新
+      if (newWallets?.length !== oldWallets?.length) {
+        ctx._stateUpdateTrigger.value++;
+      }
+    },
+    { immediate: true, deep: true },
+  );
 
   return {
     connect: ctx.connect,

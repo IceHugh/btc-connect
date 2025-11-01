@@ -5,6 +5,133 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [0.4.0] - 2025-11-01
+
+### 🎉 重大更新 - React/Vue 包统一
+
+#### ✨ 新功能
+- **统一的 Hook/Composable 接口**: React 和 Vue 包现在提供完全一致的 API 接口
+- **增强的 useWallet Hook**: 成为所有功能的统一访问点，包含状态、操作和工具函数
+- **新增事件监听 Hook**: `useWalletEvent` 支持跨框架的事件监听功能
+- **新增钱包管理器 Hook**: `useWalletManager` 提供高级钱包管理功能
+- **新增主题管理 Hook**: `useTheme` 支持亮色/暗色/自动主题切换
+- **增强模态框管理**: `useWalletModalEnhanced` (React) 和 `useWalletModal` (Vue) 支持来源追踪
+- **统一工具函数库**: 新增 `formatAddress`、`formatBalance` 等 10+ 个跨框架工具函数
+- **完整类型系统**: 统一的 TypeScript 类型定义，确保类型安全
+
+#### 🔧 API 变更
+
+**React 包**:
+```typescript
+// 新增 Hooks
+useWalletEvent()    // 事件监听
+useWalletManager()  // 钱包管理器
+useTheme()          // 主题管理
+useWalletModalEnhanced()  // 增强模态框控制
+
+// 增强的 useWallet Hook
+const {
+  // 基础状态
+  status, accounts, currentAccount, network, error, currentWallet,
+  isConnected, isConnecting, theme, address, balance, publicKey,
+
+  // 连接操作
+  connect, disconnect, switchWallet, availableWallets,
+
+  // 网络管理
+  switchNetwork,
+
+  // 子功能访问
+  useWalletEvent,
+  walletModal,
+  currentAdapter, allAdapters, manager,
+
+  // 签名和交易
+  signMessage, signPsbt, sendBitcoin,
+
+  // 工具函数
+  utils: { formatAddress, formatBalance }
+} = useWallet();
+```
+
+**Vue 包**:
+```typescript
+// 新增 Composables
+useWalletEvent()    // 事件监听
+useWalletManager()  // 钱包管理器
+useTheme()          // 主题管理
+useWalletModal()    // 模态框控制
+
+// 增强的 useWallet Composable
+// 返回相同的接口结构，但状态为 Ref<T>
+const {
+  // 与 React 包相同的属性和方法
+  // ...（所有属性都返回响应式引用）
+} = useWallet();
+```
+
+#### 🏗️ 架构改进
+- **统一类型定义**: 在 `@btc-connect/core` 中创建 `src/types/unified.ts`
+- **共享工具函数**: 所有工具函数移至核心包，支持跨框架使用
+- **简化导出结构**: 两个包的导出结构完全一致
+- **移除冗余功能**: Vue 包的 `createWalletContext` 从公共 API 中移除
+
+#### 🧪 测试覆盖
+- **核心包**: 26 个测试用例，100% 通过率
+- **React 包**: 完整的 Hook 测试套件
+- **Vue 包**: 完整的 Composable 测试套件
+- **集成测试**: 跨框架一致性验证
+
+#### 📦 包版本
+- **@btc-connect/core**: v0.4.0 - 核心适配层，新增统一类型和工具函数
+- **@btc-connect/react**: v0.4.0 - React Hooks，完全 API 重构
+- **@btc-connect/vue**: v0.4.0 - Vue Composables，完全 API 重构
+
+#### 🔄 迁移指南
+
+**React 包迁移**:
+```typescript
+// v0.3.x -> v0.4.0
+// 之前
+import { useWallet, useAccount } from '@btc-connect/react';
+const { connect } = useWallet();
+const { address } = useAccount();
+
+// 现在
+import { useWallet } from '@btc-connect/react';
+const { connect, address, useWalletEvent, walletModal, utils } = useWallet();
+```
+
+**Vue 包迁移**:
+```typescript
+// v0.3.x -> v0.4.0
+// 之前
+import { useCore, useWallet } from '@btc-connect/vue';
+const { connect } = useCore();
+const { address } = useWallet();
+
+// 现在
+import { useWallet } from '@btc-connect/vue';
+const { connect, address, useWalletEvent, walletModal, utils } = useWallet();
+```
+
+#### 📚 文档更新
+- 新增 [统一指南](./UNIFICATION_GUIDE.md) - 详细的迁移和功能文档
+- 更新所有模块的 CLAUDE.md 文档
+- 更新示例项目以展示新 API 使用
+
+#### ⚠️ 破坏性变更
+- **React**: `useAccount` Hook 的功能已集成到 `useWallet` 中
+- **Vue**: `createWalletContext` 函数已从公共 API 中移除
+- **Vue**: `useCore` Composable 的连接功能已移至 `useWallet`
+- 所有包的类型导入路径可能需要更新
+
+#### 🔧 开发体验改进
+- **更好的 TypeScript 支持**: 统一的类型系统和完整的类型提示
+- **一致的错误处理**: 跨框架统一的错误处理机制
+- **性能优化**: 减少重复渲染和不必要的计算
+- **开发工具**: 更好的调试和开发体验
+
 ## [0.3.11] - 2025-10-26
 
 ### 🐛 Bug 修复

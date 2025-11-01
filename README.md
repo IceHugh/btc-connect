@@ -32,11 +32,16 @@
 
 - 🌐 **Framework Agnostic**: Works with React, Vue, and vanilla JavaScript
 - 🔗 **Unified Interface**: Single API for multiple Bitcoin wallets
+- 🎯 **Unified Hooks/Composables**: React and Vue provide completely consistent interfaces
+- 🎣 **Enhanced useWallet**: Single access point for all wallet functionality
 - 🔄 **Auto Connection**: Seamless wallet reconnection on page reload
 - 📱 **SSR Support**: Full support for server-side rendering
-- 🎨 **Customizable UI**: Built-in components with theming support
+- 🎨 **Advanced Theme System**: Light/dark/auto themes with customization
+- 📊 **Event Management**: Cross-framework event listening with auto-cleanup
+- 🎛️ **Wallet Manager**: Advanced wallet adapter management
+- 🛠️ **Rich Utility Functions**: 10+ cross-framework utility functions
 - ⚡ **Lightweight**: Minimal bundle size with tree-shaking support
-- 🔒 **Type Safe**: Full TypeScript support
+- 🔒 **Type Safe**: Full TypeScript support with unified type system
 - 🧪 **Well Tested**: Comprehensive test suite with 100% coverage
 
 ## 🦄 Supported Wallets
@@ -81,65 +86,117 @@ npm install @btc-connect/vue
 
 ## 🎯 Quick Start
 
-### React Example
+### 🚀 5分钟快速开始
 
+1. **安装包**
+```bash
+# React
+npm install @btc-connect/react
+
+# Vue
+npm install @btc-connect/vue
+
+# 核心 (框架无关)
+npm install @btc-connect/core
+```
+
+2. **基础使用**
 ```tsx
-import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
+// React
+import { BTCWalletProvider, ConnectButton } from '@btc-connect/react';
 
 function App() {
   return (
     <BTCWalletProvider autoConnect={true}>
       <ConnectButton />
-      <WalletModal />
     </BTCWalletProvider>
   );
 }
 ```
 
-### Vue Example
-
 ```vue
+<!-- Vue -->
 <template>
-  <div>
-    <ConnectButton />
-    <WalletModal />
-  </div>
+  <ConnectButton />
 </template>
 
 <script setup>
-import { ConnectButton, WalletModal } from '@btc-connect/vue';
+import { ConnectButton } from '@btc-connect/vue';
 </script>
 ```
 
-### Core Example
+3. **获取钱包状态**
+```tsx
+// React
+import { useWallet } from '@btc-connect/react';
 
-```typescript
-import { BTCWalletManager } from '@btc-connect/core';
+function WalletInfo() {
+  const { isConnected, address, balance, connect, disconnect } = useWallet();
 
-const manager = new BTCWalletManager({
-  onStateChange: (state) => console.log('State changed:', state),
-  onError: (error) => console.error('Wallet error:', error)
-});
-
-// Initialize adapters
-manager.initializeAdapters();
-
-// Connect wallet
-const accounts = await manager.connect('unisat');
-console.log('Connected accounts:', accounts);
+  // 单一 Hook 访问所有功能
+  return (
+    <div>
+      {isConnected ? (
+        <div>
+          <p>已连接: {address}</p>
+          <p>余额: {balance}</p>
+          <button onClick={disconnect}>断开</button>
+        </div>
+      ) : (
+        <button onClick={() => connect('unisat')}>连接钱包</button>
+      )}
+    </div>
+  );
+}
 ```
 
-## 📚 Documentation
+```vue
+<!-- Vue -->
+<script setup>
+import { useWallet } from '@btc-connect/vue';
 
-### Module Documentation
-- [📖 Core API Documentation](./packages/core/README.md) | [中文文档](./packages/core/README.zh-CN.md)
-- [⚛️ React Integration Guide](./packages/react/README.md) | [中文文档](./packages/react/README.zh-CN.md)
-- [🖖 Vue Integration Guide](./packages/vue/README.md) | [中文文档](./packages/vue/README.zh-CN.md)
+const { isConnected, address, balance, connect, disconnect } = useWallet();
+// 响应式状态，自动更新UI
+</script>
+```
 
-### Examples
-- [React Example](./examples/react/)
-- [Vue Example](./examples/vue-example/)
-- [Next.js SSR Example](./examples/nextjs/)
+### 🎯 核心特性
+
+- **统一API**: React和Vue提供完全一致的接口
+- **单一访问点**: `useWallet` Hook/Composable 包含所有功能
+- **类型安全**: 完整的TypeScript支持
+- **SSR兼容**: 完整的服务器端渲染支持
+- **丰富功能**: 事件监听、主题管理、工具函数等
+
+### 📚 完整文档
+
+- [📘 完整API文档](./docs/api.md) - 所有API的详细说明和示例
+- [🔧 Next.js配置指南](./docs/nextjs.md) - Next.js特殊配置和最佳实践
+- [🔧 Nuxt.js配置指南](./docs/nuxt.md) - Nuxt.js特殊配置和最佳实践
+- [📖 快速开始](./QUICK_START.md) - 5分钟快速集成指南
+- [📝 变更记录](./CHANGELOG.md) - 完整版本变更记录
+
+## 📚 详细文档
+
+### 📖 API 参考
+- [📘 完整API文档](./docs/api.md) - 所有API的详细说明和示例
+- [🔧 Next.js配置指南](./docs/nextjs.md) - Next.js特殊配置和最佳实践
+- [🔧 Nuxt.js配置指南](./docs/nuxt.md) - Nuxt.js特殊配置和最佳实践
+
+### 🏗️ 项目示例
+- [React示例](./examples/react/) - 基础React集成示例
+- [Vue示例](./examples/vue-example/) - 基础Vue集成示例
+- [Next.js示例](./examples/nextjs/) - Next.js SSR完整示例
+- [Nuxt.js示例](./examples/nuxt-example/) - Nuxt 3 SSR完整示例
+
+### 🔄 迁移和更新
+- [📝 变更日志](./CHANGELOG.md) - 完整版本变更记录
+
+### 🏗️ 项目示例
+- [React示例](./examples/react/) - 基础React集成示例
+- [Vue示例](./examples/vue-example/) - 基础Vue集成示例
+- [Next.js示例](./examples/nextjs/) - Next.js SSR完整示例
+- [Nuxt.js示例](./examples/nuxt-example/) - Nuxt 3 SSR完整示例
 
 ## 🏗️ Project Structure
 

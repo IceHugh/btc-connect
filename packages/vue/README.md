@@ -27,7 +27,7 @@
 
 ## Features
 
-- 🎯 **Vue 3 Composables**: Reactive wallet state management with Composition API
+- 🎯 **Vue 3 Composables**: Individual composables for each function with unified access point
 - 📦 **Plugin System**: Vue plugin for easy application integration
 - 🎨 **Pre-built Components**: Ready-to-use wallet connection UI components
 - ⚡ **Reactivity**: Built for Vue 3's reactivity system
@@ -35,6 +35,7 @@
 - 🛡️ **Type Safe**: Full TypeScript support with proper type definitions
 - 📱 **SSR Compatible**: Server-side rendering support with Nuxt 3
 - 🎯 **Framework Optimized**: Designed specifically for Vue patterns
+- 🛠️ **Utility Functions**: Built-in formatting and validation tools
 
 ## Installation
 
@@ -77,18 +78,11 @@ app.mount('#app')
   <div>
     <h1>My Bitcoin App</h1>
     <ConnectButton theme="light" />
-    <WalletModal />
-
-    <!-- Or use composables directly -->
-    <AccountDisplay />
-    <BalanceDisplay />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ConnectButton, WalletModal } from '@btc-connect/vue'
-import AccountDisplay from './components/AccountDisplay.vue'
-import BalanceDisplay from './components/BalanceDisplay.vue'
+import { ConnectButton } from '@btc-connect/vue'
 </script>
 ```
 
@@ -96,630 +90,278 @@ import BalanceDisplay from './components/BalanceDisplay.vue'
 
 ### ConnectButton
 
-A pre-built button component for wallet connection with customizable styling.
+Pre-built button component for wallet connection with customizable styling.
 
-```vue
-<template>
-  <ConnectButton
-    theme="light"
-    size="md"
-    variant="select"
-    label="Connect Wallet"
-    @connect="handleConnect"
-    @disconnect="handleDisconnect"
-  />
-</template>
+**Props:**
+- `size?: 'sm' | 'md' | 'lg'` - Button size (default: 'md')
+- `variant?: 'select' | 'button' | 'compact'` - Display style (default: 'select')
+- `label?: string` - Custom button label
+- `disabled?: boolean` - Disable button (default: false)
+- `theme?: 'light' | 'dark' | 'auto'` - Button theme (default: 'auto')
 
-<script setup lang="ts">
-import { ConnectButton } from '@btc-connect/vue'
+### WalletModal
 
-const handleConnect = (walletId: string) => {
-  console.log('Connected to:', walletId)
-}
+Modal component for wallet selection and connection management.
 
-const handleDisconnect = () => {
-  console.log('Disconnected')
-}
-</script>
-```
+**Props:**
+- `theme?: 'light' | 'dark' | 'auto'` - Modal theme (default: 'auto')
+- `isOpen?: boolean` - Modal open state (controlled mode)
+- `onClose?: () => void` - Close callback
+- `onConnect?: (walletId: string) => void` - Connection callback
 
-### VueWalletModal
+## Vue Composables
 
-A modal component for wallet selection and connection management.
+### useWallet - Unified Composable
 
-```vue
-<template>
-  <div>
-    <ConnectButton @click="openModal" />
-    <VueWalletModal
-      :is-open="isModalOpen"
-      theme="light"
-      @close="closeModal"
-    />
-  </div>
-</template>
+Primary composable providing access to all wallet functionality.
 
-<script setup lang="ts">
-import { ConnectButton, VueWalletModal } from '@btc-connect/vue'
-import { useWalletModal } from '@btc-connect/vue'
-
-const { isOpen: isModalOpen, open: openModal, close: closeModal } = useWalletModal()
-</script>
-```
-
-## Composables API
-
-### useCore
-
-Access core wallet management functionality.
-
+**Returns:**
 ```typescript
-<script setup lang="ts">
-import { useCore } from '@btc-connect/vue'
+interface UseWalletReturn {
+  // State (Reactive)
+  status: Ref<ConnectionStatus>;
+  isConnected: Ref<boolean>;
+  isConnecting: Ref<boolean>;
+  address: Ref<string | undefined>;
+  balance: Ref<number | undefined>;
+  network: Ref<Network>;
+  error: Ref<Error | undefined>;
 
-const {
-  manager,
-  state,
-  isConnected,
-  isConnecting,
-  currentWallet,
-  availableWallets,
-  theme,
-  connect,
-  disconnect,
-  switchWallet
-} = useCore()
+  // Operations
+  connect: (walletId: string) => Promise<AccountInfo[]>;
+  disconnect: () => Promise<void>;
+  switchWallet: (walletId: string) => Promise<AccountInfo[]>;
+  availableWallets: Ref<WalletInfo[]>;
 
-// Watch connection status
-watch(isConnected, (connected) => {
-  if (connected) {
-    console.log('Wallet connected')
-  }
-})
-</script>
+  // Advanced
+  useWalletEvent: <T extends WalletEvent>(event: T, handler: EventHandler<T>) => UseWalletEventReturn<T>;
+  walletModal: UseWalletModalReturn;
+  manager: Ref<BTCWalletManager>;
+}
 ```
 
-### useAccount
+### useWalletEvent
 
-Get detailed account and balance information.
+Composable for listening to wallet events with automatic cleanup.
 
-```vue
-<template>
-  <div v-if="hasAccounts">
-    <h3>Account Information</h3>
-    <p><strong>Address:</strong> {{ address }}</p>
-    <p><strong>Public Key:</strong> {{ publicKey }}</p>
-    <p><strong>Balance:</strong> {{ formattedBalance }}</p>
-  </div>
-  <div v-else>
-    <p>No accounts available</p>
-  </div>
-</template>
+**Parameters:**
+- `event: WalletEvent` - Event type ('connect', 'disconnect', 'accountChange', 'networkChange', 'error')
+- `handler: EventHandler` - Event handler function
 
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useAccount } from '@btc-connect/vue'
-
-const {
-  accounts,
-  currentAccount,
-  hasAccounts,
-  address,
-  publicKey,
-  balance,
-  refreshAccountInfo
-} = useAccount()
-
-const formattedBalance = computed(() => {
-  if (!balance.value) return '0 BTC'
-  return `${(balance.value / 100000000).toFixed(8)} BTC`
-})
-
-// Auto-refresh every 30 seconds
-onMounted(() => {
-  const interval = setInterval(refreshAccountInfo, 30000)
-  onUnmounted(() => clearInterval(interval))
-})
-</script>
+**Returns:**
+```typescript
+interface UseWalletEventReturn<T> {
+  on: (handler: EventHandler<T>) => void;
+  off: (handler: EventHandler<T>) => void;
+  once: (handler: EventHandler<T>) => void;
+  clear: () => void;
+  eventHistory: Ref<EventHistoryItem[]>;
+}
 ```
 
-### useBalance
+### useNetwork
 
-Focused balance management with formatting.
+Composable for network management and switching.
 
-```vue
-<template>
-  <div>
-    <h3>Balance Information</h3>
-    <div v-if="isLoading">
-      Loading balance...
-    </div>
-    <div v-else-if="error">
-      Error: {{ error.message }}
-    </div>
-    <div v-else>
-      <p><strong>Total:</strong> {{ formattedTotal }}</p>
-      <p><strong>Confirmed:</strong> {{ formattedConfirmed }}</p>
-      <p><strong>Unconfirmed:</strong> {{ formattedUnconfirmed }}</p>
-      <button @click="refreshBalance">Refresh</button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useBalance } from '@btc-connect/vue'
-
-const {
-  balance,
-  confirmedBalance,
-  unconfirmed,
-  totalBalance,
-  isLoading,
-  error,
-  refreshBalance
-} = useBalance()
-
-const formatSats = (amount: number | null) => {
-  if (!amount) return '0 sats'
-  return amount.toLocaleString()
+**Returns:**
+```typescript
+interface UseNetworkReturn {
+  network: Ref<Network>;
+  switchNetwork: (network: Network) => Promise<void>;
+  isSwitching: Ref<boolean>;
 }
-
-const formattedTotal = computed(() => formatSats(totalBalance.value))
-const formattedConfirmed = computed(() => formatSats(confirmedBalance.value))
-const formattedUnconfirmed = computed(() => formatSats(unconfirmedBalance.value))
-</script>
 ```
 
-### useConnectWallet
+### useTheme
 
-Handle wallet connection operations.
+Composable for theme management and switching.
 
-```vue
-<template>
-  <div>
-    <h3>Wallet Controls</h3>
-    <div v-if="availableWallets.length === 0">
-      <p>No wallets available</p>
-    </div>
-    <div v-else>
-      <button
-        v-for="wallet in availableWallets"
-        :key="wallet.id"
-        @click="handleConnect(wallet.id)"
-        :disabled="isConnecting"
-      >
-        {{ wallet.name }}
-      </button>
-    </div>
-    <button
-      v-if="isConnected"
-      @click="handleDisconnect"
-      :disabled="isConnecting"
-    >
-      Disconnect
-    </button>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useConnectWallet } from '@btc-connect/vue'
-
-const {
-  connect,
-  disconnect,
-  switchWallet,
-  availableWallets,
-  isConnected,
-  isConnecting
-} = useConnectWallet()
-
-const handleConnect = async (walletId: string) => {
-  try {
-    await connect(walletId)
-    console.log('Connected to:', walletId)
-  } catch (error) {
-    console.error('Connection failed:', error)
-  }
+**Returns:**
+```typescript
+interface UseThemeReturn {
+  theme: Ref<ThemeMode>;
+  systemTheme: Ref<ThemeMode>;
+  effectiveTheme: ComputedRef<ThemeMode>;
+  setTheme: (theme: ThemeMode) => void;
+  resetTheme: () => void;
 }
-
-const handleDisconnect = async () => {
-  try {
-    await disconnect()
-    console.log('Disconnected')
-  } catch (error) {
-    console.error('Disconnect failed:', error)
-  }
-}
-</script>
-```
-
-### useSignature
-
-Handle message and transaction signing.
-
-```vue
-<template>
-  <div>
-    <h3>Signature Actions</h3>
-    <div>
-      <input
-        v-model="message"
-        placeholder="Enter message to sign"
-        type="text"
-      />
-      <button @click="handleSignMessage" :disabled="isSigning || !message">
-        {{ isSigning ? 'Signing...' : 'Sign Message' }}
-      </button>
-    </div>
-    <div v-if="signature">
-      <p><strong>Signature:</strong></p>
-      <code>{{ signature }}</code>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useSignature } from '@btc-connect/vue'
-
-const {
-  signMessage,
-  signPsbt,
-  isSigning
-} = useSignature()
-
-const message = ref('')
-const signature = ref('')
-
-const handleSignMessage = async () => {
-  try {
-    signature.value = await signMessage(message.value)
-    console.log('Message signed:', signature.value)
-  } catch (error) {
-    console.error('Message signing failed:', error)
-  }
-}
-</script>
-```
-
-### useTransactions
-
-Handle Bitcoin transaction operations.
-
-```vue
-<template>
-  <div>
-    <h3>Transaction Actions</h3>
-    <div>
-      <input
-        v-model="recipientAddress"
-        placeholder="Recipient address"
-        type="text"
-      />
-      <input
-        v-model="amount"
-        placeholder="Amount (sats)"
-        type="number"
-      />
-      <button
-        @click="handleSendBitcoin"
-        :disabled="isSending || !recipientAddress || !amount"
-      >
-        {{ isSending ? 'Sending...' : 'Send Bitcoin' }}
-      </button>
-    </div>
-    <div v-if="transactionId">
-      <p><strong>Transaction ID:</strong></p>
-      <code>{{ transactionId }}</code>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useTransactions } from '@btc-connect/vue'
-
-const {
-  sendBitcoin,
-  sendTransaction,
-  isSending
-} = useTransactions()
-
-const recipientAddress = ref('')
-const amount = ref(0)
-const transactionId = ref('')
-
-const handleSendBitcoin = async () => {
-  try {
-    transactionId.value = await sendBitcoin(recipientAddress.value, amount.value)
-    console.log('Transaction sent:', transactionId.value)
-  } catch (error) {
-    console.error('Transaction failed:', error)
-  }
-}
-</script>
 ```
 
 ### useWalletModal
 
-Control the wallet selection modal.
+Composable for global modal control with source tracking.
+
+**Returns:**
+```typescript
+interface UseWalletModalReturn {
+  isOpen: Ref<boolean>;
+  theme: ComputedRef<ThemeMode>;
+  open: (walletId?: string) => void;
+  close: () => void;
+  toggle: () => void;
+  forceClose: () => void;
+  currentWalletId: Ref<string | null>;
+  modalSource: Ref<string | null>;
+}
+```
+
+## API Reference
+
+### Connection Management
 
 ```vue
-<template>
-  <div>
-    <button @click="openModal">Open Wallet Modal</button>
-    <button @click="closeModal">Close Wallet Modal</button>
-    <button @click="toggleModal">Toggle Modal</button>
-    <p>Modal is {{ isOpen ? 'open' : 'closed' }}</p>
-  </div>
-</template>
+<script setup>
+import { useWallet } from '@btc-connect/vue'
 
-<script setup lang="ts">
-import { useWalletModal } from '@btc-connect/vue'
+const { connect, isConnected, address } = useWallet()
 
-const { isOpen, open, close, toggle } = useWalletModal()
+const handleConnect = async () => {
+  try {
+    await connect('unisat')
+    console.log('Connected to:', address.value)
+  } catch (error) {
+    console.error('Connection failed:', error)
+  }
+}
+</script>
+```
+
+### Event Handling
+
+```vue
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+
+const { useWalletEvent } = useWallet()
+
+// Listen to connection events
+const { on } = useWalletEvent('connect', (accounts) => {
+  console.log('Wallet connected:', accounts)
+})
+
+// Listen to disconnection
+const { on: onDisconnect } = useWalletEvent('disconnect', () => {
+  console.log('Wallet disconnected')
+})
+</script>
+```
+
+### Bitcoin Operations
+
+```vue
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+
+const { signMessage, signPsbt, sendBitcoin } = useWallet()
+
+const handleSignMessage = async () => {
+  try {
+    const signature = await signMessage('Hello, Bitcoin!')
+    console.log('Signature:', signature)
+  } catch (error) {
+    console.error('Signing failed:', error)
+  }
+}
 </script>
 ```
 
 ## Advanced Usage
 
-### Custom Plugin Configuration
-
-```typescript
-// main.ts
-import { createApp } from 'vue'
-import { BTCWalletPlugin } from '@btc-connect/vue'
-import App from './App.vue'
-
-const app = createApp(App)
-
-app.use(BTCWalletPlugin, {
-  autoConnect: true,
-  connectTimeout: 10000,
-  theme: 'light',
-  config: {
-    walletOrder: ['unisat', 'okx', 'xverse'],
-    featuredWallets: ['unisat', 'okx'],
-    showTestnet: false,
-    showRegtest: false
-  }
-})
-
-app.mount('#app')
-```
-
-### Reactive State Management
-
-```vue
-<template>
-  <div>
-    <ConnectionStatus />
-    <WalletInfo />
-    <NetworkInfo />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useCore, useAccount, useNetwork } from '@btc-connect/vue'
-
-const { state, isConnected } = useCore()
-const { currentAccount } = useAccount()
-const { network, switchNetwork } = useNetwork()
-
-const connectionStatus = computed(() => {
-  return {
-    status: state.value.status,
-    isConnected: isConnected.value,
-    isConnecting: state.value.status === 'connecting',
-    hasError: !!state.value.error
-  }
-})
-
-const walletInfo = computed(() => {
-  return {
-    wallet: currentWallet.value,
-    account: currentAccount.value,
-    balance: currentAccount.value?.balance || 0
-  }
-})
-</script>
-```
-
-### Error Handling
-
-```vue
-<template>
-  <div>
-    <WalletActions />
-    <div v-if="error" class="error-message">
-      <h3>Error</h3>
-      <p>{{ error.message }}</p>
-      <button @click="clearError">Clear Error</button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useCore } from '@btc-connect/vue'
-
-const { state } = useCore()
-
-const error = computed(() => state.value.error)
-
-const clearError = () => {
-  if (error.value) {
-    console.error('Wallet error:', error.value)
-    // Implement error reporting
-  }
-}
-
-// Watch for errors
-watch(error, (newError) => {
-  if (newError) {
-    // Report to error tracking service
-    trackError(newError, {
-      component: 'WalletActions',
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-</script>
-```
-
-## Server-Side Rendering (SSR)
-
-The Vue adapter is fully compatible with SSR frameworks like Nuxt 3.
-
-### Nuxt 3 Plugin Configuration
+### Nuxt 3 Integration
 
 ```typescript
 // plugins/btc-connect.client.ts
 import { BTCWalletPlugin } from '@btc-connect/vue'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (process.client) {
-    nuxtApp.vueApp.use(BTCWalletPlugin, {
-      autoConnect: true,
-      connectTimeout: 10000,
-      theme: 'light',
-      config: {
-        walletOrder: ['unisat', 'okx', 'xverse'],
-        featuredWallets: ['unisat', 'okx']
-      }
-    })
-  }
+  nuxtApp.vueApp.use(BTCWalletPlugin, {
+    autoConnect: true,
+    theme: 'auto'
+  })
 })
 ```
 
-### Client-Side Only Components
-
 ```vue
-<!-- components/WalletConnectButton.vue -->
+<!-- pages/index.vue -->
 <template>
-  <ClientOnly>
-    <ConnectButton theme="light" />
-  </ClientOnly>
+  <div>
+    <h1>Bitcoin Wallet App</h1>
+    <ClientOnly>
+      <ConnectButton />
+    </ClientOnly>
+  </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ConnectButton } from '@btc-connect/vue'
 </script>
 ```
 
-## Performance Optimization
-
-### Lazy Loading Components
+### Custom Theme
 
 ```vue
 <template>
   <div>
-    <h2>Wallet Features</h2>
-    <Suspense>
-      <LazyWalletModal />
-    </Suspense>
+    <ConnectButton theme="dark" />
+    <button @click="toggleTheme">Toggle Theme</button>
   </div>
 </template>
 
-<script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+<script setup>
+import { useTheme } from '@btc-connect/vue'
 
-const LazyWalletModal = defineAsyncComponent(() =>
-  import('@btc-connect/vue').then(mod => ({
-    default: mod.VueWalletModal
-  }))
-)
+const { theme, setTheme } = useTheme()
+
+const toggleTheme = () => {
+  setTheme(theme.value === 'light' ? 'dark' : 'light')
+}
 </script>
 ```
 
-### Composable Memoization
+### Modal Control
 
-```typescript
-// composables/useFormattedBalance.ts
-import { computed } from 'vue'
-import { useBalance } from '@btc-connect/vue'
+```vue
+<template>
+  <div>
+    <button @click="openModal">Open Wallet Modal</button>
+    <button @click="closeModal">Close Modal</button>
+  </div>
+</template>
 
-export function useFormattedBalance() {
-  const { balance, confirmedBalance, unconfirmedBalance } = useBalance()
+<script setup>
+import { useWalletModal } from '@btc-connect/vue'
 
-  const formattedBalance = computed(() => {
-    if (!balance.value) return '0 BTC'
-    return `${(balance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  const formattedConfirmed = computed(() => {
-    if (!confirmedBalance.value) return '0 BTC'
-    return `${(confirmedBalance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  const formattedUnconfirmed = computed(() => {
-    if (!unconfirmedBalance.value) return '0 BTC'
-    return `${(unconfirmedBalance.value / 100000000).toFixed(8)} BTC`
-  })
-
-  return {
-    balance,
-    confirmedBalance,
-    unconfirmedBalance,
-    formattedBalance,
-    formattedConfirmed,
-    formattedUnconfirmed
-  }
-}
+const { open: openModal, close: closeModal, isOpen } = useWalletModal()
+</script>
 ```
 
 ## Best Practices
 
-1. **Plugin Placement**: Install the plugin at the root of your Vue application
-2. **Reactive Patterns**: Leverage Vue's reactivity system for state management
-3. **Error Handling**: Always handle wallet operations in try-catch blocks
-4. **Loading States**: Show appropriate loading states during operations
-5. **SSR Considerations**: Use ClientOnly wrappers for wallet-dependent UI
-6. **Performance**: Use lazy loading and computed properties for optimal performance
-
-## Testing
-
-The library provides utilities for testing your wallet integration.
-
-```typescript
-// tests/components/WalletButton.spec.ts
-import { mount } from '@vue/test-utils'
-import { createApp } from 'vue'
-import { BTCWalletPlugin, createMockManager } from '@btc-connect/vue'
-
-// Mock the wallet manager
-jest.mock('@btc-connect/core', () => ({
-  ...jest.requireActual('@btc-connect/core'),
-  createWalletManager: jest.fn(() => createMockManager())
-}))
-
-describe('ConnectButton', () => {
-  it('renders connect button when not connected', () => {
-    const app = createApp(ConnectButton)
-    const wrapper = mount(app)
-
-    expect(wrapper.text()).toContain('Connect Wallet')
-  })
-})
-```
+1. **Plugin Installation**: Always install BTCWalletPlugin at app initialization
+2. **Error Handling**: Wrap wallet operations in try-catch blocks
+3. **Reactivity**: Use reactive refs and computed properties for UI updates
+4. **Type Safety**: Leverage TypeScript types for better development experience
+5. **SSR**: Use ClientOnly component for wallet-specific UI in SSR environments
 
 ## Migration Guide
 
-### From Version 0.1.x to 0.2.x
+### From v0.3.x to v0.4.0+
 
-```typescript
-// Old way (deprecated)
-import { installBTCWallet } from '@btc-connect/vue'
+```vue
+<!-- Old way -->
+<script setup>
+import { useCore, useWallet, useWalletEvent } from '@btc-connect/vue'
+const { connect } = useCore()
+const { address } = useWallet()
+useWalletEvent('connect', handler)
+</script>
 
-installBTCWallet(app, { autoConnect: true })
-
-// New way
-import { BTCWalletPlugin } from '@btc-connect/vue'
-
-app.use(BTCWalletPlugin, { autoConnect: true })
+<!-- New way -->
+<script setup>
+import { useWallet } from '@btc-connect/vue'
+const { connect, address, useWalletEvent } = useWallet()
+useWalletEvent('connect', handler)
+</script>
 ```
 
 ## Contributing

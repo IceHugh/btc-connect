@@ -5,7 +5,10 @@ export type WalletEvent =
   | 'disconnect'
   | 'accountChange'
   | 'networkChange'
-  | 'error';
+  | 'error'
+  | 'availableWallets'
+  | 'walletDetected'
+  | 'walletDetectionComplete';
 
 // 事件参数类型定义
 export interface ConnectEventParams {
@@ -32,6 +35,28 @@ export interface ErrorEventParams {
   error: WalletError;
 }
 
+// 钱包检测事件参数类型定义
+export interface AvailableWalletsEventParams {
+  wallets: WalletInfo[];
+  adapters: BTCWalletAdapter[];
+  timestamp: number;
+}
+
+export interface WalletDetectedEventParams {
+  walletId: string;
+  walletInfo: WalletInfo;
+  totalDetected: number;
+  timestamp: number;
+}
+
+export interface WalletDetectionCompleteEventParams {
+  wallets: string[];
+  adapters: BTCWalletAdapter[];
+  elapsedTime: number;
+  isComplete: boolean;
+  timestamp: number;
+}
+
 // 事件处理器类型映射
 export interface EventHandlerMap {
   connect: (params: ConnectEventParams) => void;
@@ -39,10 +64,16 @@ export interface EventHandlerMap {
   accountChange: (params: AccountChangeEventParams) => void;
   networkChange: (params: NetworkChangeEventParams) => void;
   error: (params: ErrorEventParams) => void;
+  availableWallets: (params: AvailableWalletsEventParams) => void;
+  walletDetected: (params: WalletDetectedEventParams) => void;
+  walletDetectionComplete: (params: WalletDetectionCompleteEventParams) => void;
 }
 
 // 统一的事件处理器类型
-export type EventHandler<T extends WalletEvent> = EventHandlerMap[T];
+export type EventHandler<T extends WalletEvent> =
+  T extends keyof EventHandlerMap
+    ? EventHandlerMap[T]
+    : (...args: any[]) => void;
 
 // 钱包连接状态
 export type ConnectionStatus =
@@ -561,6 +592,11 @@ export class ErrorHandlerManager {
     }
   }
 }
+
+// === 导出统一接口类型 ===
+
+// 重新导出所有统一类型，供 React 和 Vue 包使用
+export * from './unified';
 
 // 交易输入
 export interface TransactionInput {

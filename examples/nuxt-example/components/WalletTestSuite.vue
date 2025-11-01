@@ -60,6 +60,9 @@
         </div>
       </div>
 
+      <!-- AutoConnect 状态监控 -->
+      <AutoConnectStatusCard class="mb-8" />
+
       <!-- 测试控制 -->
       <div class="wallet-card mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
@@ -521,20 +524,20 @@ onMounted(() => {
   const { manager } = useCore()
 
   if (manager.value) {
-    manager.value.on('connect', (accounts: any[]) => {
-      addLog(`钱包已连接，账户数量: ${accounts.length}`)
+    manager.value.on('connect', (params) => {
+      addLog(`钱包已连接，账户数量: ${params.accounts.length}`)
     })
 
     manager.value.on('disconnect', () => {
       addLog('钱包已断开连接')
     })
 
-    manager.value.on('accountChange', (accounts: any[]) => {
-      addLog(`账户已变更，新账户数量: ${accounts.length}`)
+    manager.value.on('accountChange', (params) => {
+      addLog(`账户已变更，新账户数量: ${params.accounts.length}`)
     })
 
-    manager.value.on('networkChange', (network: string) => {
-      addLog(`网络已切换到: ${network}`)
+    manager.value.on('networkChange', (params) => {
+      addLog(`网络已切换到: ${params.network}`)
     })
   }
 })

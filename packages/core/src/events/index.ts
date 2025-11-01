@@ -1,16 +1,19 @@
 import type {
   AccountChangeEventParams,
+  AvailableWalletsEventParams,
   ConnectEventParams,
   ErrorEventParams,
-  LegacyEventHandler,
+  EventHandler,
   NetworkChangeEventParams,
+  WalletDetectedEventParams,
+  WalletDetectionCompleteEventParams,
   WalletEvent,
 } from '../types';
 
 // 事件监听器接口
-interface EventListener {
-  event: WalletEvent;
-  handler: LegacyEventHandler;
+interface EventListener<T extends WalletEvent> {
+  event: T;
+  handler: EventHandler<T>;
   once?: boolean;
 }
 
@@ -18,27 +21,27 @@ interface EventListener {
  * 简单的事件发射器实现
  */
 export class EventEmitter {
-  private listeners: Map<WalletEvent, EventListener[]> = new Map();
+  private listeners: Map<WalletEvent, EventListener<any>[]> = new Map();
   private maxListeners: number = 100;
 
   /**
    * 添加事件监听器
    */
-  on(event: WalletEvent, handler: LegacyEventHandler): void {
+  on<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.addListener(event, handler, false);
   }
 
   /**
    * 添加一次性事件监听器
    */
-  once(event: WalletEvent, handler: LegacyEventHandler): void {
+  once<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.addListener(event, handler, true);
   }
 
   /**
    * 移除事件监听器
    */
-  off(event: WalletEvent, handler: LegacyEventHandler): void {
+  off<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     const listeners = this.listeners.get(event);
     if (!listeners) return;
 
@@ -126,9 +129,9 @@ export class EventEmitter {
   /**
    * 添加监听器的内部方法
    */
-  private addListener(
-    event: WalletEvent,
-    handler: LegacyEventHandler,
+  private addListener<T extends WalletEvent>(
+    event: T,
+    handler: EventHandler<T>,
     once: boolean,
   ): void {
     const listeners = this.listeners.get(event) || [];
@@ -163,27 +166,11 @@ export class WalletEventManager extends EventEmitter {
   }
 
   /**
-   * 发射连接事件（兼容旧版本）
-   */
-  emitConnectLegacy(accounts: ConnectEventParams['accounts']): boolean {
-    if (this.isDestroyed) return false;
-    return this.emit('connect', accounts as any);
-  }
-
-  /**
    * 发射断开连接事件
    */
   emitDisconnect(walletId: string): boolean {
     if (this.isDestroyed) return false;
     return this.emit('disconnect', { walletId });
-  }
-
-  /**
-   * 发射断开连接事件（兼容旧版本）
-   */
-  emitDisconnectLegacy(): boolean {
-    if (this.isDestroyed) return false;
-    return this.emit('disconnect', undefined as any);
   }
 
   /**
@@ -198,16 +185,6 @@ export class WalletEventManager extends EventEmitter {
   }
 
   /**
-   * 发射账户变化事件（兼容旧版本）
-   */
-  emitAccountChangeLegacy(
-    accounts: AccountChangeEventParams['accounts'],
-  ): boolean {
-    if (this.isDestroyed) return false;
-    return this.emit('accountChange', accounts as any);
-  }
-
-  /**
    * 发射网络变化事件
    */
   emitNetworkChange(
@@ -219,16 +196,6 @@ export class WalletEventManager extends EventEmitter {
   }
 
   /**
-   * 发射网络变化事件（兼容旧版本）
-   */
-  emitNetworkChangeLegacy(
-    network: NetworkChangeEventParams['network'],
-  ): boolean {
-    if (this.isDestroyed) return false;
-    return this.emit('networkChange', network as any);
-  }
-
-  /**
    * 发射错误事件
    */
   emitError(walletId: string, error: ErrorEventParams['error']): boolean {
@@ -237,11 +204,29 @@ export class WalletEventManager extends EventEmitter {
   }
 
   /**
-   * 发射错误事件（兼容旧版本）
+   * 发射可用钱包列表变化事件
    */
-  emitErrorLegacy(error: Error): boolean {
+  emitAvailableWallets(params: AvailableWalletsEventParams): boolean {
     if (this.isDestroyed) return false;
-    return this.emit('error', error as any);
+    return this.emit('availableWallets', params);
+  }
+
+  /**
+   * 发射检测到新钱包事件
+   */
+  emitWalletDetected(params: WalletDetectedEventParams): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('walletDetected', params);
+  }
+
+  /**
+   * 发射钱包检测完成事件
+   */
+  emitWalletDetectionComplete(
+    params: WalletDetectionCompleteEventParams,
+  ): boolean {
+    if (this.isDestroyed) return false;
+    return this.emit('walletDetectionComplete', params);
   }
 
   /**

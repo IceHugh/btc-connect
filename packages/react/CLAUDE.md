@@ -1,8 +1,17 @@
-[根目录](../../CLAUDE.md) > [packages](../) > **react**
-
 # @btc-connect/react
 
 ## 变更记录 (Changelog)
+
+### 2025-11-01 22:00:00 - 🎉 重大统一更新
+- **API 统一**: 与 Vue 包实现完全一致的 Hook 接口
+- **增强 useWallet**: 成为所有功能的统一访问点，包含状态、操作和工具函数
+- **新增 useWalletEvent Hook**: 提供跨框架的事件监听功能
+- **新增 useWalletManager Hook**: 提供高级钱包管理器功能
+- **新增 useTheme Hook**: 支持亮色/暗色/自动主题切换
+- **新增 useWalletModalEnhanced Hook**: 增强模态框控制，支持来源追踪
+- **统一工具函数**: 集成 formatAddress、formatBalance 等 10+ 个工具函数
+- **完整测试覆盖**: 新增全面的 Hook 测试套件
+- **类型系统增强**: 统一的 TypeScript 类型定义，确保跨框架类型安全
 
 ### 2025-10-24 22:00:00
 - 优化连接性能：移除自动获取public key和balance的逻辑
@@ -32,17 +41,29 @@
 
 ### 基本使用
 ```tsx
-import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
+import { BTCWalletProvider, ConnectButton } from '@btc-connect/react';
 
 function App() {
   return (
     <BTCWalletProvider autoConnect={true}>
       <ConnectButton />
-      <WalletModal />
     </BTCWalletProvider>
   );
 }
 ```
+
+### 🆕 v0.4.0+ 统一 API 使用
+```tsx
+import { useWallet } from '@btc-connect/react';
+
+function WalletComponent() {
+  const wallet = useWallet();
+  // wallet 包含所有钱包状态、操作和工具函数
+  // 详细API说明请参考下方的Hooks文档
+}
+```
+
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
 
 ## 对外接口
 
@@ -67,50 +88,214 @@ function BTCWalletProvider({
 
 ### 核心 Hooks
 
-#### useWallet - 获取钱包状态
-```tsx
-const {
-  status,           // 连接状态
-  accounts,         // 账户列表
-  currentAccount,   // 当前账户
-  network,          // 网络信息
-  error,            // 错误信息
-  currentWallet,    // 当前钱包信息
-  isConnected,      // 是否已连接
-  isConnecting,     // 是否正在连接
-  address,          // 当前地址
-  balance,          // 余额信息
-  publicKey,        // 公钥
-} = useWallet();
+#### 🆕 useWallet - 统一钱包访问点 (v0.4.0+)
+
+**描述**: 统一的钱包状态和操作访问点，提供所有钱包功能的单一入口。
+
+**返回值**:
+```typescript
+interface UseWalletReturn {
+  // === 基础状态 ===
+  status: ConnectionStatus;                    // 连接状态：'disconnected' | 'connecting' | 'connected' | 'error'
+  accounts: AccountInfo[];                     // 账户列表
+  currentAccount: AccountInfo | undefined;      // 当前账户信息
+  network: Network;                             // 网络类型：'livenet' | 'testnet' | 'regtest' | 'mainnet'
+  error: Error | undefined;                      // 错误信息
+  currentWallet: WalletInfo | null;             // 当前钱包信息
+  isConnected: boolean;                         // 是否已连接
+  isConnecting: boolean;                        // 是否正在连接
+  theme: ThemeMode;                             // 主题模式：'light' | 'dark' | 'auto'
+  address: string | undefined;                  // 当前地址
+  balance: number | undefined;                  // 当前余额（聪）
+  publicKey: string | undefined;               // 当前公钥
+
+  // === 连接操作 ===
+  connect: (walletId: string) => Promise<AccountInfo[]>;     // 连接指定钱包
+  disconnect: () => Promise<void>;                           // 断开当前连接
+  switchWallet: (walletId: string) => Promise<AccountInfo[]>;  // 切换到指定钱包
+  availableWallets: WalletInfo[];                            // 可用钱包列表
+
+  // === 网络管理 ===
+  switchNetwork: (network: Network) => Promise<void>;        // 切换网络
+
+  // === 事件监听功能 ===
+  useWalletEvent: <T extends WalletEvent>(event: T, handler: EventHandler<T>) => UseWalletEventReturn<T>;
+
+  // === 模态框控制 ===
+  walletModal: UseWalletModalReturn;
+
+  // === 钱包管理器功能 ===
+  currentAdapter: BTCWalletAdapter | null;        // 当前适配器
+  allAdapters: BTCWalletAdapter[];               // 所有适配器
+  manager: BTCWalletManager;                     // 原始管理器实例
+
+  // === 签名功能 ===
+  signMessage: (message: string) => Promise<string>;     // 签名消息
+  signPsbt: (psbt: string) => Promise<string>;           // 签名PSBT
+  sendBitcoin: (toAddress: string, amount: number) => Promise<string>; // 发送比特币
+
+  // === 工具函数快捷访问 ===
+  utils: {
+    formatAddress: (address: string, options?: FormatAddressOptions) => string;
+    formatBalance: (satoshis: number, options?: FormatBalanceOptions) => string;
+  };
+}
 ```
 
-#### useConnectWallet - 连接操作
-```tsx
-const {
-  connect,          // 连接钱包
-  disconnect,       // 断开连接
-  switchWallet,     // 切换钱包
-  availableWallets, // 可用钱包列表
-} = useConnectWallet();
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
+
+#### 🆕 useWalletEvent - 事件监听 (v0.4.0+)
+
+**描述**: 提供跨框架的事件监听功能，支持自动清理和事件历史记录。
+
+**参数**:
+- `event: T` - 钱包事件类型
+- `handler: EventHandler<T>` - 事件处理函数
+
+**返回值**:
+```typescript
+interface UseWalletEventReturn<T extends WalletEvent> {
+  on: (handler: EventHandler<T>) => void;                    // 添加事件监听器
+  off: (handler: EventHandler<T>) => void;                   // 移除事件监听器
+  once: (handler: EventHandler<T>) => void;                  // 添加一次性监听器
+  clear: () => void;                                      // 清理所有监听器
+  clearHistory: () => void;                               // 清理事件历史
+  eventHistory: EventHistoryItem[];                       // 事件历史记录
+}
 ```
 
-#### useWalletEvent - 事件监听
-```tsx
-useWalletEvent('connect', (accounts) => {
-  console.log('Connected:', accounts);
-});
+**支持的事件类型**:
+- `'connect'` - 钱包连接成功
+- `'disconnect'` - 钱包断开连接
+- `'accountChange'` - 账户变更
+- `'networkChange'` - 网络变更
+- `'error'` - 错误发生
 
-useWalletEvent('disconnect', () => {
-  console.log('Disconnected');
-});
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
+
+#### 🆕 useWalletManager - 高级钱包管理器 (v0.4.0+)
+
+**描述**: 提供高级钱包管理功能，包括适配器操作和统计信息。
+
+**返回值**:
+```typescript
+interface UseWalletManagerReturn {
+  currentAdapter: BTCWalletAdapter | null;      // 当前激活的适配器
+  availableAdapters: BTCWalletAdapter[];         // 所有可用适配器列表
+  adapterStates: AdapterState[];                 // 适配器状态数组
+  getAdapter: (walletId: string) => BTCWalletAdapter | null;  // 获取指定钱包的适配器
+  addAdapter: (adapter: BTCWalletAdapter) => void;             // 添加新适配器
+  removeAdapter: (walletId: string) => void;                  // 移除适配器
+  manager: BTCWalletManager;                           // 原始管理器实例
+  stats: ManagerStats;                                  // 管理器统计信息
+}
+
+interface AdapterState {
+  id: string;                    // 钱包ID
+  name: string;                  // 钱包名称
+  isReady: boolean;              // 是否就绪
+  isInstalled: boolean;          // 是否已安装
+  isConnected: boolean;          // 是否已连接
+  lastError: Error | null;       // 最后的错误
+}
+
+interface ManagerStats {
+  totalAdapters: number;        // 总适配器数量
+  connectedAdapters: number;     // 已连接适配器数量
+  readyAdapters: number;        // 就绪适配器数量
+  lastUpdated: number;          // 最后更新时间
+}
 ```
 
-#### useNetwork - 网络管理
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
+
+#### 🆕 useTheme - 主题管理 (v0.4.0+)
+
+**描述**: 提供完整的主题管理系统，支持亮色/暗色/自动主题切换。
+
+**返回值**:
+```typescript
+interface UseThemeReturn {
+  theme: ThemeMode;                    // 当前主题模式
+  systemTheme: ThemeMode;              // 系统主题模式
+  effectiveTheme: ThemeMode;           // 有效主题（考虑系统设置）
+  setTheme: (theme: ThemeMode) => void;     // 设置主题
+  setThemeMode: (mode: ThemeMode) => void;  // 设置主题模式
+  setCustomTheme: (theme: CustomTheme) => void; // 设置自定义主题
+  resetTheme: () => void;               // 重置为默认主题
+}
+
+type ThemeMode = 'light' | 'dark' | 'auto';
+
+interface CustomTheme {
+  colors: {
+    primary?: string;
+    background?: string;
+    text?: string;
+    border?: string;
+  };
+  fonts?: {
+    primary?: string;
+    secondary?: string;
+  };
+}
+```
+
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
+
+#### 🆕 useWalletModalEnhanced - 增强模态框控制 (v0.4.0+)
+
+**描述**: 增强的模态框控制功能，支持来源追踪和程序化控制。
+
+**返回值**:
+```typescript
+interface UseWalletModalReturn {
+  isModalOpen: boolean;                              // 模态框是否打开
+  theme: ThemeMode;                                   // 模态框主题
+  openModal: () => void;                              // 打开模态框
+  closeModal: () => void;                             // 关闭模态框
+  toggleModal: () => void;                             // 切换模态框状态
+  forceClose: () => void;                              // 强制关闭
+  openWithSource: (walletId?: string, source?: string) => void; // 带来源打开
+  modalSource: string | null;                         // 模态框来源
+}
+```
+
+**注意**: 详细使用示例请参考 [docs/examples.md](../../docs/examples.md)
+
+#### useNetwork - 网络管理 (保持兼容)
 ```tsx
 const {
   network,           // 当前网络
   switchNetwork,    // 切换网络函数
+  isSwitching,      // 是否正在切换
 } = useNetwork();
+```
+
+### 🔧 迁移指南 (v0.3.x → v0.4.0+)
+
+#### 基础用法迁移
+```tsx
+// v0.3.x 旧用法
+import { useWallet, useAccount } from '@btc-connect/react';
+const { connect } = useWallet();
+const { address } = useAccount();
+
+// v0.4.0+ 新用法
+import { useWallet } from '@btc-connect/react';
+const { connect, address, useWalletEvent, walletModal, utils } = useWallet();
+```
+
+#### 事件监听迁移
+```tsx
+// v0.3.x 旧用法
+useWalletEvent('connect', handler);
+
+// v0.4.0+ 新用法
+const { on, once, clear } = useWalletEvent('connect', handler);
+// 或者直接在 useWallet 中使用
+const { useWalletEvent } = useWallet();
+useWalletEvent('connect', handler);
 ```
 
 ### 组件
@@ -218,69 +403,16 @@ type ThemeMode = 'light' | 'dark' | 'auto';
 ## 常见问题 (FAQ)
 
 ### Q: 如何实现自定义连接策略？
-A: 定义连接策略任务并传递给 Provider：
-```tsx
-const connectionPolicy: ConnectionPolicy = {
-  tasks: [
-    {
-      run: async ({ manager }) => {
-        // 自定义连接后任务
-        const balance = await manager.getCurrentAdapter()?.getBalance?.();
-        return { success: true };
-      },
-      required: false,
-      autoBehavior: 'run'
-    }
-  ],
-  emitEventsOnAutoConnect: true
-};
-
-<BTCWalletProvider connectionPolicy={connectionPolicy}>
-  {/* ... */}
-</BTCWalletProvider>
-```
+A: 定义 `ConnectionPolicy` 对象并传递给 BTCWalletProvider 的 `connectionPolicy` 属性。
 
 ### Q: 如何处理 SSR 环境？
-A: Provider 内置 SSR 保护，自动处理客户端初始化：
-```tsx
-// 在 SSR 环境中安全使用
-function MyComponent() {
-  const { manager } = useWalletContext();
-
-  // manager 在服务端为 null，客户端为实际实例
-  if (!manager) {
-    return <div>Loading...</div>;
-  }
-
-  return <div>Wallet ready</div>;
-}
-```
+A: BTCWalletProvider 内置 SSR 保护，manager 在服务端为 null，客户端为实际实例。
 
 ### Q: 如何自定义主题和样式？
-A: 使用主题属性和 CSS 变量：
-```tsx
-<ConnectButton
-  theme="dark"
-  size="lg"
-  variant="button"
-/>
-```
+A: 使用 ConnectButton 组件的 `theme`、`size`、`variant` 属性进行配置。
 
 ### Q: 如何监听钱包事件？
-A: 使用 useWalletEvent Hook：
-```tsx
-function WalletEvents() {
-  useWalletEvent('accountChange', (accounts) => {
-    console.log('Account changed:', accounts);
-  });
-
-  useWalletEvent('networkChange', (network) => {
-    console.log('Network changed:', network);
-  });
-
-  return null;
-}
-```
+A: 使用 useWalletEvent Hook，支持 'connect'、'disconnect'、'accountChange'、'networkChange'、'error' 等事件类型。
 
 ## 相关文件清单
 

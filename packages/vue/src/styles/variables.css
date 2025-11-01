@@ -1,0 +1,90 @@
+/**
+ * CSS 变量定义 - 与 React 包保持一致
+ */
+
+:root {
+  /* 主色调 */
+  --btc-connect-primary: #f7931a;
+  --btc-connect-primary-hover: #e8840d;
+  --btc-connect-primary-light: #fff4e6;
+
+  /* 中性色 */
+  --btc-connect-gray-50: #f8f9fa;
+  --btc-connect-gray-100: #e9ecef;
+  --btc-connect-gray-200: #dee2e6;
+  --btc-connect-gray-300: #ced4da;
+  --btc-connect-gray-400: #adb5bd;
+  --btc-connect-gray-500: #6c757d;
+  --btc-connect-gray-600: #495057;
+  --btc-connect-gray-700: #343a40;
+  --btc-connect-gray-800: #212529;
+  --btc-connect-gray-900: #000000;
+
+  /* 状态色 */
+  --btc-connect-success: #22c55e;
+  --btc-connect-warning: #f59e0b;
+  --btc-connect-error: #ef4444;
+  --btc-connect-info: #3b82f6;
+
+  /* 尺寸 */
+  --btc-connect-border-radius: 8px;
+  --btc-connect-border-radius-sm: 4px;
+  --btc-connect-border-radius-lg: 12px;
+
+  /* 间距 */
+  --btc-connect-spacing-xs: 4px;
+  --btc-connect-spacing-sm: 8px;
+  --btc-connect-spacing-md: 16px;
+  --btc-connect-spacing-lg: 24px;
+
+  /* 阴影 */
+  --btc-connect-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --btc-connect-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --btc-connect-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --btc-connect-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* 过渡 */
+  --btc-connect-transition: all 0.15s ease;
+}
+
+/* 暗色主题变量 */
+.theme-dark,
+.btc-connect-theme-dark {
+  --btc-connect-gray-50: #212529;
+  --btc-connect-gray-100: #343a40;
+  --btc-connect-gray-200: #495057;
+  --btc-connect-gray-300: #6c757d;
+  --btc-connect-gray-400: #adb5bd;
+  --btc-connect-gray-500: #ced4da;
+  --btc-connect-gray-600: #dee2e6;
+  --btc-connect-gray-700: #e9ecef;
+  --btc-connect-gray-800: #f8f9fa;
+  --btc-connect-gray-900: #ffffff;
+
+  --btc-connect-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --btc-connect-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --btc-connect-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 基础重置样式 */
+.btc-connect *,
+.btc-connect *::before,
+.btc-connect *::after {
+  box-sizing: border-box;
+}
+
+/* 响应式断点 */
+@media (max-width: 480px) {
+  :root {
+    --btc-connect-spacing-sm: 6px;
+    --btc-connect-spacing-md: 12px;
+    --btc-connect-spacing-lg: 18px;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --btc-connect-transition: none;
+  }
+}

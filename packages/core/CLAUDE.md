@@ -1,5 +1,3 @@
-[根目录](../../CLAUDE.md) > [packages](../) > **core**
-
 # @btc-connect/core
 
 ## 变更记录 (Changelog)

@@ -1,10 +1,13 @@
 // 重新导出 @btc-connect/core 的类型，避免外部依赖
 export type {
   AccountInfo,
+  AvailableWalletsEventParams,
   BalanceDetail,
   ConnectionStatus,
   ModalConfig,
   Network,
+  WalletDetectedEventParams,
+  WalletDetectionCompleteEventParams,
   WalletEvent,
   WalletInfo,
   WalletManagerConfig,

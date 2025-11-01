@@ -4,12 +4,14 @@ import { WalletEventManager } from '../events';
 import type {
   AccountInfo,
   BTCWalletAdapter,
+  EventHandler,
   WalletEvent,
   WalletInfo,
   WalletManager,
   WalletManagerConfig,
   WalletState,
 } from '../types';
+import { WalletError } from '../types';
 
 /**
  * 钱包管理器实现
@@ -141,7 +143,7 @@ export class BTCWalletManager implements WalletManager {
       this.currentAdapter = adapter;
 
       // 发射连接事件
-      this.eventManager.emitConnectLegacy(accounts);
+      this.eventManager.emitConnect(walletId, accounts);
 
       // 调用状态变化回调
       if (this.config.onStateChange) {
@@ -158,9 +160,16 @@ export class BTCWalletManager implements WalletManager {
       }
 
       // 发射错误事件
-      this.eventManager.emitErrorLegacy(
-        error instanceof Error ? error : new Error(String(error)),
-      );
+      const walletError =
+        error instanceof WalletError
+          ? error
+          : new WalletError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              {},
+              error instanceof Error ? error : undefined,
+            );
+      this.eventManager.emitError(this.currentAdapter!.id, walletError);
 
       throw error;
     }
@@ -202,7 +211,7 @@ export class BTCWalletManager implements WalletManager {
         await adapter.getNetwork();
       } catch {}
 
-      this.eventManager.emitConnectLegacy((adapter as any).state.accounts);
+      this.eventManager.emitConnect(walletId, (adapter as any).state.accounts);
       if (this.config.onStateChange) {
         this.config.onStateChange(this.getState());
       }
@@ -217,6 +226,7 @@ export class BTCWalletManager implements WalletManager {
    */
   async disconnect(): Promise<void> {
     if (this.currentAdapter) {
+      const adapterId = this.currentAdapter.id;
       try {
         await this.currentAdapter.disconnect();
       } catch (error) {
@@ -224,7 +234,7 @@ export class BTCWalletManager implements WalletManager {
         console.warn('Error disconnecting wallet:', error);
       } finally {
         this.currentAdapter = null;
-        this.eventManager.emitDisconnectLegacy();
+        this.eventManager.emitDisconnect(adapterId);
 
         // 调用状态变化回调
         if (this.config.onStateChange) {
@@ -280,14 +290,14 @@ export class BTCWalletManager implements WalletManager {
   /**
    * 添加事件监听器
    */
-  on(event: WalletEvent, handler: (...args: any[]) => void): void {
+  on<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.eventManager.on(event, handler);
   }
 
   /**
    * 移除事件监听器
    */
-  off(event: WalletEvent, handler: (...args: any[]) => void): void {
+  off<T extends WalletEvent>(event: T, handler: EventHandler<T>): void {
     this.eventManager.off(event, handler);
   }
 
@@ -311,7 +321,10 @@ export class BTCWalletManager implements WalletManager {
       await this.currentAdapter.switchNetwork(network as any);
 
       // 发射网络变化事件
-      this.eventManager.emitNetworkChangeLegacy(network as any);
+      this.eventManager.emitNetworkChange(
+        this.currentAdapter!.id,
+        network as any,
+      );
 
       // 调用状态变化回调
       if (this.config.onStateChange) {
@@ -326,9 +339,16 @@ export class BTCWalletManager implements WalletManager {
       }
 
       // 发射错误事件
-      this.eventManager.emitErrorLegacy(
-        error instanceof Error ? error : new Error(String(error)),
-      );
+      const walletError =
+        error instanceof WalletError
+          ? error
+          : new WalletError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              {},
+              error instanceof Error ? error : undefined,
+            );
+      this.eventManager.emitError(this.currentAdapter!.id, walletError);
 
       throw error;
     }

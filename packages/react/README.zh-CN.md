@@ -1,6 +1,6 @@
 # @btc-connect/react
 
-English | [中文文档](./README.zh-CN.md)
+[中文文档](./README.zh-CN.md) | English
 
 <p align="center">
   <strong>React 适配器 - 提供Hooks和Context的BTC Connect绑定</strong>
@@ -8,16 +8,16 @@ English | [中文文档](./README.zh-CN.md)
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@btc-connect/react">
-    <img src="https://img.shields.io/npm/v/@btc-connect/react.svg" alt="NPM 版本">
+    <img src="https://img.shields.io/npm/v/@btc-connect/react.svg" alt="NPM Version">
   </a>
   <a href="https://github.com/IceHugh/btc-connect/actions">
     <img src="https://github.com/IceHugh/btc-connect/workflows/CI/badge.svg" alt="CI">
   </a>
   <a href="https://codecov.io/gh/IceHugh/btc-connect">
-    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="覆盖率">
+    <img src="https://codecov.io/gh/IceHugh/btc-connect/branch/main/graph/badge.svg" alt="Coverage">
   </a>
   <a href="https://bundlephobia.com/result?p=@btc-connect/react">
-    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/react.svg" alt="包大小">
+    <img src="https://img.shields.io/bundlephobia/minzip/@btc-connect/react.svg" alt="Bundle Size">
   </a>
 </p>
 
@@ -27,7 +27,7 @@ English | [中文文档](./README.zh-CN.md)
 
 ## 特性
 
-- 🎣 **React Hooks**: 使用自定义hooks进行声明式钱包状态管理
+- 🎣 **现代React Hooks**: 为每个功能提供独立的hooks，统一访问点
 - 📦 **Context Provider**: 集中式钱包状态管理
 - 🎨 **预构建组件**: 即可用的钱包连接UI组件
 - ⚛️ **React 18+支持**: 为现代React构建，支持并发特性
@@ -35,6 +35,7 @@ English | [中文文档](./README.zh-CN.md)
 - 🛡️ **类型安全**: 完整的TypeScript支持和类型定义
 - 📱 **SSR兼容**: 支持Next.js等服务器端渲染框架
 - 🎯 **框架优化**: 专为React模式设计
+- 🛠️ **工具函数**: 内置格式化和验证工具
 
 ## 安装
 
@@ -52,7 +53,7 @@ npm install react react-dom
 
 ```tsx
 import React from 'react';
-import { BTCWalletProvider, ConnectButton, WalletModal } from '@btc-connect/react';
+import { BTCWalletProvider, ConnectButton } from '@btc-connect/react';
 
 function App() {
   return (
@@ -60,7 +61,6 @@ function App() {
       <div>
         <h1>我的比特币应用</h1>
         <ConnectButton />
-        <WalletModal />
       </div>
     </BTCWalletProvider>
   );
@@ -75,510 +75,241 @@ export default App;
 
 管理钱包状态并为整个应用树提供状态管理的根Provider。
 
-```tsx
-function App() {
-  return (
-    <BTCWalletProvider
-      autoConnect={true}
-      connectTimeout={5000}
-      theme="light"
-      config={{
-        onStateChange: (state) => console.log('状态:', state),
-        onError: (error) => console.error('错误:', error)
-      }}
-    >
-      <YourApp />
-    </BTCWalletProvider>
-  );
-}
-```
-
-#### 主题管理
-
-`BTCWalletProvider` 统一管理所有组件的主题。主题设置会自动传递给所有子组件：
-
-```tsx
-// 设置暗色主题
-<BTCWalletProvider theme="dark">
-  <ConnectButton />  {/* 自动使用 dark 主题 */}
-  <WalletModal />    {/* 自动使用 dark 主题 */}
-</BTCWalletProvider>
-
-// 设置亮色主题（默认）
-<BTCWalletProvider theme="light">
-  <ConnectButton />  {/* 自动使用 light 主题 */}
-  <WalletModal />    {/* 自动使用 light 主题 */}
-</BTCWalletProvider>
-```
-
-**支持的主题：**
-- `"light"`: 亮色主题（默认）
-- `"dark"`: 暗色主题
-
-**动态主题切换：**
-```tsx
-function App() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  return (
-    <BTCWalletProvider theme={theme}>
-      <div>
-        <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-          切换主题
-        </button>
-        <ConnectButton />
-        <WalletModal />
-      </div>
-    </BTCWalletProvider>
-  );
-}
-```
+**Props:**
+- `children: ReactNode` - 子组件
+- `autoConnect?: boolean` - 启用自动连接（默认: false）
+- `connectTimeout?: number` - 连接超时时间，毫秒（默认: 5000）
+- `connectionPolicy?: ConnectionPolicy` - 自定义连接策略
+- `theme?: 'light' | 'dark'` - 所有组件的主题（默认: 'light'）
+- `config?: WalletManagerConfig` - 核心管理器配置
 
 ### ConnectButton
 
 可自定义样式的钱包连接预构建按钮组件。
 
-```tsx
-function Header() {
-  return (
-    <header>
-      <ConnectButton
-        size="md"
-        variant="select"
-        label="连接钱包"
-      />
-    </header>
-  );
-}
-```
+**Props:**
+- `size?: 'sm' | 'md' | 'lg'` - 按钮大小（默认: 'md'）
+- `variant?: 'select' | 'button' | 'compact'` - 显示样式（默认: 'select'）
+- `label?: string` - 自定义按钮标签
+- `disabled?: boolean` - 禁用按钮（默认: false）
+- `className?: string` - 自定义CSS类
+- `style?: React.CSSProperties` - 自定义内联样式
 
 ### WalletModal
 
 钱包选择和连接管理的模态框组件。
 
-```tsx
-function WalletLayout() {
-  const { isModalOpen, openModal, closeModal } = useWalletModal();
+**Props:**
+- `theme?: 'light' | 'dark'` - 模态框主题（默认: 从provider继承）
+- `isOpen?: boolean` - 模态框打开状态（受控模式）
+- `onClose?: () => void` - 关闭回调
+- `onConnect?: (walletId: string) => void` - 连接回调
 
-  return (
-    <div>
-      <ConnectButton onClick={openModal} />
-      <WalletModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
-    </div>
-  );
-}
-```
+## React Hooks
 
-## Hooks API
+### useWallet - 统一Hook
 
-### useWallet
+主要hook，提供所有钱包功能的访问。
 
-获取当前钱包状态和账户信息。
+**返回值:**
+```typescript
+interface UseWalletReturn {
+  // 状态
+  status: ConnectionStatus;
+  isConnected: boolean;
+  isConnecting: boolean;
+  address?: string;
+  balance?: number;
+  network?: Network;
+  error?: Error;
 
-```tsx
-function AccountInfo() {
-  const {
-    status,
-    accounts,
-    currentAccount,
-    network,
-    error,
-    isConnected,
-    isConnecting,
-    address,
-    balance,
-    publicKey,
-    currentWallet
-  } = useWallet();
+  // 操作
+  connect: (walletId: string) => Promise<AccountInfo[]>;
+  disconnect: () => Promise<void>;
+  switchWallet: (walletId: string) => Promise<AccountInfo[]>;
+  availableWallets: WalletInfo[];
 
-  if (isConnecting) return <div>连接中...</div>;
-  if (!isConnected) return <div>未连接</div>;
-
-  return (
-    <div>
-      <h3>账户信息</h3>
-      <p><strong>状态:</strong> {status}</p>
-      <p><strong>地址:</strong> {address}</p>
-      <p><strong>网络:</strong> {network}</p>
-      <p><strong>余额:</strong> {balance} sats</p>
-      <p><strong>钱包:</strong> {currentWallet?.name}</p>
-    </div>
-  );
-}
-```
-
-### useConnectWallet
-
-处理钱包连接操作。
-
-```tsx
-function WalletControls() {
-  const {
-    connect,
-    disconnect,
-    switchWallet,
-    availableWallets
-  } = useConnectWallet();
-
-  const handleConnect = async (walletId: string) => {
-    try {
-      await connect(walletId);
-      console.log('连接成功！');
-    } catch (error) {
-      console.error('连接失败:', error);
-    }
-  };
-
-  return (
-    <div>
-      <h3>可用钱包</h3>
-      {availableWallets.map(wallet => (
-        <button
-          key={wallet.id}
-          onClick={() => handleConnect(wallet.id)}
-        >
-          {wallet.name}
-        </button>
-      ))}
-      <button onClick={() => disconnect()}>
-        断开连接
-      </button>
-    </div>
-  );
+  // 高级
+  useWalletEvent: <T extends WalletEvent>(event: T, handler: EventHandler<T>) => UseWalletEventReturn<T>;
+  walletModal: UseWalletModalReturn;
+  manager: BTCWalletManager;
 }
 ```
 
 ### useWalletEvent
 
-监听钱包事件，自动清理监听器。
+监听钱包事件的hook，支持自动清理。
 
-```tsx
-function EventListener() {
-  useWalletEvent('connect', (accounts) => {
-    console.log('钱包已连接:', accounts);
-    // 显示成功通知
-  });
+**参数:**
+- `event: WalletEvent` - 事件类型（'connect', 'disconnect', 'accountChange', 'networkChange', 'error'）
+- `handler: EventHandler` - 事件处理函数
 
-  useWalletEvent('disconnect', () => {
-    console.log('钱包已断开');
-    // 清除用户数据
-  });
-
-  useWalletEvent('accountChange', (accounts) => {
-    console.log('账户已更改:', accounts);
-    // 更新UI
-  });
-
-  return <div>事件监听器激活</div>;
+**返回值:**
+```typescript
+interface UseWalletEventReturn<T> {
+  on: (handler: EventHandler<T>) => void;
+  off: (handler: EventHandler<T>) => void;
+  once: (handler: EventHandler<T>) => void;
+  clear: () => void;
+  eventHistory: EventHistoryItem[];
 }
 ```
 
 ### useNetwork
 
-管理网络信息和切换。
+网络管理和切换的hook。
 
-```tsx
-function NetworkInfo() {
-  const { network, switchNetwork } = useNetwork();
-
-  const handleNetworkSwitch = async (targetNetwork: Network) => {
-    try {
-      await switchNetwork(targetNetwork);
-      console.log(`已切换到${targetNetwork}`);
-    } catch (error) {
-      console.error('网络切换失败:', error);
-    }
-  };
-
-  return (
-    <div>
-      <p><strong>当前网络:</strong> {network}</p>
-      <button onClick={() => handleNetworkSwitch('mainnet')}>
-        切换到主网
-      </button>
-      <button onClick={() => handleNetworkSwitch('testnet')}>
-        切换到测试网
-      </button>
-    </div>
-  );
+**返回值:**
+```typescript
+interface UseNetworkReturn {
+  network: Network;
+  switchNetwork: (network: Network) => Promise<void>;
+  isSwitching: boolean;
 }
 ```
 
-### useAccount
+### useTheme
 
-获取详细账户和余额信息。
+主题管理和切换的hook。
 
-```tsx
-function AccountDetails() {
-  const {
-    accounts,
-    currentAccount,
-    hasAccounts,
-    refreshAccountInfo
-  } = useAccount();
+**返回值:**
+```typescript
+interface UseThemeReturn {
+  theme: ThemeMode;
+  systemTheme: ThemeMode;
+  effectiveTheme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  resetTheme: () => void;
+}
+```
 
-  if (!hasAccounts) {
-    return <div>没有可用账户</div>;
+## API 参考
+
+### 连接管理
+
+```typescript
+// 连接钱包
+const { connect, isConnected, address } = useWallet();
+
+const handleConnect = async () => {
+  try {
+    await connect('unisat');
+    console.log('连接到:', address);
+  } catch (error) {
+    console.error('连接失败:', error);
   }
-
-  return (
-    <div>
-      <h3>账户详情</h3>
-      <p><strong>总账户数:</strong> {accounts.length}</p>
-      {currentAccount && (
-        <div>
-          <p><strong>当前地址:</strong> {currentAccount.address}</p>
-          <p><strong>余额:</strong> {currentAccount.balance} sats</p>
-          <button onClick={refreshAccountInfo}>
-            刷新余额
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+};
 ```
 
-### useBalance
+### 事件处理
 
-专注的余额管理和格式化。
+```typescript
+// 监听钱包事件
+const { useWalletEvent } = useWallet();
 
-```tsx
-function BalanceDisplay() {
-  const {
-    balance,
-    confirmedBalance,
-    unconfirmedBalance,
-    totalBalance,
-    isLoading,
-    error,
-    refreshBalance
-  } = useBalance();
+useWalletEvent('connect', (accounts) => {
+  console.log('钱包已连接:', accounts);
+});
 
-  if (isLoading) return <div>加载余额中...</div>;
-  if (error) return <div>错误: {error.message}</div>;
-
-  return (
-    <div>
-      <h3>余额信息</h3>
-      <p><strong>总计:</strong> {totalBalance} sats</p>
-      <p><strong>已确认:</strong> {confirmedBalance} sats</p>
-      <p><strong>未确认:</strong> {unconfirmedBalance} sats</p>
-      <button onClick={refreshBalance}>
-        刷新
-      </button>
-    </div>
-  );
-}
+useWalletEvent('disconnect', () => {
+  console.log('钱包已断开');
+});
 ```
 
-### useWalletModal
+### 比特币操作
 
-控制钱包选择模态框。
+```typescript
+// 签名消息
+const { signMessage, signPsbt, sendBitcoin } = useWallet();
 
-```tsx
-function ModalControls() {
-  const { isOpen, open, close, toggle } = useWalletModal();
-
-  return (
-    <div>
-      <button onClick={open}>打开钱包模态框</button>
-      <button onClick={close}>关闭钱包模态框</button>
-      <button onClick={toggle}>切换模态框</button>
-      <p>模态框{isOpen ? '已打开' : '已关闭'}</p>
-    </div>
-  );
-}
+const handleSignMessage = async () => {
+  const signature = await signMessage('Hello, Bitcoin!');
+  console.log('签名:', signature);
+};
 ```
 
 ## 高级用法
 
 ### 自定义连接策略
 
-定义连接后运行的自定义任务。
+```typescript
+interface ConnectionPolicy {
+  tasks: ConnectionPolicyTask[];
+  emitEventsOnAutoConnect?: boolean;
+}
 
-```tsx
-const connectionPolicy: ConnectionPolicy = {
+const customPolicy: ConnectionPolicy = {
   tasks: [
     {
-      run: async ({ manager, accounts }) => {
-        // 连接后自定义逻辑
-        console.log('已连接账户:', accounts);
-
-        // 加载用户数据
-        await loadUserData(accounts[0].address);
-
+      run: async (context) => {
+        // 自定义连接逻辑
         return { success: true };
       },
-      required: false,
-      autoBehavior: 'run'
+      required: true
     }
-  ],
-  emitEventsOnAutoConnect: true
+  ]
 };
 
-function App() {
-  return (
-    <BTCWalletProvider connectionPolicy={connectionPolicy}>
-      {/* 你的应用 */}
-    </BTCWalletProvider>
-  );
-}
+<BTCWalletProvider connectionPolicy={customPolicy}>
+  <App />
+</BTCWalletProvider>
 ```
 
-### 错误边界
-
-为钱包操作实现适当的错误处理。
+### Next.js SSR支持
 
 ```tsx
-class WalletErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('钱包错误:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div>
-          <h2>钱包连接出现问题。</h2>
-          <details>
-            {this.state.error && this.state.error.message}
-          </details>
-          <button onClick={() => this.setState({ hasError: false, error: null })}>
-            重试
-          </button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-function App() {
-  return (
-    <WalletErrorBoundary>
-      <BTCWalletProvider>
-        <YourApp />
-      </BTCWalletProvider>
-    </WalletErrorBoundary>
-  );
-}
-```
-
-## 服务器端渲染 (SSR)
-
-React适配器完全兼容Next.js等SSR框架。
-
-### Next.js App Router
-
-```tsx
-// app/layout.tsx
+// pages/_app.tsx
 import { BTCWalletProvider } from '@btc-connect/react';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <html lang="zh-CN">
-      <body>
-        <BTCWalletProvider>
-          {children}
-        </BTCWalletProvider>
-      </body>
-    </html>
+    <BTCWalletProvider autoConnect={true}>
+      <Component {...pageProps} />
+    </BTCWalletProvider>
   );
 }
-```
 
-### 仅客户端组件
-
-```tsx
-// components/WalletConnectButton.tsx
-'use client';
-
+// pages/index.tsx
 import { ConnectButton } from '@btc-connect/react';
 
-export default function WalletConnectButton() {
-  return <ConnectButton />;
-}
-```
-
-## 性能优化
-
-### 记忆化
-
-```tsx
-import { useMemo } from 'react';
-
-function OptimizedWalletDisplay() {
-  const { balance, address } = useWallet();
-
-  const formattedBalance = useMemo(() => {
-    if (!balance) return '0 sats';
-    return `${(balance / 100000000).toFixed(8)} BTC`;
-  }, [balance]);
-
-  const shortAddress = useMemo(() => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }, [address]);
-
+export default function Home() {
   return (
     <div>
-      <p>{shortAddress}</p>
-      <p>{formattedBalance}</p>
+      <h1>比特币钱包应用</h1>
+      <ConnectButton />
     </div>
-  );
-}
-```
-
-### 懒加载
-
-```tsx
-import { lazy, Suspense } from 'react';
-
-const WalletModal = lazy(() => import('@btc-connect/react').then(mod => ({
-  default: mod.WalletModal
-})));
-
-function App() {
-  return (
-    <BTCWalletProvider>
-      <Suspense fallback={<div>加载中...</div>}>
-        <WalletModal />
-      </Suspense>
-    </BTCWalletProvider>
   );
 }
 ```
 
 ## 最佳实践
 
-1. **Provider位置**: 将Provider放在组件树尽可能高的位置
+1. **Provider位置**: 将BTCWalletProvider放在应用的根位置
 2. **错误处理**: 始终将钱包操作包装在try-catch块中
-3. **加载状态**: 连接期间显示适当的加载状态
-4. **事件清理**: 使用提供的hooks，自动处理清理
-5. **SSR考虑**: 对钱包依赖的UI使用仅客户端组件
-6. **性能**: 记忆化昂贵计算，对模态框使用懒加载
+3. **事件清理**: 使用hooks提供的自动清理功能
+4. **类型安全**: 利用TypeScript类型获得更好的开发体验
+5. **SSR**: 确保钱包操作只在客户端执行
+
+## 迁移指南
+
+### 从v0.3.x迁移到v0.4.0+
+
+```tsx
+// 旧方式
+import { useWallet, useAccount, useWalletEvent } from '@btc-connect/react';
+const { connect } = useWallet();
+const { address } = useAccount();
+useWalletEvent('connect', handler);
+
+// 新方式
+import { useWallet } from '@btc-connect/react';
+const { connect, address, useWalletEvent } = useWallet();
+useWalletEvent('connect', handler);
+```
 
 ## 贡献
 
-请阅读我们的[贡献指南](../../CONTRIBUTING.zh-CN.md)了解我们的行为准则和提交拉取请求的流程。
+请阅读我们的[贡献指南](../../CONTRIBUTING.md)了解我们的行为准则和提交拉取请求的流程。
 
 ## 许可证
 

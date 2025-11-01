@@ -5,7 +5,6 @@ export {
   useConnectWallet,
   useNetwork,
   useWallet,
-  useWalletConnect,
   useWalletEvent,
   useWalletModal,
 } from '../hooks';

@@ -8,7 +8,6 @@ import type {
   AccountInfo,
   BalanceDetail,
   BTCWalletManager,
-  ConnectionStatus,
   Network,
   WalletEvent,
   WalletInfo,
@@ -16,9 +15,10 @@ import type {
   WalletState,
 } from '@btc-connect/core';
 import type { App, ComputedRef, Ref, StyleValue } from 'vue';
+import type { WalletDetectionManager } from '../utils/wallet-detection-manager';
 
 // 事件处理器类型
-export type WalletEventHandler<T extends WalletEvent> = (data: any) => void;
+export type WalletEventHandler<_T extends WalletEvent> = (data: any) => void;
 
 // === 重新导出核心类型 ===
 export type {
@@ -293,6 +293,19 @@ export interface WalletContext {
   /** 切换模态框 */
   toggleModal: () => void;
 
+  // 钱包检测相关
+  /** 检测管理器 */
+  detectionManager: Ref<WalletDetectionManager | null>;
+  /** 是否正在检测钱包 */
+  isDetecting: ComputedRef<boolean>;
+  /** 开始钱包检测 */
+  startWalletDetection: (options?: {
+    autoConnect?: boolean;
+    connectTimeout?: number;
+  }) => Promise<void>;
+  /** 停止钱包检测 */
+  stopWalletDetection: () => void;
+
   // 内部状态更新触发器
   _stateUpdateTrigger: Ref<number>;
 }
@@ -405,7 +418,7 @@ export class ConnectionError extends BTCConnectError {
 
 // 网络错误
 export class NetworkError extends BTCConnectError {
-  constructor(message: string, network?: Network) {
+  constructor(message: string, _network?: Network) {
     super(message, 'NETWORK_ERROR');
     this.name = 'NetworkError';
   }
